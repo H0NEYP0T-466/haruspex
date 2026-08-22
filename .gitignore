@@ -1,24 +1,69 @@
-# Logs
-logs
-*.log
+# ==============================================================================
+# HARUSPEX Git Ignore Rules
+# ==============================================================================
+
+# --- Dataset Files (DO NOT COMMIT DATASETS) ---
+backend/dataset/
+dataset/
+*.npz
+*.tar.gz
+*.zip
+*.7z
+
+# --- Model & Output Artifacts ---
+outputs/
+*.pkl
+*.joblib
+*.ubj
+*.model
+
+# --- Python Virtual Environments ---
+backend/.venv/
+backend/venv/
+.venv/
+venv/
+ENV/
+env/
+
+# --- Environment & Secret Files ---
+backend/.env
+.env
+.env.local
+*.env
+
+# --- Byte-compiled / Python Cache ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.nox/
+.tox/
+
+# --- Build & Distribution ---
+dist/
+dist-ssr/
+build/
+*.egg-info/
+.eggs/
+
+# --- Node / Frontend ---
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.oxlintrc.json.log
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# --- IDEs & OS Files ---
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db

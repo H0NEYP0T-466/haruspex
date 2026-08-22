@@ -1,0 +1,1 @@
+"""HARUSPEX FastAPI application."""

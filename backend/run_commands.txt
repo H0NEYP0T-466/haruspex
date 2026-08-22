@@ -1,0 +1,11 @@
+# 1. Run full end-to-end training pipeline
+cd backend
+source .venv/bin/activate
+python scripts/train.py
+
+# 2. Launch FastAPI backend
+python -m haruspex.api.main
+
+# 3. Launch React frontend dashboard (in project root)
+npm run dev
+

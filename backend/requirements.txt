@@ -1,0 +1,38 @@
+# HARUSPEX backend dependencies
+# Install with:  cd backend && source .venv/bin/activate && pip install -r requirements.txt
+#
+# Notes:
+# - Minimum bounds are used so pip resolves the newest build compatible with your
+#   Python (3.10+). All listed packages ship prebuilt wheels for 3.10-3.14.
+# - `yara-python` bundles libyara (no system dependency needed).
+# - `python-multipart` and `httpx` are required by FastAPI (file uploads / TestClient).
+
+# --- Web API ---
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+python-multipart>=0.0.12
+python-dotenv>=1.0
+
+# --- ML ---
+xgboost>=2.1
+lightgbm>=4.5
+scikit-learn>=1.5
+
+# --- XAI ---
+shap>=0.46
+lime>=0.2.0.1
+
+# --- Data ---
+pandas>=2.2
+numpy>=2.1
+matplotlib>=3.9
+
+# --- Forensics ---
+lief>=0.14
+yara-python>=4.5
+
+# --- Tooling / tests ---
+pytest>=8.3
+httpx>=0.27
+ruff>=0.6

@@ -1,0 +1,18 @@
+# ==============================================================================
+# HARUSPEX Backend Git Ignore Rules
+# ==============================================================================
+
+# --- Datasets (PRE-DOWNLOADED - DO NOT COMMIT) ---
+dataset/
+dataset/*
+*.npz
+
+# --- Environments & Secrets ---
+.venv/
+venv/
+.env
+
+# --- Caches ---
+__pycache__/
+.pytest_cache/
+.ruff_cache/
