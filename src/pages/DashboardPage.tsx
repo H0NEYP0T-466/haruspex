@@ -48,10 +48,8 @@ export default function DashboardPage() {
         .map(([name, value]) => ({ name, value }))
     : [];
 
-  // Top families bar chart data
-  const familyData = datasetInfo
-    ? datasetInfo.families.slice(0, 10).map((fam, i) => ({ name: fam, count: 10 - i }))
-    : [];
+  // Top families bar chart data (real per-family sample counts from the API)
+  const familyData = datasetInfo?.top_families ?? [];
 
   return (
     <div>
@@ -132,7 +130,7 @@ export default function DashboardPage() {
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
                   labelLine={false}
                 >
                   {categoryData.map((_, i) => (
@@ -175,6 +173,31 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Top families */}
+      {familyData.length > 0 && (
+        <div className="card" style={{ marginTop: 'var(--space-lg)' }}>
+          <div className="card-header">
+            <div className="card-title">Top Malware Families</div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={familyData} layout="vertical" margin={{ left: 24 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3e" />
+              <XAxis type="number" stroke="#8b95a8" />
+              <YAxis type="category" dataKey="name" stroke="#8b95a8" width={120} />
+              <Tooltip
+                contentStyle={{ background: '#1a2235', border: '1px solid #2a3a55', borderRadius: '8px' }}
+                labelStyle={{ color: '#e8edf5' }}
+              />
+              <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                {familyData.map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* Feature info */}
       {datasetInfo && (

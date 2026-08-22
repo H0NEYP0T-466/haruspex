@@ -76,6 +76,7 @@ export interface DatasetInfo {
   n_malware: number;
   n_families: number;
   families: string[];
+  top_families: { name: string; count: number }[];
   categories: Record<string, number>;
 }
 

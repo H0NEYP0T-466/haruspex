@@ -141,12 +141,15 @@ async def explain_sample(request: ExplainRequest):
 @router.get("/dataset/info")
 async def dataset_info():
     """Return BODMAS dataset summary information."""
+    from haruspex.data.bodmas import get_family_sample_counts
+
     try:
         dataset = _get_dataset()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load dataset: {e}")
 
     families = dataset.metadata["family"].replace("", None).dropna().unique()
+    family_counts = get_family_sample_counts(dataset.metadata)
 
     return {
         "total_samples": dataset.n_samples,
@@ -154,7 +157,11 @@ async def dataset_info():
         "n_benign": dataset.n_benign,
         "n_malware": dataset.n_malware,
         "n_families": len(families),
-        "families": sorted(families.tolist())[:50],  # First 50
+        "families": sorted(families.tolist())[:50],  # First 50 (alphabetical)
+        "top_families": [
+            {"name": name, "count": int(count)}
+            for name, count in family_counts.head(10).items()
+        ],
         "categories": dataset.metadata["category"].value_counts().to_dict(),
     }
 

@@ -41,6 +41,11 @@ pip install -r requirements.txt
 # Train models (requires BODMAS dataset in backend/dataset/BODMAS/)
 python scripts/train.py
 
+# (Optional) Vectorize EMBER 2018 for cross-dataset evaluation
+# (requires dataset/ember2018/test_features.jsonl)
+python scripts/prepare_ember.py
+python scripts/evaluate.py
+
 # Start API server
 python -m haruspex.api.main
 ```
@@ -93,7 +98,7 @@ HARUSPEX/
 | Random | Standard 80/20 stratified | Sanity-check baseline |
 | Family-held-out | Hold out entire malware families | Zero-day (family-based) |
 | Temporal | Train before cutoff, test after | Zero-day (time-based) |
-| Cross-dataset | Train BODMAS → test EMBER | Cross-domain (placeholder) |
+| Cross-dataset | Train BODMAS → test EMBER | Cross-domain generalization |
 
 ## API Endpoints
 

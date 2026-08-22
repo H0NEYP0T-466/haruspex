@@ -1,0 +1,95 @@
+󰣇 Projects/FAST_API/HARUSPEX   master ❯ cd backend                                                                                                    15:46 
+󰣇 FAST_API/HARUSPEX/backend   master ❯ . venv/bin/activate                                                                                    3.14.6  15:46 
+󰣇 FAST_API/HARUSPEX/backend   master ❯ python scripts/evaluate.py                                                                        venv 3.14.6  15:46 
+[HARUSPEX] 2026-08-22 15:46:38 INFO haruspex.models.xgboost_model: XGBoost model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/xgboost.json
+[HARUSPEX] 2026-08-22 15:46:38 INFO haruspex.utils.storage: Model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/xgboost.json
+[HARUSPEX] 2026-08-22 15:46:38 INFO haruspex.models.lightgbm_model: LightGBM model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/lightgbm.json
+[HARUSPEX] 2026-08-22 15:46:38 INFO haruspex.utils.storage: Model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/lightgbm.json
+[HARUSPEX] 2026-08-22 15:46:38 INFO __main__: Loading BODMAS dataset...
+[HARUSPEX] 2026-08-22 15:46:38 INFO haruspex.data.bodmas: Loading BODMAS dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas.npz
+[HARUSPEX] 2026-08-22 15:46:44 INFO haruspex.data.bodmas: Features X: shape=(134435, 2381), dtype=float32
+[HARUSPEX] 2026-08-22 15:46:44 INFO haruspex.data.bodmas: Labels  y: shape=(134435,), dtype=int32 | benign=77142, malware=57293
+[HARUSPEX] 2026-08-22 15:46:44 INFO haruspex.data.bodmas: Loading metadata from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_metadata.csv
+[HARUSPEX] 2026-08-22 15:46:44 INFO haruspex.data.bodmas: Loading malware categories from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_malware_category.csv
+[HARUSPEX] 2026-08-22 15:46:45 INFO haruspex.data.bodmas: BODMAS loaded: 134435 samples (77142 benign, 57293 malware), 2381 features, 582 families
+[HARUSPEX] 2026-08-22 15:46:45 INFO __main__: BODMAS ready: 134435 samples (77142 benign / 57293 malware), 2381 features
+[HARUSPEX] 2026-08-22 15:46:45 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-22 15:46:45 INFO __main__: Evaluating model: XGBOOST
+[HARUSPEX] 2026-08-22 15:46:45 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-22 15:46:45 INFO __main__: --- random [xgboost] ---
+[HARUSPEX] 2026-08-22 15:46:46 INFO haruspex.data.splits: Random split: train=107548 (42.6% malware), test=26887 (42.6% malware)
+[HARUSPEX] 2026-08-22 15:46:47 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_random_confusion_matrix.png
+[HARUSPEX] 2026-08-22 15:46:48 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_random_roc_curve.png
+[HARUSPEX] 2026-08-22 15:46:48 INFO haruspex.evaluation.protocols: Evaluation [xgboost/random]: acc=0.9970, f1=0.9965, auc=0.9998
+[HARUSPEX] 2026-08-22 15:46:48 INFO __main__: --- family-held-out [xgboost] ---
+[HARUSPEX] 2026-08-22 15:46:48 INFO haruspex.data.splits: Family-held-out split: holding out families ['gepys', 'benjamin', 'musecador', 'autoit']
+[HARUSPEX] 2026-08-22 15:46:49 INFO haruspex.data.splits: Family-held-out split: train=130217 (40.8% malware), test=4218 (100.0% malware), held-out families=['gepys', 'benjamin', 'musecador', 'autoit']
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:469: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+  warnings.warn(
+[HARUSPEX] 2026-08-22 15:46:50 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_family_held_out_confusion_matrix.png
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:1355: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+[HARUSPEX] 2026-08-22 15:46:50 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_family_held_out_roc_curve.png
+[HARUSPEX] 2026-08-22 15:46:50 INFO haruspex.evaluation.protocols: Evaluation [xgboost/family_held_out]: acc=0.9998, f1=0.9999, auc=nan
+[HARUSPEX] 2026-08-22 15:46:50 INFO __main__: --- temporal [xgboost] ---
+[HARUSPEX] 2026-08-22 15:46:50 INFO haruspex.data.splits: Temporal split: cutoff date = 2020-06-01
+[HARUSPEX] 2026-08-22 15:46:52 INFO haruspex.data.splits: Temporal split (cutoff=2020-06-01): train=95537 (41.5% malware), test=38898 (45.3% malware)
+[HARUSPEX] 2026-08-22 15:46:53 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_temporal_confusion_matrix.png
+[HARUSPEX] 2026-08-22 15:46:54 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_temporal_roc_curve.png
+[HARUSPEX] 2026-08-22 15:46:54 INFO haruspex.evaluation.protocols: Evaluation [xgboost/temporal]: acc=0.9995, f1=0.9995, auc=1.0000
+[HARUSPEX] 2026-08-22 15:46:54 INFO __main__: --- cross-dataset (EMBER 2018) [xgboost] ---
+[HARUSPEX] 2026-08-22 15:46:54 INFO haruspex.data.ember: Loading EMBER dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/ember2018
+[HARUSPEX] 2026-08-22 15:46:54 INFO haruspex.data.ember: Reading vectorized EMBER features via numpy memmap: X_test.dat
+[HARUSPEX] 2026-08-22 15:46:54 INFO haruspex.data.ember: EMBER loaded (test partition): 10000 samples (5005 benign, 4995 malware)
+[HARUSPEX] 2026-08-22 15:46:54 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_cross_dataset_confusion_matrix.png
+[HARUSPEX] 2026-08-22 15:46:55 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_cross_dataset_roc_curve.png
+[HARUSPEX] 2026-08-22 15:46:55 INFO haruspex.evaluation.protocols: Evaluation [xgboost/cross_dataset]: acc=0.8390, f1=0.8191, auc=0.9226
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: 
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: === XGBOOST Results ===
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: random                 acc=0.9970  precision=0.9979  recall=0.9951  f1=0.9965  auc=0.9998
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: family_held_out        acc=0.9998  precision=1.0000  recall=0.9998  f1=0.9999  auc=nan
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: temporal               acc=0.9995  precision=0.9998  recall=0.9991  f1=0.9995  auc=1.0000
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: cross_dataset          acc=0.8390  precision=0.9334  recall=0.7297  f1=0.8191  auc=0.9226
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: 
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: Evaluating model: LIGHTGBM
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-22 15:46:55 INFO __main__: --- random [lightgbm] ---
+[HARUSPEX] 2026-08-22 15:46:56 INFO haruspex.data.splits: Random split: train=107548 (42.6% malware), test=26887 (42.6% malware)
+[HARUSPEX] 2026-08-22 15:46:57 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_random_confusion_matrix.png
+[HARUSPEX] 2026-08-22 15:46:58 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_random_roc_curve.png
+[HARUSPEX] 2026-08-22 15:46:58 INFO haruspex.evaluation.protocols: Evaluation [lightgbm/random]: acc=0.9972, f1=0.9967, auc=0.9999
+[HARUSPEX] 2026-08-22 15:46:58 INFO __main__: --- family-held-out [lightgbm] ---
+[HARUSPEX] 2026-08-22 15:46:58 INFO haruspex.data.splits: Family-held-out split: holding out families ['gepys', 'benjamin', 'musecador', 'autoit']
+[HARUSPEX] 2026-08-22 15:46:59 INFO haruspex.data.splits: Family-held-out split: train=130217 (40.8% malware), test=4218 (100.0% malware), held-out families=['gepys', 'benjamin', 'musecador', 'autoit']
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:469: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+  warnings.warn(
+[HARUSPEX] 2026-08-22 15:47:00 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_family_held_out_confusion_matrix.png
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:1355: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+[HARUSPEX] 2026-08-22 15:47:00 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_family_held_out_roc_curve.png
+[HARUSPEX] 2026-08-22 15:47:00 INFO haruspex.evaluation.protocols: Evaluation [lightgbm/family_held_out]: acc=0.9998, f1=0.9999, auc=nan
+[HARUSPEX] 2026-08-22 15:47:00 INFO __main__: --- temporal [lightgbm] ---
+[HARUSPEX] 2026-08-22 15:47:00 INFO haruspex.data.splits: Temporal split: cutoff date = 2020-06-01
+[HARUSPEX] 2026-08-22 15:47:01 INFO haruspex.data.splits: Temporal split (cutoff=2020-06-01): train=95537 (41.5% malware), test=38898 (45.3% malware)
+[HARUSPEX] 2026-08-22 15:47:03 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_temporal_confusion_matrix.png
+[HARUSPEX] 2026-08-22 15:47:03 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_temporal_roc_curve.png
+[HARUSPEX] 2026-08-22 15:47:03 INFO haruspex.evaluation.protocols: Evaluation [lightgbm/temporal]: acc=0.9996, f1=0.9996, auc=1.0000
+[HARUSPEX] 2026-08-22 15:47:03 INFO __main__: --- cross-dataset (EMBER 2018) [lightgbm] ---
+[HARUSPEX] 2026-08-22 15:47:03 INFO haruspex.data.ember: Loading EMBER dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/ember2018
+[HARUSPEX] 2026-08-22 15:47:03 INFO haruspex.data.ember: Reading vectorized EMBER features via numpy memmap: X_test.dat
+[HARUSPEX] 2026-08-22 15:47:04 INFO haruspex.data.ember: EMBER loaded (test partition): 10000 samples (5005 benign, 4995 malware)
+[HARUSPEX] 2026-08-22 15:47:04 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_cross_dataset_confusion_matrix.png
+[HARUSPEX] 2026-08-22 15:47:05 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_cross_dataset_roc_curve.png
+[HARUSPEX] 2026-08-22 15:47:05 INFO haruspex.evaluation.protocols: Evaluation [lightgbm/cross_dataset]: acc=0.8396, f1=0.8191, auc=0.9236
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: 
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: === LIGHTGBM Results ===
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: random                 acc=0.9972  precision=0.9983  recall=0.9950  f1=0.9967  auc=0.9999
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: family_held_out        acc=0.9998  precision=1.0000  recall=0.9998  f1=0.9999  auc=nan
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: temporal               acc=0.9996  precision=0.9998  recall=0.9994  f1=0.9996  auc=1.0000
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: cross_dataset          acc=0.8396  precision=0.9380  recall=0.7269  f1=0.8191  auc=0.9236
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: 
+[HARUSPEX] 2026-08-22 15:47:05 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/evaluation_results.json
+[HARUSPEX] 2026-08-22 15:47:05 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/evaluation_results.txt
+[HARUSPEX] 2026-08-22 15:47:05 INFO __main__: Full report saved to /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/evaluation_results.json
+󰣇 FAST_API/HARUSPEX/backend   master ❯   

@@ -17,7 +17,7 @@ rule dropper_file_operations {
         $writefile = "WriteFile" ascii
         $createfile = "CreateFileA" ascii
     condition:
-        uint16(0) == 0x5A4D and ($urldownload or $shellexec) and ($tmppath or $writefile or $createfile)
+        uint16(0) == 0x5A4D and ($urldownload or $shellexec or $winexec) and ($tmppath or $writefile or $createfile)
 }
 
 rule embedded_executable {
