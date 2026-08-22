@@ -77,7 +77,10 @@ def plot_confusion_matrix(
         Matplotlib figure.
     """
     labels = labels or ["Benign", "Malware"]
-    cm = confusion_matrix(y_true, y_pred)
+    # Explicitly pin labels=[0, 1] so the matrix is always 2x2, even when
+    # only one class is present in y_true/y_pred (e.g. a held-out split
+    # where the model gets every sample right).
+    cm = confusion_matrix(y_true, y_pred, labels=list(range(len(labels))))
 
     fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(cm, interpolation="nearest", cmap="Blues")

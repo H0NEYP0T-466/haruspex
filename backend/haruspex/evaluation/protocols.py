@@ -14,7 +14,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from haruspex.config import HELD_OUT_FAMILIES, TEMPORAL_CUTOFF, get_feature_names
+from haruspex.config import HELD_OUT_FAMILIES, NUM_FEATURES, TEMPORAL_CUTOFF, get_feature_names
 from haruspex.data.splits import (
     SplitResult,
     family_held_out_split,
@@ -154,7 +154,7 @@ def evaluate_cross_dataset(
         X_ember, y_ember, meta_ember = load_ember(max_samples=max_samples)
 
         split = SplitResult(
-            X_train=np.empty((0, 2381), dtype=np.float32),
+            X_train=np.empty((0, NUM_FEATURES), dtype=np.float32),
             y_train=np.empty((0,), dtype=np.int32),
             X_test=X_ember,
             y_test=y_ember,
