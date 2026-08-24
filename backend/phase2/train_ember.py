@@ -30,12 +30,13 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
 # Add backend/ to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -43,14 +44,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from haruspex.config import (
     BACKEND_DIR,
     NUM_FEATURES,
-    REPORTS_DIR,
     ensure_output_dirs,
     get_feature_names,
 )
 from haruspex.correlation.correlator import Correlator
-from haruspex.data.splits import SplitResult, random_split
+from haruspex.data.splits import random_split
 from haruspex.evaluation.metrics import (
-    compute_metrics,
     plot_confusion_matrix,
     plot_feature_importance,
     plot_roc_curve,
@@ -61,13 +60,13 @@ from haruspex.models.lightgbm_model import LightGBMDetector
 from haruspex.models.trainer import train_model
 from haruspex.models.xgboost_model import XGBoostDetector
 from haruspex.utils.logging import get_logger
-from haruspex.utils.storage import save_model, save_report
+from haruspex.utils.storage import save_report
 from haruspex.xai.shap_explainer import SHAPExplainer
 
 logger = get_logger(__name__)
 
 EMBER_DIR = BACKEND_DIR / "dataset" / "ember2018"
-DEFAULT_MAX_SAMPLES = 200_000  # Safe for 16GB RAM
+DEFAULT_MAX_SAMPLES = 200_000_000  # Safe for 16GB RAM
 
 
 def load_ember_train(
@@ -183,7 +182,11 @@ def main() -> None:
     # Step 2: Train models
     # ------------------------------------------------------------------
     print("\n[2/8] Training models on EMBER data...")
+    n_total = int(X_train_full.shape[0])
     split = random_split(X_train_full, y_train_full, metadata, test_size=0.2)
+    # random_split made its own copies — free the full matrix before
+    # model training, otherwise peak RAM is ~2x the dataset size.
+    del X_train_full
 
     # Train XGBoost
     print("  Training XGBoost...")
@@ -224,8 +227,6 @@ def main() -> None:
             preds = model.predict(X_test_ember)
             proba = model.predict_proba(X_test_ember)
 
-            from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
-
             acc = accuracy_score(y_test_ember, preds)
             f1 = f1_score(y_test_ember, preds)
             try:
@@ -236,12 +237,17 @@ def main() -> None:
             print(f"  {name} on EMBER test: acc={acc:.4f}, f1={f1:.4f}, auc={auc:.4f}")
 
             # Save plots
-            fig = plot_confusion_matrix(y_test_ember, preds, title=f"{name} — EMBER Test")
-            from haruspex.utils.storage import save_plot
-            save_plot(fig, f"{name}_ember_test_confusion_matrix")
+            fig = plot_confusion_matrix(
+                y_test_ember, preds, save_name=f"{name}_ember_test_confusion_matrix",
+                title=f"{name} — EMBER Test",
+            )
+            plt.close(fig)
 
-            fig = plot_roc_curve(y_test_ember, proba, title=f"{name} — EMBER Test ROC")
-            save_plot(fig, f"{name}_ember_test_roc_curve")
+            fig = plot_roc_curve(
+                y_test_ember, proba, save_name=f"{name}_ember_test_roc_curve",
+                title=f"{name} — EMBER Test ROC",
+            )
+            plt.close(fig)
 
     except FileNotFoundError as e:
         print(f"  WARNING: Could not load EMBER test partition: {e}")
@@ -270,11 +276,17 @@ def main() -> None:
 
                 print(f"  {name} on BODMAS: acc={acc:.4f}, f1={f1:.4f}, auc={auc:.4f}")
 
-                fig = plot_confusion_matrix(bodmas.y, preds, title=f"{name} → BODMAS Generalization")
-                save_plot(fig, f"{name}_bodmas_generalization_confusion_matrix")
+                fig = plot_confusion_matrix(
+                    bodmas.y, preds, save_name=f"{name}_bodmas_generalization_confusion_matrix",
+                    title=f"{name} → BODMAS Generalization",
+                )
+                plt.close(fig)
 
-                fig = plot_roc_curve(bodmas.y, proba, title=f"{name} → BODMAS Generalization ROC")
-                save_plot(fig, f"{name}_bodmas_generalization_roc_curve")
+                fig = plot_roc_curve(
+                    bodmas.y, proba, save_name=f"{name}_bodmas_generalization_roc_curve",
+                    title=f"{name} → BODMAS Generalization ROC",
+                )
+                plt.close(fig)
 
         except Exception as e:
             print(f"  WARNING: BODMAS evaluation failed: {e}")
@@ -350,8 +362,12 @@ def main() -> None:
     # ------------------------------------------------------------------
     print("\n[7/8] Saving feature importance plots...")
     for model, name in [(xgb_model, "ember_xgboost"), (lgb_model, "ember_lightgbm")]:
-        fig = plot_feature_importance(model, feature_names, top_k=20, title=f"{name} Feature Importance")
-        save_plot(fig, f"{name}_feature_importance")
+        importances = model.get_feature_importance()
+        fig = plot_feature_importance(
+            importances, feature_names, save_name=f"{name}_feature_importance",
+            title=f"{name} Feature Importance", top_n=20,
+        )
+        plt.close(fig)
 
     # ------------------------------------------------------------------
     # Step 8: Save summary
@@ -362,7 +378,7 @@ def main() -> None:
         "training_dataset": "EMBER_2018",
         "generalization_dataset": "BODMAS",
         "max_samples": args.max_samples,
-        "actual_samples": int(X_train_full.shape[0]),
+        "actual_samples": n_total,
         "models": {
             "ember_xgboost": xgb_metrics,
             "ember_lightgbm": lgb_metrics,
@@ -384,10 +400,10 @@ def main() -> None:
     print("  HARUSPEX Phase 2 — Training Complete!")
     print("=" * 72)
     print(f"\n  Time elapsed: {elapsed:.1f}s ({elapsed/60:.1f} min)")
-    print(f"\n  Models saved:")
-    print(f"    outputs/models/ember_xgboost.json")
-    print(f"    outputs/models/ember_lightgbm.json")
-    print(f"\n  EMBER train/test performance:")
+    print("\n  Models saved:")
+    print("    outputs/models/ember_xgboost.json")
+    print("    outputs/models/ember_lightgbm.json")
+    print("\n  EMBER train/test performance:")
     print(f"    XGBoost:  acc={xgb_metrics['test_accuracy']:.4f}, f1={xgb_metrics['test_f1']:.4f}, auc={xgb_metrics['test_auc']:.4f}")
     print(f"    LightGBM: acc={lgb_metrics['test_accuracy']:.4f}, f1={lgb_metrics['test_f1']:.4f}, auc={lgb_metrics['test_auc']:.4f}")
     print(f"\n  Top-10 SHAP features ({best_name}):")
@@ -398,7 +414,7 @@ def main() -> None:
     total_evidence = sum(r.total_evidence for r in investigation_reports)
     print(f"  Total evidence items: {total_evidence}")
     print(f"  Correlated evidence:  {total_correlated}")
-    print(f"\n  Outputs saved to: outputs/")
+    print("\n  Outputs saved to: outputs/")
     print("=" * 72)
 
 

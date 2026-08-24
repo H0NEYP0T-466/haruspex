@@ -1,0 +1,523 @@
+󰣇 ~ ❯ cd Projects/FAST_API/HARUSPEX/                     3.14.6  10:27 
+󰣇 Projects/FAST_API/HARUSPEX   master  ! ❯ cd backend          10:27 
+󰣇 FAST_API/HARUSPEX/backend   master  ! ❯ . venv/bin/activate
+󰣇 FAST_API/HARUSPEX/backend   master  ! ❯ python scripts/evaluate.py 
+[HARUSPEX] 2026-08-24 10:27:13 INFO haruspex.models.xgboost_model: XGBoost model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/xgboost.json
+[HARUSPEX] 2026-08-24 10:27:13 INFO haruspex.utils.storage: Model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/xgboost.json
+[HARUSPEX] 2026-08-24 10:27:13 INFO haruspex.models.lightgbm_model: LightGBM model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/lightgbm.json
+[HARUSPEX] 2026-08-24 10:27:13 INFO haruspex.utils.storage: Model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/lightgbm.json
+[HARUSPEX] 2026-08-24 10:27:13 INFO __main__: Loading BODMAS dataset...
+[HARUSPEX] 2026-08-24 10:27:13 INFO haruspex.data.bodmas: Loading BODMAS dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas.npz
+[HARUSPEX] 2026-08-24 10:27:18 INFO haruspex.data.bodmas: Features X: shape=(134435, 2381), dtype=float32
+[HARUSPEX] 2026-08-24 10:27:18 INFO haruspex.data.bodmas: Labels  y: shape=(134435,), dtype=int32 | benign=77142, malware=57293
+[HARUSPEX] 2026-08-24 10:27:18 INFO haruspex.data.bodmas: Loading metadata from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_metadata.csv
+[HARUSPEX] 2026-08-24 10:27:18 INFO haruspex.data.bodmas: Loading malware categories from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_malware_category.csv
+[HARUSPEX] 2026-08-24 10:27:19 INFO haruspex.data.bodmas: BODMAS loaded: 134435 samples (77142 benign, 57293 malware), 2381 features, 582 families
+[HARUSPEX] 2026-08-24 10:27:19 INFO __main__: BODMAS ready: 134435 samples (77142 benign / 57293 malware), 2381 features
+[HARUSPEX] 2026-08-24 10:27:19 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-24 10:27:19 INFO __main__: Evaluating model: XGBOOST
+[HARUSPEX] 2026-08-24 10:27:19 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-24 10:27:19 INFO __main__: --- random [xgboost] ---
+[HARUSPEX] 2026-08-24 10:27:19 INFO haruspex.data.splits: Random split: train=107548 (42.6% malware), test=26887 (42.6% malware)
+^[[23;9~[HARUSPEX] 2026-08-24 10:27:20 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_random_confusion_matrix.png
+[HARUSPEX] 2026-08-24 10:27:21 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_random_roc_curve.png
+[HARUSPEX] 2026-08-24 10:27:21 INFO haruspex.evaluation.protocols: Evaluation [xgboost/random]: acc=0.9970, f1=0.9965, auc=0.9998
+[HARUSPEX] 2026-08-24 10:27:21 INFO __main__: --- family-held-out [xgboost] ---
+[HARUSPEX] 2026-08-24 10:27:21 INFO haruspex.data.splits: Family-held-out split: holding out families ['gepys', 'benjamin', 'musecador', 'autoit']
+[HARUSPEX] 2026-08-24 10:27:21 INFO haruspex.data.splits: Family-held-out split: train=130217 (40.8% malware), test=4218 (100.0% malware), held-out families=['gepys', 'benjamin', 'musecador', 'autoit']
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:469: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+  warnings.warn(
+[HARUSPEX] 2026-08-24 10:27:21 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_family_held_out_confusion_matrix.png
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:1355: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+[HARUSPEX] 2026-08-24 10:27:22 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_family_held_out_roc_curve.png
+[HARUSPEX] 2026-08-24 10:27:22 INFO haruspex.evaluation.protocols: Evaluation [xgboost/family_held_out]: acc=0.9998, f1=0.9999, auc=nan
+[HARUSPEX] 2026-08-24 10:27:22 INFO __main__: --- temporal [xgboost] ---
+[HARUSPEX] 2026-08-24 10:27:22 INFO haruspex.data.splits: Temporal split: cutoff date = 2020-06-01
+[HARUSPEX] 2026-08-24 10:27:22 INFO haruspex.data.splits: Temporal split (cutoff=2020-06-01): train=95537 (41.5% malware), test=38898 (45.3% malware)
+^[[23;9~^[[24;2~[HARUSPEX] 2026-08-24 10:27:23 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_temporal_confusion_matrix.png
+[HARUSPEX] 2026-08-24 10:27:24 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_temporal_roc_curve.png
+[HARUSPEX] 2026-08-24 10:27:24 INFO haruspex.evaluation.protocols: Evaluation [xgboost/temporal]: acc=0.9995, f1=0.9995, auc=1.0000
+[HARUSPEX] 2026-08-24 10:27:24 INFO __main__: --- cross-dataset (EMBER 2018) [xgboost] ---
+[HARUSPEX] 2026-08-24 10:27:24 INFO haruspex.data.ember: Loading EMBER dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/ember2018
+[HARUSPEX] 2026-08-24 10:27:24 INFO haruspex.data.ember: Reading vectorized EMBER features via numpy memmap: X_test.dat
+[HARUSPEX] 2026-08-24 10:27:32 INFO haruspex.data.ember: EMBER loaded (test partition): 200000 samples (100000 benign, 100000 malware)
+[HARUSPEX] 2026-08-24 10:27:37 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_cross_dataset_confusion_matrix.png
+[HARUSPEX] 2026-08-24 10:27:37 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_cross_dataset_roc_curve.png
+[HARUSPEX] 2026-08-24 10:27:37 INFO haruspex.evaluation.protocols: Evaluation [xgboost/cross_dataset]: acc=0.8417, f1=0.8215, auc=0.9256
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: 
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: === XGBOOST Results ===
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: random                 acc=0.9970  precision=0.9979  recall=0.9951  f1=0.9965  auc=0.9998
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: family_held_out        acc=0.9998  precision=1.0000  recall=0.9998  f1=0.9999  auc=nan
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: temporal               acc=0.9995  precision=0.9998  recall=0.9991  f1=0.9995  auc=1.0000
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: cross_dataset          acc=0.8417  precision=0.9413  recall=0.7288  f1=0.8215  auc=0.9256
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: 
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: Evaluating model: LIGHTGBM
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-24 10:27:38 INFO __main__: --- random [lightgbm] ---
+[HARUSPEX] 2026-08-24 10:27:38 INFO haruspex.data.splits: Random split: train=107548 (42.6% malware), test=26887 (42.6% malware)
+[HARUSPEX] 2026-08-24 10:27:39 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_random_confusion_matrix.png
+[HARUSPEX] 2026-08-24 10:27:40 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_random_roc_curve.png
+[HARUSPEX] 2026-08-24 10:27:40 INFO haruspex.evaluation.protocols: Evaluation [lightgbm/random]: acc=0.9972, f1=0.9967, auc=0.9999
+[HARUSPEX] 2026-08-24 10:27:40 INFO __main__: --- family-held-out [lightgbm] ---
+[HARUSPEX] 2026-08-24 10:27:40 INFO haruspex.data.splits: Family-held-out split: holding out families ['gepys', 'benjamin', 'musecador', 'autoit']
+[HARUSPEX] 2026-08-24 10:27:40 INFO haruspex.data.splits: Family-held-out split: train=130217 (40.8% malware), test=4218 (100.0% malware), held-out families=['gepys', 'benjamin', 'musecador', 'autoit']
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:469: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+  warnings.warn(
+[HARUSPEX] 2026-08-24 10:27:40 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_family_held_out_confusion_matrix.png
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:1355: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+[HARUSPEX] 2026-08-24 10:27:41 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_family_held_out_roc_curve.png
+[HARUSPEX] 2026-08-24 10:27:41 INFO haruspex.evaluation.protocols: Evaluation [lightgbm/family_held_out]: acc=0.9998, f1=0.9999, auc=nan
+[HARUSPEX] 2026-08-24 10:27:41 INFO __main__: --- temporal [lightgbm] ---
+[HARUSPEX] 2026-08-24 10:27:41 INFO haruspex.data.splits: Temporal split: cutoff date = 2020-06-01
+[HARUSPEX] 2026-08-24 10:27:41 INFO haruspex.data.splits: Temporal split (cutoff=2020-06-01): train=95537 (41.5% malware), test=38898 (45.3% malware)
+[HARUSPEX] 2026-08-24 10:27:42 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_temporal_confusion_matrix.png
+[HARUSPEX] 2026-08-24 10:27:43 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/lightgbm_temporal_roc_curve.png
+󰣇 FAST_API/HARUSPEX/backend   master ❯ python scripts/evaluate.py --dataset ember --max-ember-samples 0
+[HARUSPEX] 2026-08-24 10:33:07 INFO haruspex.models.xgboost_model: XGBoost model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/xgboost.json
+[HARUSPEX] 2026-08-24 10:33:07 INFO haruspex.utils.storage: Model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/xgboost.json
+[HARUSPEX] 2026-08-24 10:33:07 INFO haruspex.models.lightgbm_model: LightGBM model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/lightgbm.json
+[HARUSPEX] 2026-08-24 10:33:07 INFO haruspex.utils.storage: Model loaded from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/lightgbm.json
+[HARUSPEX] 2026-08-24 10:33:07 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-24 10:33:07 INFO __main__: Evaluating model: XGBOOST
+[HARUSPEX] 2026-08-24 10:33:07 INFO __main__: ============================================================
+[HARUSPEX] 2026-08-24 10:33:07 INFO __main__: --- cross-dataset (EMBER 2018) [xgboost] ---
+[HARUSPEX] 2026-08-24 10:33:07 INFO haruspex.data.ember: Loading EMBER dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/ember2018
+[HARUSPEX] 2026-08-24 10:33:07 INFO haruspex.data.ember: Reading vectorized EMBER features via numpy memmap: X_test.dat
+[HARUSPEX] 2026-08-24 10:33:13 INFO haruspex.data.ember: EMBER loaded (test partition): 200000 samples (100000 benign, 100000 malware)
+[HARUSPEX] 2026-08-24 10:33:18 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_cross_dataset_confusion_matrix.png
+[HARUSPEX] 2026-08-24 10:33:19 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/xgboost_cross_dataset_roc_curve.png
+[HARUSPEX] 2026-08-24 10:33:19 INFO haruspex.evaluation.protocols: Evaluation [xgboost/cross_dataset]: acc=0.8417, f1=0.8215, auc=0.9256
+[HARUSPEX] 2026-08-24 10:33:19 INFO __main__: 
+[HARUSPEX] 2026-08-24 10:33:19 INFO __main__: === XGBOOST Results ===
+󰣇 FAST_API/HARUSPEX/backend   master ❯ ls          venv 3.14.6  10:38 
+dataset   pyproject.toml    scripts            training_logs.txt
+haruspex  requirements.txt  testing_ember.txt  venv
+phase2    run_commands.txt  tests
+󰣇 FAST_API/HARUSPEX/backend   master ❯ cd phase2   venv 3.14.6  10:38 
+󰣇 HARUSPEX/backend/phase2   master ❯ ls            venv 3.14.6  10:38 
+__init__.py         prepare_ember.py  train_ember.py
+kaggle_notebook.py  README.md
+󰣇 HARUSPEX/backend/phase2   master ❯ python prepare_ember.py            
+========================================================================
+  EMBER 2018 — Vectorize Train Partition
+========================================================================
+
+  Found 6 train JSONL files:
+    train_features_0.jsonl (540 MB)
+    train_features_1.jsonl (1583 MB)
+󰣇 HARUSPEX/backend/phase2   master ❯ python prepare_ember.py
+========================================================================
+  EMBER 2018 — Vectorize Train Partition
+========================================================================
+
+  Found 6 train JSONL files:
+    train_features_0.jsonl (540 MB)
+    train_features_1.jsonl (1583 MB)
+    train_features_2.jsonl (1239 MB)
+    train_features_3.jsonl (1313 MB)
+    train_features_4.jsonl (1261 MB)
+    train_features_5.jsonl (1766 MB)
+
+  X_test.dat already exists (good — shipped with EMBER 2018)
+
+  Starting train vectorization (6 files)...
+  This will take 30-60 minutes on a laptop CPU.
+
+[HARUSPEX] 2026-08-24 10:44:53 INFO haruspex.data.ember: Applied ember/scikit-learn compatibility patch to SectionInfo.
+[HARUSPEX] 2026-08-24 10:45:10 INFO haruspex.data.ember: Vectorizing 800000 raw samples from 6 file(s) -> X_train.dat
+[HARUSPEX] 2026-08-24 10:47:28 INFO haruspex.data.ember:   ... 50000/800000 vectorized
+^CTraceback (most recent call last):
+  File "/home/honeypot/Projects/FAST_API/HARUSPEX/backend/phase2/prepare_ember.py", line 104, in <module>
+    print("=" * 72)
+    ^^^^^^
+  File "/home/honeypot/Projects/FAST_API/HARUSPEX/backend/phase2/prepare_ember.py", line 95, in main
+    def _cleanup(paths: list[Path]) -> None:
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/data/ember.py", line 286, in vectorize_partition
+󰣇 HARUSPEX/backend/phase2   master  ! ❯ python prepare_ember.py
+========================================================================
+  EMBER 2018 — Vectorize Train Partition
+========================================================================
+
+  Found 6 train JSONL files:
+    train_features_0.jsonl (540 MB)
+    train_features_1.jsonl (1583 MB)
+    train_features_2.jsonl (1239 MB)
+    train_features_3.jsonl (1313 MB)
+    train_features_4.jsonl (1261 MB)
+    train_features_5.jsonl (1766 MB)
+
+  Test memmaps: OK (y_test.dat: 100,000 benign / 100,000 malware / 0 unlabeled)
+
+  Starting train vectorization (6 files)...
+  This will take 30-60 minutes on a laptop CPU.
+
+[HARUSPEX] 2026-08-24 10:53:35 INFO haruspex.data.ember: Applied ember/scikit-learn compatibility patch to SectionInfo.
+[HARUSPEX] 2026-08-24 10:53:51 INFO haruspex.data.ember: Vectorizing 800000 raw samples from 6 file(s) -> X_train.dat.tmp
+[HARUSPEX] 2026-08-24 10:56:39 INFO haruspex.data.ember:   ... 50000/800000 vectorized
+[HARUSPEX] 2026-08-24 10:58:52 INFO haruspex.data.ember:   ... 100000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:01:09 INFO haruspex.data.ember:   ... 150000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:03:08 INFO haruspex.data.ember:   ... 200000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:05:20 INFO haruspex.data.ember:   ... 250000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:08:03 INFO haruspex.data.ember:   ... 300000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:10:22 INFO haruspex.data.ember:   ... 350000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:13:12 INFO haruspex.data.ember:   ... 400000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:15:41 INFO haruspex.data.ember:   ... 450000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:18:03 INFO haruspex.data.ember:   ... 500000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:20:49 INFO haruspex.data.ember:   ... 550000/800000 vectorized
+[HARUSPEX] 2026-08-24 11:22:57 INFO haruspex.data.ember:   ... 600000/800000 vectorized
+󰣇 HARUSPEX/backend/phase2   master  ! ❯ python train_ember.py
+========================================================================
+  HARUSPEX Phase 2 — Train on EMBER 2018
+========================================================================
+
+[1/8] Loading EMBER train partition (max_samples=200000000)...
+[HARUSPEX] 2026-08-24 12:18:37 INFO __main__: Loading EMBER train partition from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/ember2018/X_train.dat
+[HARUSPEX] 2026-08-24 12:18:37 INFO __main__: EMBER train: 800000 total rows, 600000 labeled
+[HARUSPEX] 2026-08-24 12:19:04 INFO __main__: Loaded: 600000 samples (300000 benign, 300000 malware)
+  Loaded: 600000 samples, 2381 features
+  Benign: 300000 | Malware: 300000
+
+[2/8] Training models on EMBER data...
+[HARUSPEX] 2026-08-24 12:19:16 INFO haruspex.data.splits: Random split: train=480000 (50.0% malware), test=120000 (50.0% malware)
+  Training XGBoost...
+[HARUSPEX] 2026-08-24 12:19:18 INFO haruspex.models.xgboost_model: Training XGBoost: 432000 samples, 2381 features
+[0]	validation_0-logloss:0.63297
+[1]	validation_0-logloss:0.58229
+[2]	validation_0-logloss:0.53823
+[3]	validation_0-logloss:0.49968
+[4]	validation_0-logloss:0.46573
+[5]	validation_0-logloss:0.43584
+[6]	validation_0-logloss:0.41039
+[7]	validation_0-logloss:0.38689
+[8]	validation_0-logloss:0.36560
+[9]	validation_0-logloss:0.34747
+[10]	validation_0-logloss:0.33021
+[11]	validation_0-logloss:0.31545
+[12]	validation_0-logloss:0.30267
+[13]	validation_0-logloss:0.29020
+[14]	validation_0-logloss:0.28066
+[15]	validation_0-logloss:0.26999
+[16]	validation_0-logloss:0.26079
+[17]	validation_0-logloss:0.25169
+[18]	validation_0-logloss:0.24451
+[19]	validation_0-logloss:0.23777
+[20]	validation_0-logloss:0.23067
+[21]	validation_0-logloss:0.22496
+[22]	validation_0-logloss:0.22000
+[23]	validation_0-logloss:0.21578
+[24]	validation_0-logloss:0.21193
+[25]	validation_0-logloss:0.20784
+[26]	validation_0-logloss:0.20420
+[27]	validation_0-logloss:0.19935
+[28]	validation_0-logloss:0.19579
+[29]	validation_0-logloss:0.19215
+[30]	validation_0-logloss:0.18924
+[31]	validation_0-logloss:0.18477
+[32]	validation_0-logloss:0.18206
+[33]	validation_0-logloss:0.17963
+[34]	validation_0-logloss:0.17736
+[35]	validation_0-logloss:0.17454
+[36]	validation_0-logloss:0.17153
+[37]	validation_0-logloss:0.16940
+[38]	validation_0-logloss:0.16623
+[39]	validation_0-logloss:0.16438
+[40]	validation_0-logloss:0.16110
+[41]	validation_0-logloss:0.15931
+[42]	validation_0-logloss:0.15705
+[43]	validation_0-logloss:0.15467
+[44]	validation_0-logloss:0.15309
+[45]	validation_0-logloss:0.15063
+[46]	validation_0-logloss:0.14853
+[47]	validation_0-logloss:0.14642
+[48]	validation_0-logloss:0.14495
+[49]	validation_0-logloss:0.14411
+[50]	validation_0-logloss:0.14263
+[51]	validation_0-logloss:0.14124
+[52]	validation_0-logloss:0.14000
+[53]	validation_0-logloss:0.13812
+[54]	validation_0-logloss:0.13714
+[55]	validation_0-logloss:0.13580
+[56]	validation_0-logloss:0.13483
+[57]	validation_0-logloss:0.13409
+[58]	validation_0-logloss:0.13319
+[59]	validation_0-logloss:0.13212
+[60]	validation_0-logloss:0.13137
+[61]	validation_0-logloss:0.13071
+[62]	validation_0-logloss:0.13005
+[63]	validation_0-logloss:0.12926
+[64]	validation_0-logloss:0.12856
+[65]	validation_0-logloss:0.12748
+[66]	validation_0-logloss:0.12617
+[67]	validation_0-logloss:0.12549
+[68]	validation_0-logloss:0.12482
+[69]	validation_0-logloss:0.12406
+[70]	validation_0-logloss:0.12327
+[71]	validation_0-logloss:0.12241
+[72]	validation_0-logloss:0.12185
+[73]	validation_0-logloss:0.12114
+[74]	validation_0-logloss:0.12000
+[75]	validation_0-logloss:0.11957
+[76]	validation_0-logloss:0.11866
+[77]	validation_0-logloss:0.11762
+[78]	validation_0-logloss:0.11698
+[79]	validation_0-logloss:0.11610
+[80]	validation_0-logloss:0.11560
+[81]	validation_0-logloss:0.11532
+[82]	validation_0-logloss:0.11471
+[83]	validation_0-logloss:0.11415
+[84]	validation_0-logloss:0.11378
+[85]	validation_0-logloss:0.11347
+[86]	validation_0-logloss:0.11313
+[87]	validation_0-logloss:0.11269
+[88]	validation_0-logloss:0.11239
+[89]	validation_0-logloss:0.11165
+[90]	validation_0-logloss:0.11090
+[91]	validation_0-logloss:0.11050
+[92]	validation_0-logloss:0.11020
+[93]	validation_0-logloss:0.10979
+[94]	validation_0-logloss:0.10931
+[95]	validation_0-logloss:0.10904
+[96]	validation_0-logloss:0.10833
+[97]	validation_0-logloss:0.10738
+[98]	validation_0-logloss:0.10675
+[99]	validation_0-logloss:0.10614
+[100]	validation_0-logloss:0.10573
+[101]	validation_0-logloss:0.10538
+[102]	validation_0-logloss:0.10520
+[103]	validation_0-logloss:0.10490
+[104]	validation_0-logloss:0.10479
+[105]	validation_0-logloss:0.10435
+[106]	validation_0-logloss:0.10407
+[107]	validation_0-logloss:0.10347
+[108]	validation_0-logloss:0.10317
+[109]	validation_0-logloss:0.10271
+[110]	validation_0-logloss:0.10223
+[111]	validation_0-logloss:0.10180
+[112]	validation_0-logloss:0.10148
+[113]	validation_0-logloss:0.10121
+[114]	validation_0-logloss:0.10079
+[115]	validation_0-logloss:0.10069
+[116]	validation_0-logloss:0.10049
+[117]	validation_0-logloss:0.10039
+[118]	validation_0-logloss:0.09989
+[119]	validation_0-logloss:0.09922
+[120]	validation_0-logloss:0.09899
+[121]	validation_0-logloss:0.09881
+[122]	validation_0-logloss:0.09836
+[123]	validation_0-logloss:0.09783
+[124]	validation_0-logloss:0.09762
+[125]	validation_0-logloss:0.09711
+[126]	validation_0-logloss:0.09698
+[127]	validation_0-logloss:0.09642
+[128]	validation_0-logloss:0.09629
+[129]	validation_0-logloss:0.09616
+[130]	validation_0-logloss:0.09575
+[131]	validation_0-logloss:0.09529
+[132]	validation_0-logloss:0.09512
+[133]	validation_0-logloss:0.09488
+[134]	validation_0-logloss:0.09472
+[135]	validation_0-logloss:0.09448
+[136]	validation_0-logloss:0.09423
+[137]	validation_0-logloss:0.09416
+[138]	validation_0-logloss:0.09403
+[139]	validation_0-logloss:0.09366
+[140]	validation_0-logloss:0.09351
+[141]	validation_0-logloss:0.09324
+[142]	validation_0-logloss:0.09282
+[143]	validation_0-logloss:0.09243
+[144]	validation_0-logloss:0.09232
+[145]	validation_0-logloss:0.09225
+[146]	validation_0-logloss:0.09200
+[147]	validation_0-logloss:0.09179
+[148]	validation_0-logloss:0.09164
+[149]	validation_0-logloss:0.09151
+[150]	validation_0-logloss:0.09140
+[151]	validation_0-logloss:0.09119
+[152]	validation_0-logloss:0.09085
+[153]	validation_0-logloss:0.09074
+[154]	validation_0-logloss:0.09056
+[155]	validation_0-logloss:0.09015
+[156]	validation_0-logloss:0.08984
+[157]	validation_0-logloss:0.08951
+[158]	validation_0-logloss:0.08937
+[159]	validation_0-logloss:0.08914
+[160]	validation_0-logloss:0.08895
+[161]	validation_0-logloss:0.08888
+[162]	validation_0-logloss:0.08869
+[163]	validation_0-logloss:0.08851
+[164]	validation_0-logloss:0.08829
+[165]	validation_0-logloss:0.08818
+[166]	validation_0-logloss:0.08790
+[167]	validation_0-logloss:0.08775
+[168]	validation_0-logloss:0.08751
+[169]	validation_0-logloss:0.08742
+[170]	validation_0-logloss:0.08731
+[171]	validation_0-logloss:0.08721
+[172]	validation_0-logloss:0.08706
+[173]	validation_0-logloss:0.08687
+[174]	validation_0-logloss:0.08675
+[175]	validation_0-logloss:0.08665
+[176]	validation_0-logloss:0.08661
+[177]	validation_0-logloss:0.08639
+[178]	validation_0-logloss:0.08634
+[179]	validation_0-logloss:0.08630
+[180]	validation_0-logloss:0.08621
+[181]	validation_0-logloss:0.08601
+[182]	validation_0-logloss:0.08580
+[183]	validation_0-logloss:0.08574
+[184]	validation_0-logloss:0.08551
+[185]	validation_0-logloss:0.08530
+[186]	validation_0-logloss:0.08503
+[187]	validation_0-logloss:0.08493
+[188]	validation_0-logloss:0.08479
+[189]	validation_0-logloss:0.08438
+[190]	validation_0-logloss:0.08419
+[191]	validation_0-logloss:0.08410
+[192]	validation_0-logloss:0.08396
+[193]	validation_0-logloss:0.08360
+[194]	validation_0-logloss:0.08334
+[195]	validation_0-logloss:0.08306
+[196]	validation_0-logloss:0.08287
+[197]	validation_0-logloss:0.08264
+[198]	validation_0-logloss:0.08255
+[199]	validation_0-logloss:0.08237
+[HARUSPEX] 2026-08-24 12:34:00 INFO haruspex.models.xgboost_model: XGBoost trained: train_acc=0.9817, val_acc=0.9713
+[HARUSPEX] 2026-08-24 12:34:02 INFO haruspex.models.trainer: xgboost on random split: test_acc=0.9721, test_f1=0.9721, test_auc=0.9964
+[HARUSPEX] 2026-08-24 12:34:02 INFO haruspex.models.xgboost_model: XGBoost model saved to /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/ember_xgboost.json
+[HARUSPEX] 2026-08-24 12:34:02 INFO haruspex.utils.storage: Model saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/ember_xgboost.json
+  XGBoost: test_acc=0.9721, test_f1=0.9721, test_auc=0.9964
+  Training LightGBM...
+[HARUSPEX] 2026-08-24 12:34:04 INFO haruspex.models.lightgbm_model: Training LightGBM: 432000 samples, 2381 features
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/lightgbm/sklearn.py:1106: LGBMDeprecationWarning: The argument 'eval_set' is deprecated, use 'eval_X' and 'eval_y' instead.
+  eval_set = _validate_eval_set_Xy(eval_set=eval_set, eval_X=eval_X, eval_y=eval_y)
+[HARUSPEX] 2026-08-24 12:38:36 INFO haruspex.models.lightgbm_model: LightGBM trained: train_acc=0.9766, val_acc=0.9677
+[HARUSPEX] 2026-08-24 12:38:41 INFO haruspex.models.trainer: lightgbm on random split: test_acc=0.9690, test_f1=0.9689, test_auc=0.9957
+[HARUSPEX] 2026-08-24 12:38:41 INFO haruspex.models.lightgbm_model: LightGBM model saved to /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/ember_lightgbm.json
+[HARUSPEX] 2026-08-24 12:38:41 INFO haruspex.utils.storage: Model saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/models/ember_lightgbm.json
+  LightGBM: test_acc=0.9690, test_f1=0.9689, test_auc=0.9957
+
+  Best model: ember_xgboost (AUC=0.9964)
+
+[3/8] Evaluating on EMBER official test partition...
+[HARUSPEX] 2026-08-24 12:38:45 INFO __main__: EMBER test: 200000 labeled samples (100000 benign, 100000 malware)
+  ember_xgboost on EMBER test: acc=0.9610, f1=0.9612, auc=0.9927
+[HARUSPEX] 2026-08-24 12:38:50 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_xgboost_ember_test_confusion_matrix.png
+[HARUSPEX] 2026-08-24 12:38:50 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_xgboost_ember_test_roc_curve.png
+  ember_lightgbm on EMBER test: acc=0.9595, f1=0.9598, auc=0.9919
+[HARUSPEX] 2026-08-24 12:38:59 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_lightgbm_ember_test_confusion_matrix.png
+[HARUSPEX] 2026-08-24 12:38:59 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_lightgbm_ember_test_roc_curve.png
+
+[4/8] Cross-dataset generalization: evaluating on BODMAS...
+[HARUSPEX] 2026-08-24 12:38:59 INFO haruspex.data.bodmas: Loading BODMAS dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas.npz
+[HARUSPEX] 2026-08-24 12:39:03 INFO haruspex.data.bodmas: Features X: shape=(134435, 2381), dtype=float32
+[HARUSPEX] 2026-08-24 12:39:03 INFO haruspex.data.bodmas: Labels  y: shape=(134435,), dtype=int32 | benign=77142, malware=57293
+[HARUSPEX] 2026-08-24 12:39:03 INFO haruspex.data.bodmas: Loading metadata from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_metadata.csv
+[HARUSPEX] 2026-08-24 12:39:04 INFO haruspex.data.bodmas: Loading malware categories from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_malware_category.csv
+[HARUSPEX] 2026-08-24 12:39:04 INFO haruspex.data.bodmas: BODMAS loaded: 134435 samples (77142 benign, 57293 malware), 2381 features, 582 families
+  BODMAS: 134435 samples (77142 benign, 57293 malware)
+  ember_xgboost on BODMAS: acc=0.9611, f1=0.9537, auc=0.9960
+[HARUSPEX] 2026-08-24 12:39:07 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_xgboost_bodmas_generalization_confusion_matrix.png
+[HARUSPEX] 2026-08-24 12:39:08 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_xgboost_bodmas_generalization_roc_curve.png
+  ember_lightgbm on BODMAS: acc=0.9617, f1=0.9542, auc=0.9962
+[HARUSPEX] 2026-08-24 12:39:14 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_lightgbm_bodmas_generalization_confusion_matrix.png
+[HARUSPEX] 2026-08-24 12:39:14 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_lightgbm_bodmas_generalization_roc_curve.png
+
+[5/8] Generating SHAP explanations for ember_xgboost...
+[HARUSPEX] 2026-08-24 12:39:14 INFO haruspex.xai.shap_explainer: Using TreeExplainer for xgboost
+[HARUSPEX] 2026-08-24 12:39:14 INFO haruspex.xai.shap_explainer: Computing SHAP values for 100 samples...
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/phase2_shap_summary.png
+  Top-10 SHAP features:
+    header_info_11: 0.6832
+    data_dir_info_8: 0.3913
+    header_info_0: 0.3060
+    header_info_29: 0.2392
+    section_info_3: 0.2342
+    data_dir_info_4: 0.1984
+    string_info_103: 0.1618
+    data_dir_info_13: 0.1599
+    general_info_4: 0.1265
+    header_info_57: 0.1144
+
+[6/8] Running correlation engine on 5 EMBER test samples...
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.ioc_extractor: Loaded 5 YARA rule files
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.static_analysis: Feature vector analysis: 2 indicators, packed=False, entropy=0.03
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.ioc_extractor: Extracted 2 IOCs from forensic analysis
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Correlation complete: 22 evidence items (2 correlated, 18 AI-only, 2 forensic-only)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Investigation report generated: ember_test_sample_0 → benign (0.2% confidence, 22 evidence items, 2 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_0.json
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_0.txt
+  Sample 1: benign → pred=benign (0.2%), 22 evidence (2 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.static_analysis: Feature vector analysis: 3 indicators, packed=True, entropy=0.03
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.ioc_extractor: Extracted 4 IOCs from forensic analysis
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Correlation complete: 24 evidence items (2 correlated, 18 AI-only, 4 forensic-only)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Investigation report generated: ember_test_sample_1 → malware (97.2% confidence, 24 evidence items, 2 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_1.json
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_1.txt
+  Sample 2: malware → pred=malware (97.2%), 24 evidence (2 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.static_analysis: Feature vector analysis: 3 indicators, packed=True, entropy=0.03
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.ioc_extractor: Extracted 4 IOCs from forensic analysis
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Correlation complete: 23 evidence items (6 correlated, 14 AI-only, 3 forensic-only)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Investigation report generated: ember_test_sample_2 → malware (99.5% confidence, 23 evidence items, 6 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_2.json
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_2.txt
+  Sample 3: malware → pred=malware (99.5%), 23 evidence (6 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.static_analysis: Feature vector analysis: 3 indicators, packed=True, entropy=0.03
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.ioc_extractor: Extracted 4 IOCs from forensic analysis
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Correlation complete: 23 evidence items (8 correlated, 12 AI-only, 3 forensic-only)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Investigation report generated: ember_test_sample_3 → benign (47.0% confidence, 23 evidence items, 8 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_3.json
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_3.txt
+  Sample 4: malware → pred=benign (47.0%), 23 evidence (8 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.static_analysis: Feature vector analysis: 4 indicators, packed=True, entropy=0.03
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.forensics.ioc_extractor: Extracted 6 IOCs from forensic analysis
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Correlation complete: 24 evidence items (9 correlated, 11 AI-only, 4 forensic-only)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.correlation.correlator: Investigation report generated: ember_test_sample_4 → malware (96.3% confidence, 24 evidence items, 9 correlated)
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_4.json
+[HARUSPEX] 2026-08-24 12:39:15 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_investigation_sample_4.txt
+  Sample 5: malware → pred=malware (96.3%), 24 evidence (9 correlated)
+
+[7/8] Saving feature importance plots...
+[HARUSPEX] 2026-08-24 12:39:16 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_xgboost_feature_importance.png
+[HARUSPEX] 2026-08-24 12:39:16 INFO haruspex.utils.storage: Plot saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/plots/ember_lightgbm_feature_importance.png
+
+[8/8] Saving training summary...
+[HARUSPEX] 2026-08-24 12:39:16 INFO haruspex.utils.storage: Report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_training_summary.json
+[HARUSPEX] 2026-08-24 12:39:16 INFO haruspex.utils.storage: Text report saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/../outputs/reports/phase2_training_summary.txt
+
+========================================================================
+  HARUSPEX Phase 2 — Training Complete!
+========================================================================
+
+  Time elapsed: 1239.3s (20.7 min)
+
+  Models saved:
+    outputs/models/ember_xgboost.json
+    outputs/models/ember_lightgbm.json
+
+  EMBER train/test performance:
+    XGBoost:  acc=0.9721, f1=0.9721, auc=0.9964
+    LightGBM: acc=0.9690, f1=0.9689, auc=0.9957
+
+  Top-10 SHAP features (ember_xgboost):
+    header_info_11                : 0.6832
+    data_dir_info_8               : 0.3913
+    header_info_0                 : 0.3060
+    header_info_29                : 0.2392
+    section_info_3                : 0.2342
+    data_dir_info_4               : 0.1984
+    string_info_103               : 0.1618
+    data_dir_info_13              : 0.1599
+    general_info_4                : 0.1265
+    header_info_57                : 0.1144
+
+  Investigation reports: 5
+  Total evidence items: 116
+  Correlated evidence:  27
+
+  Outputs saved to: outputs/
+========================================================================
+󰣇 HARUSPEX/backend/phase2   master  ! ❯  
