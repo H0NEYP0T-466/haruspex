@@ -52,7 +52,6 @@ function App() {
   }, []);
 
   const activeGroupMeta = MODEL_GROUPS[modelGroup];
-  const isEmberAvailable = availableGroups.includes('ember');
 
   return (
     <BrowserRouter>

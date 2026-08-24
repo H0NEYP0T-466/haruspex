@@ -86,7 +86,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <div className="card-title">🤖 Loaded Models</div>
           </div>
-          {modelInfo.loaded.length === 0 ? (
+          {Object.keys(modelInfo.groups).length === 0 ? (
             <div className="empty-state" style={{ padding: 'var(--space-lg)' }}>
               <p>No models loaded. Run <code style={{ color: 'var(--accent-cyan)' }}>python scripts/train.py</code> first.</p>
             </div>
@@ -100,13 +100,15 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {modelInfo.loaded.map((name) => (
-                  <tr key={name}>
-                    <td style={{ fontWeight: 600 }}>{name.toUpperCase()}</td>
-                    <td><span className="severity-badge severity-low">LOADED</span></td>
-                    <td>{name === modelInfo.default ? '✓' : ''}</td>
-                  </tr>
-                ))}
+                {Object.entries(modelInfo.groups).map(([groupName, group]) =>
+                  group.models.map((modelName) => (
+                    <tr key={`${groupName}-${modelName}`}>
+                      <td style={{ fontWeight: 600 }}>{modelName.toUpperCase()}</td>
+                      <td><span className="severity-badge severity-low">LOADED</span></td>
+                      <td>{modelName === group.default ? '✓' : ''}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           )}
