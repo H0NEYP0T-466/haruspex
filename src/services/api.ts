@@ -63,10 +63,15 @@ export interface LimeFeature {
   weight: number;
 }
 
-export interface ModelInfo {
-  loaded: string[];
-  saved: { name: string; path: string; format: string }[];
+export interface ModelGroupInfo {
+  models: string[];
   default: string | null;
+}
+
+export interface ModelInfo {
+  groups: Record<string, ModelGroupInfo>;
+  active_group: string | null;
+  saved: { name: string; path: string; format: string }[];
 }
 
 export interface DatasetInfo {
@@ -98,7 +103,8 @@ export interface DatasetSample {
 
 export interface HealthResponse {
   status: string;
-  models_loaded: string[];
+  model_groups: Record<string, string[]>;
+  active_group: string | null;
   version: string;
 }
 
@@ -133,19 +139,34 @@ class HaruspexAPI {
     return this.request<ModelInfo>('/models');
   }
 
-  async predictFromVector(features: number[], modelName?: string): Promise<PredictionReport> {
+  async predictFromVector(
+    features: number[],
+    modelName?: string,
+    modelGroup?: string,
+  ): Promise<PredictionReport> {
     return this.request<PredictionReport>('/predict/vector', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ features, model_name: modelName }),
+      body: JSON.stringify({
+        features,
+        model_name: modelName,
+        model_group: modelGroup,
+      }),
     });
   }
 
-  async predictFromFile(file: File, modelName?: string): Promise<PredictionReport> {
+  async predictFromFile(
+    file: File,
+    modelName?: string,
+    modelGroup?: string,
+  ): Promise<PredictionReport> {
     const formData = new FormData();
     formData.append('file', file);
     if (modelName) {
       formData.append('model_name', modelName);
+    }
+    if (modelGroup) {
+      formData.append('model_group', modelGroup);
     }
     return this.request<PredictionReport>('/predict', {
       method: 'POST',
@@ -153,13 +174,37 @@ class HaruspexAPI {
     });
   }
 
-  async explainSample(sampleIndex: number, modelName?: string, numFeatures = 20): Promise<PredictionReport> {
+  async explainSample(
+    sampleIndex: number,
+    modelName?: string,
+    modelGroup?: string,
+    numFeatures = 20,
+  ): Promise<PredictionReport> {
     return this.request<PredictionReport>('/explain', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         sample_index: sampleIndex,
         model_name: modelName,
+        model_group: modelGroup,
+        num_features: numFeatures,
+      }),
+    });
+  }
+
+  async explainRandom(
+    modelName?: string,
+    modelGroup?: string,
+    labelFilter?: string,
+    numFeatures = 20,
+  ): Promise<PredictionReport> {
+    return this.request<PredictionReport>('/explain/random', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model_name: modelName,
+        model_group: modelGroup,
+        label_filter: labelFilter,
         num_features: numFeatures,
       }),
     });

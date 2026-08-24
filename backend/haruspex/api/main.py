@@ -23,7 +23,15 @@ from haruspex.utils.storage import load_model, list_saved_models
 
 logger = get_logger(__name__)
 
-# Global model store — loaded on startup
+# ---------------------------------------------------------------------------
+# Model store — organized by group (bodmas / ember)
+# ---------------------------------------------------------------------------
+# Structure:
+#   _model_store = {
+#       "bodmas": {"xgboost": model, "lightgbm": model, "_default": model},
+#       "ember":  {"xgboost": model, "lightgbm": model, "_default": model},
+#       "_active_group": "bodmas",
+#   }
 _model_store: dict[str, Any] = {}
 
 
@@ -32,35 +40,92 @@ def get_model_store() -> dict[str, Any]:
     return _model_store
 
 
+def get_model(model_name: str | None = None, model_group: str | None = None) -> tuple[Any, str, str]:
+    """Resolve a model from the store.
+
+    Args:
+        model_name: Optional model name ("xgboost" or "lightgbm").
+        model_group: Optional group name ("bodmas" or "ember").
+
+    Returns:
+        Tuple of (model, used_model_name, used_group_name).
+
+    Raises:
+        ValueError: If no models are available.
+    """
+    # Determine group
+    group = model_group or _model_store.get("_active_group", "bodmas")
+    if group not in _model_store or not isinstance(_model_store.get(group), dict):
+        # Fallback to any available group
+        available = [k for k in _model_store if not k.startswith("_") and isinstance(_model_store[k], dict)]
+        if not available:
+            raise ValueError("No models loaded. Run train.py first.")
+        group = available[0]
+
+    group_store = _model_store[group]
+
+    # Determine model within group
+    if model_name and model_name in group_store:
+        return group_store[model_name], model_name, group
+    elif "_default" in group_store:
+        name = next((k for k in ["xgboost", "lightgbm"] if k in group_store), "unknown")
+        return group_store["_default"], name, group
+    else:
+        raise ValueError(f"No models available in group '{group}'.")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load trained models on application startup."""
     ensure_output_dirs()
     logger.info("HARUSPEX API starting up — loading models...")
 
-    # Try loading each model type
+    # Model groups: (group_name, file_prefix)
+    model_groups = [
+        ("bodmas", ""),          # xgboost.json, lightgbm.json
+        ("ember", "ember_"),     # ember_xgboost.json, ember_lightgbm.json
+    ]
+
     model_classes = {
         "xgboost": XGBoostDetector,
         "lightgbm": LightGBMDetector,
     }
 
-    for name, cls in model_classes.items():
-        try:
-            model = load_model(name, cls)
-            _model_store[name] = model
-            logger.info("Loaded model: %s", name)
-        except FileNotFoundError:
-            logger.warning("Model '%s' not found — train first via scripts/train.py", name)
+    total_loaded = 0
+    for group_name, prefix in model_groups:
+        group_store: dict[str, Any] = {}
 
+        for algo_name, cls in model_classes.items():
+            file_name = f"{prefix}{algo_name}"
+            try:
+                model = load_model(file_name, cls)
+                group_store[algo_name] = model
+                logger.info("Loaded model: %s/%s (file: %s)", group_name, algo_name, file_name)
+                total_loaded += 1
+            except FileNotFoundError:
+                logger.warning(
+                    "Model '%s/%s' not found (file: %s) — train first",
+                    group_name, algo_name, file_name,
+                )
+
+        if group_store:
+            # Set default model within group (prefer xgboost)
+            default = "xgboost" if "xgboost" in group_store else next(iter(group_store))
+            group_store["_default"] = group_store[default]
+            _model_store[group_name] = group_store
+            logger.info("Group '%s': %d models loaded (default: %s)",
+                        group_name, len(group_store) - 1, default)
+
+    # Set active group (prefer bodmas, fallback to first available)
     if _model_store:
-        # Set default model (prefer xgboost)
-        default = "xgboost" if "xgboost" in _model_store else next(iter(_model_store))
-        _model_store["_default"] = _model_store[default]
-        logger.info("Default model: %s", default)
-    else:
-        logger.warning("No models loaded — /predict will return errors")
+        active = "bodmas" if "bodmas" in _model_store else next(
+            k for k in _model_store if not k.startswith("_")
+        )
+        _model_store["_active_group"] = active
 
-    logger.info("HARUSPEX API ready (%d models loaded)", len(_model_store) - (1 if "_default" in _model_store else 0))
+    logger.info("HARUSPEX API ready (%d models loaded across %d groups)",
+                total_loaded,
+                sum(1 for k in _model_store if not k.startswith("_")))
 
     yield
 
@@ -74,7 +139,7 @@ app = FastAPI(
         "Explainable AI framework for zero-day malware detection "
         "and digital forensic investigation."
     ),
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -95,26 +160,43 @@ app.include_router(explain_router, prefix="/api", tags=["explanation"])
 @app.get("/api/health")
 async def health_check():
     """Liveness check endpoint."""
-    models = [k for k in _model_store if not k.startswith("_")]
+    groups = {}
+    for group_name in _model_store:
+        if group_name.startswith("_"):
+            continue
+        group = _model_store[group_name]
+        if isinstance(group, dict):
+            groups[group_name] = [k for k in group if not k.startswith("_")]
+
     return {
         "status": "healthy",
-        "models_loaded": models,
-        "version": "0.1.0",
+        "model_groups": groups,
+        "active_group": _model_store.get("_active_group", None),
+        "version": "0.2.0",
     }
 
 
 @app.get("/api/models")
 async def list_models():
-    """List available trained models."""
-    loaded = [k for k in _model_store if not k.startswith("_")]
+    """List available trained models, organized by group."""
+    groups = {}
+    for group_name in _model_store:
+        if group_name.startswith("_"):
+            continue
+        group = _model_store[group_name]
+        if isinstance(group, dict):
+            groups[group_name] = {
+                "models": [k for k in group if not k.startswith("_")],
+                "default": next(
+                    (k for k in ["xgboost", "lightgbm"] if k in group), None
+                ),
+            }
+
     saved = list_saved_models()
     return {
-        "loaded": loaded,
+        "groups": groups,
+        "active_group": _model_store.get("_active_group", None),
         "saved": saved,
-        "default": next(
-            (k for k in ["xgboost", "lightgbm"] if k in _model_store),
-            None,
-        ),
     }
 
 

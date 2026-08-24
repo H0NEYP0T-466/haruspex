@@ -36,6 +36,7 @@ class FeatureVectorRequest(BaseModel):
 
     features: list[float]
     model_name: Optional[str] = None
+    model_group: Optional[str] = None
 
 
 class PredictionResponse(BaseModel):
@@ -57,6 +58,7 @@ async def predict(
     file: Optional[UploadFile] = File(None),
     features_json: Optional[str] = Form(None),
     model_name: Optional[str] = Form(None),
+    model_group: Optional[str] = Form(None),
 ):
     """Run the full HARUSPEX investigation pipeline.
 
@@ -64,23 +66,18 @@ async def predict(
       - A PE file upload (multipart form)
       - A JSON string of feature values (form field)
 
+    Optional:
+      - model_name: "xgboost" or "lightgbm"
+      - model_group: "bodmas" or "ember"
+
     Returns a complete investigation report.
     """
-    from haruspex.api.main import get_model_store
+    from haruspex.api.main import get_model
 
-    model_store = get_model_store()
-    if not model_store:
-        raise HTTPException(status_code=503, detail="No models loaded. Run train.py first.")
-
-    # Select model
-    if model_name and model_name in model_store:
-        model = model_store[model_name]
-        used_model = model_name
-    elif "_default" in model_store:
-        model = model_store["_default"]
-        used_model = next(k for k in ["xgboost", "lightgbm"] if k in model_store)
-    else:
-        raise HTTPException(status_code=503, detail="No default model available.")
+    try:
+        model, used_model, used_group = get_model(model_name, model_group)
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
     static_analyzer = StaticAnalyzer()
     ioc_extractor = IOCExtractor()
@@ -89,14 +86,15 @@ async def predict(
 
     pe_path: Optional[Path] = None
     features: Optional[np.ndarray] = None
-    forensic_report: Optional[ForensicReport] = None
+    forensic_report = None
     iocs: Optional[list] = None
     sample_id: str = "api_upload"
 
     try:
         # --- Mode 1: PE file upload ---
         if file and file.filename:
-            logger.info("Processing PE file upload: %s", file.filename)
+            logger.info("Processing PE file upload: %s (group=%s, model=%s)",
+                        file.filename, used_group, used_model)
             content = await file.read()
 
             # Save to temp file for LIEF/YARA analysis
@@ -164,7 +162,7 @@ async def predict(
             sample_id=sample_id,
             prediction=prediction,
             confidence=confidence,
-            model_name=used_model,
+            model_name=f"{used_group}/{used_model}",
             evidence_items=evidence,
             shap_explanation=shap_exp,
             forensic_report=forensic_report,
@@ -190,11 +188,7 @@ async def predict_from_vector(request: FeatureVectorRequest):
 
     Alternative to the form-based /predict endpoint.
     """
-    from haruspex.api.main import get_model_store
-
-    model_store = get_model_store()
-    if not model_store:
-        raise HTTPException(status_code=503, detail="No models loaded.")
+    from haruspex.api.main import get_model
 
     if len(request.features) != NUM_FEATURES:
         raise HTTPException(
@@ -202,15 +196,10 @@ async def predict_from_vector(request: FeatureVectorRequest):
             detail=f"Expected {NUM_FEATURES} features, got {len(request.features)}",
         )
 
-    model_name = request.model_name
-    if model_name and model_name in model_store:
-        model = model_store[model_name]
-        used_model = model_name
-    elif "_default" in model_store:
-        model = model_store["_default"]
-        used_model = next(k for k in ["xgboost", "lightgbm"] if k in model_store)
-    else:
-        raise HTTPException(status_code=503, detail="No default model available.")
+    try:
+        model, used_model, used_group = get_model(request.model_name, request.model_group)
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
     features = np.array(request.features, dtype=np.float32)
     x = features.reshape(1, -1)
@@ -239,7 +228,7 @@ async def predict_from_vector(request: FeatureVectorRequest):
         sample_id="api_vector",
         prediction=prediction,
         confidence=confidence,
-        model_name=used_model,
+        model_name=f"{used_group}/{used_model}",
         evidence_items=evidence,
         shap_explanation=shap_exp,
         forensic_report=forensic_report,

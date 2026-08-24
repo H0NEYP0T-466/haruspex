@@ -27,12 +27,19 @@ function getSourceBadge(source: string) {
   return <span className={`evidence-source-badge ${info.cls}`}>{info.label}</span>;
 }
 
-export default function UploadPage() {
+interface UploadPageProps {
+  modelGroup: string;
+}
+
+export default function UploadPage({ modelGroup }: UploadPageProps) {
   const [report, setReport] = useState<PredictionReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const groupLabel = modelGroup === 'ember' ? 'EMBER' : 'BODMAS';
+  const groupIcon = modelGroup === 'ember' ? '🔥' : '🧬';
 
   const handleAnalyze = useCallback(async (file: File) => {
     setLoading(true);
@@ -40,30 +47,14 @@ export default function UploadPage() {
     setReport(null);
 
     try {
-      // Read file as array buffer, attempt to send as feature vector
-      // For now, since PE feature extraction isn't available,
-      // we'll show an error for PE files and suggest using the explorer
-      const result = await api.predictFromFile(file);
+      const result = await api.predictFromFile(file, undefined, modelGroup);
       setReport(result);
-
-      // Save to results history
-      const history = JSON.parse(localStorage.getItem('haruspex_results') || '[]');
-      history.unshift({
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        verdict: result.prediction.verdict,
-        confidence: result.prediction.confidence,
-        risk_score: result.prediction.risk_score,
-        evidence_count: result.evidence_summary.total,
-        correlated_count: result.evidence_summary.correlated,
-      });
-      localStorage.setItem('haruspex_results', JSON.stringify(history.slice(0, 50)));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [modelGroup]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -77,41 +68,30 @@ export default function UploadPage() {
     if (file) handleAnalyze(file);
   }, [handleAnalyze]);
 
-  // Demo: analyze BODMAS sample by index
-  const handleDemoAnalysis = useCallback(async () => {
+  // Analyze a random dataset sample
+  const handleRandomAnalysis = useCallback(async () => {
     setLoading(true);
     setError(null);
     setReport(null);
     try {
-      // Pick a random malware sample index (from BODMAS malware range)
-      const sampleIndex = 77142 + Math.floor(Math.random() * 57293);
-      const result = await api.explainSample(sampleIndex);
+      const result = await api.explainRandom(undefined, modelGroup);
       setReport(result);
-
-      const history = JSON.parse(localStorage.getItem('haruspex_results') || '[]');
-      history.unshift({
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        verdict: result.prediction.verdict,
-        confidence: result.prediction.confidence,
-        risk_score: result.prediction.risk_score,
-        evidence_count: result.evidence_summary.total,
-        correlated_count: result.evidence_summary.correlated,
-        sample_index: sampleIndex,
-      });
-      localStorage.setItem('haruspex_results', JSON.stringify(history.slice(0, 50)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Demo analysis failed. Is the API running?');
+      setError(err instanceof Error ? err.message : 'Random analysis failed. Is the API running?');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [modelGroup]);
 
   return (
     <div>
       <div className="page-header">
         <h2>🔬 Malware Analysis</h2>
-        <p>Upload a PE file or analyze a BODMAS dataset sample</p>
+        <p>Upload a PE file or analyze a random dataset sample</p>
+        <div className="active-model-badge">
+          <span>{groupIcon}</span>
+          <span>Using <strong>{groupLabel} Models</strong></span>
+        </div>
       </div>
 
       {/* Upload zone */}
@@ -141,11 +121,11 @@ export default function UploadPage() {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <button className="btn btn-primary" onClick={handleDemoAnalysis} id="demo-analyze-btn">
-              ⚡ Analyze Random BODMAS Sample
+            <button className="btn btn-primary" onClick={handleRandomAnalysis} id="demo-analyze-btn">
+              ⚡ Analyze Random Sample
             </button>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '8px' }}>
-              Picks a random sample from the dataset and runs the full pipeline
+              Picks a random sample from the BODMAS dataset and runs the full {groupLabel} pipeline
             </p>
           </div>
         </>
@@ -157,7 +137,7 @@ export default function UploadPage() {
           <div className="spinner" />
           <p>Running HARUSPEX pipeline...</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            Prediction → SHAP → Forensics → Correlation
+            {groupIcon} {groupLabel} Model → Prediction → SHAP → Forensics → Correlation
           </p>
         </div>
       )}
