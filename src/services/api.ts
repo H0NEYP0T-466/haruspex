@@ -3,7 +3,7 @@
  * Communicates with the FastAPI backend at /api
  */
 
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:8014/api';
 
 export interface PredictionReport {
   sample: {
