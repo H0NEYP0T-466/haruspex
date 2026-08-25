@@ -8,17 +8,23 @@ const chartBg = 'var(--canvas-subtle)';
 const chartBorder = 'var(--border-default)';
 const chartLabel = 'var(--fg-default)';
 
-export default function DashboardPage() {
+interface DashboardPageProps {
+  modelGroup: string;
+}
+
+export default function DashboardPage({ modelGroup }: DashboardPageProps) {
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [datasetInfo, setDatasetInfo] = useState<DatasetInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const groupLabel = modelGroup === 'ember' ? 'EMBER' : 'BODMAS';
 
   useEffect(() => {
     const load = async () => {
       try {
         const [models, dataset] = await Promise.all([
           api.getModels(),
-          api.getDatasetInfo(),
+          api.getDatasetInfo(modelGroup),
         ]);
         setModelInfo(models);
         setDatasetInfo(dataset);
@@ -27,16 +33,16 @@ export default function DashboardPage() {
       }
     };
     load();
-  }, []);
+  }, [modelGroup]);
 
   if (error) {
     return (
       <div>
         <div className="page-header">
-          <h2>📊 Model Dashboard</h2>
+          <h2>Model Dashboard</h2>
           <p>Model performance metrics and dataset overview</p>
         </div>
-        <div className="error-message">⚠️ {error}</div>
+        <div className="error-message">{error}</div>
         <div style={{ color: 'var(--text-muted)', marginTop: 'var(--space-md)', fontSize: '0.85rem' }}>
           Start the API server with: <code style={{ color: 'var(--accent-cyan)' }}>cd backend && source .venv/bin/activate && python -m haruspex.api.main</code>
         </div>
@@ -44,29 +50,29 @@ export default function DashboardPage() {
     );
   }
 
-  // Category pie chart data
-  const categoryData = datasetInfo
+  // Category pie chart data (BODMAS only — EMBER has no categories)
+  const categoryData = datasetInfo && Object.keys(datasetInfo.categories).length > 0
     ? Object.entries(datasetInfo.categories)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8)
         .map(([name, value]) => ({ name, value }))
     : [];
 
-  // Top families bar chart data (real per-family sample counts from the API)
+  // Top families bar chart data (BODMAS only — EMBER has no families)
   const familyData = datasetInfo?.top_families ?? [];
 
   return (
     <div>
       <div className="page-header">
-        <h2>📊 Model Dashboard</h2>
-        <p>Model performance metrics and dataset overview</p>
+        <h2>Model Dashboard</h2>
+        <p>{groupLabel} model performance metrics and dataset overview</p>
       </div>
 
       {/* Dataset stats */}
       {datasetInfo && (
         <div className="card-grid" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="card stat-card">
-            <div className="stat-value cyan">{datasetInfo.total_samples.toLocaleString()}</div>
+            <div className="stat-value blue">{datasetInfo.total_samples.toLocaleString()}</div>
             <div className="stat-label">Total Samples</div>
           </div>
           <div className="card stat-card">
@@ -88,7 +94,7 @@ export default function DashboardPage() {
       {modelInfo && (
         <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="card-header">
-            <div className="card-title">🤖 Loaded Models</div>
+            <div className="card-title">Loaded Models</div>
           </div>
           {Object.keys(modelInfo.groups).length === 0 ? (
             <div className="empty-state" style={{ padding: 'var(--space-lg)' }}>
@@ -121,7 +127,7 @@ export default function DashboardPage() {
 
       {/* Charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
-        {/* Category distribution */}
+        {/* Category distribution — BODMAS only */}
         {categoryData.length > 0 && (
           <div className="card">
             <div className="card-header">
@@ -150,6 +156,21 @@ export default function DashboardPage() {
                 />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* No categories message for EMBER */}
+        {datasetInfo && Object.keys(datasetInfo.categories).length === 0 && (
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Malware Categories</div>
+            </div>
+            <div className="empty-state" style={{ padding: 'var(--space-lg)' }}>
+              <p>EMBER does not include malware category metadata.</p>
+              <p style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Category distribution is only available for BODMAS.
+              </p>
+            </div>
           </div>
         )}
 
@@ -182,7 +203,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Top families */}
+      {/* Top families — BODMAS only */}
       {familyData.length > 0 && (
         <div className="card" style={{ marginTop: 'var(--space-lg)' }}>
           <div className="card-header">
@@ -194,7 +215,7 @@ export default function DashboardPage() {
               <XAxis type="number" stroke="var(--fg-muted)" />
               <YAxis type="category" dataKey="name" stroke="var(--fg-muted)" width={120} />
               <Tooltip
-                contentStyle={{ background: chartBg, border: `1px solid ${chartBorder}`, borderRadius: "6px" }}
+                contentStyle={{ background: chartBg, border: `1px solid ${chartBorder}`, borderRadius: '6px' }}
                 labelStyle={{ color: chartLabel }}
               />
               <Bar dataKey="count" radius={[0, 6, 6, 0]}>
@@ -207,11 +228,26 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* No families message for EMBER */}
+      {datasetInfo && (!datasetInfo.top_families || datasetInfo.top_families.length === 0) && (
+        <div className="card" style={{ marginTop: 'var(--space-lg)' }}>
+          <div className="card-header">
+            <div className="card-title">Top Malware Families</div>
+          </div>
+          <div className="empty-state" style={{ padding: 'var(--space-lg)' }}>
+            <p>EMBER does not include malware family metadata.</p>
+            <p style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Family distribution is only available for BODMAS.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Feature info */}
       {datasetInfo && (
         <div className="card" style={{ marginTop: 'var(--space-lg)' }}>
           <div className="card-header">
-            <div className="card-title">📐 Feature Space</div>
+            <div className="card-title">Feature Space</div>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {datasetInfo.n_features.toLocaleString()} EMBER-compatible features across 9 groups:

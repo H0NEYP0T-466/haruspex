@@ -17,7 +17,11 @@ function getSeverityLabel(severity: number): string {
   return 'INFO';
 }
 
-export default function ExplorerPage() {
+interface ExplorerPageProps {
+  modelGroup: string;
+}
+
+export default function ExplorerPage({ modelGroup }: ExplorerPageProps) {
   const [datasetInfo, setDatasetInfo] = useState<DatasetInfo | null>(null);
   const [samples, setSamples] = useState<DatasetSample[]>([]);
   const [totalSamples, setTotalSamples] = useState(0);
@@ -28,14 +32,18 @@ export default function ExplorerPage() {
   const [explaining, setExplaining] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const groupLabel = modelGroup === 'ember' ? 'EMBER' : 'BODMAS';
+  const hasCategories = datasetInfo && Object.keys(datasetInfo.categories).length > 0;
+  const hasFamilies = datasetInfo && datasetInfo.families && datasetInfo.families.length > 0;
+
   useEffect(() => {
-    api.getDatasetInfo().then(setDatasetInfo).catch(() => setError('Failed to load dataset info'));
-  }, []);
+    api.getDatasetInfo(modelGroup).then(setDatasetInfo).catch(() => setError('Failed to load dataset info'));
+  }, [modelGroup]);
 
   const loadSamples = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await api.listSamples(filters, offset);
+      const result = await api.listSamples(filters, offset, 50, modelGroup);
       setSamples(result.samples);
       setTotalSamples(result.total);
     } catch (err) {
@@ -43,7 +51,7 @@ export default function ExplorerPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters, offset]);
+  }, [filters, offset, modelGroup]);
 
   useEffect(() => { loadSamples(); }, [loadSamples]);
 
@@ -51,23 +59,23 @@ export default function ExplorerPage() {
     setExplaining(sampleIndex);
     setSelectedReport(null);
     try {
-      const report = await api.explainSample(sampleIndex);
+      const report = await api.explainSample(sampleIndex, undefined, modelGroup);
       setSelectedReport(report);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Explanation failed');
     } finally {
       setExplaining(null);
     }
-  }, []);
+  }, [modelGroup]);
 
   return (
     <div>
       <div className="page-header">
-        <h2>🔍 Sample Explorer</h2>
-        <p>Browse and analyze BODMAS dataset samples</p>
+        <h2>Sample Explorer</h2>
+        <p>Browse and analyze {groupLabel} dataset samples</p>
       </div>
 
-      {error && <div className="error-message" style={{ marginBottom: 'var(--space-lg)' }}>⚠️ {error}</div>}
+      {error && <div className="error-message" style={{ marginBottom: 'var(--space-lg)' }}>{error}</div>}
 
       {/* Filters */}
       <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
@@ -82,24 +90,28 @@ export default function ExplorerPage() {
             <option value="malware">Malware</option>
           </select>
 
-          <select
-            id="filter-category"
-            value={filters.category || ''}
-            onChange={(e) => { setFilters({ ...filters, category: e.target.value || undefined }); setOffset(0); }}
-          >
-            <option value="">All Categories</option>
-            {datasetInfo && Object.keys(datasetInfo.categories).sort().map((cat) => (
-              <option key={cat} value={cat}>{cat} ({datasetInfo.categories[cat]})</option>
-            ))}
-          </select>
+          {hasCategories && (
+            <select
+              id="filter-category"
+              value={filters.category || ''}
+              onChange={(e) => { setFilters({ ...filters, category: e.target.value || undefined }); setOffset(0); }}
+            >
+              <option value="">All Categories</option>
+              {datasetInfo && Object.keys(datasetInfo.categories).sort().map((cat) => (
+                <option key={cat} value={cat}>{cat} ({datasetInfo.categories[cat]})</option>
+              ))}
+            </select>
+          )}
 
-          <input
-            type="text"
-            id="filter-family"
-            placeholder="Filter by family..."
-            onChange={(e) => { setFilters({ ...filters, family: e.target.value || undefined }); setOffset(0); }}
-            style={{ width: '200px' }}
-          />
+          {hasFamilies && (
+            <input
+              type="text"
+              id="filter-family"
+              placeholder="Filter by family..."
+              onChange={(e) => { setFilters({ ...filters, family: e.target.value || undefined }); setOffset(0); }}
+              style={{ width: '200px' }}
+            />
+          )}
 
           <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginLeft: 'auto' }}>
             {totalSamples.toLocaleString()} matches
@@ -148,7 +160,7 @@ export default function ExplorerPage() {
                         disabled={explaining === s.index}
                         id={`explain-btn-${s.index}`}
                       >
-                        {explaining === s.index ? '⏳' : '🔬'} Explain
+                        {explaining === s.index ? 'Explain' : 'Explain'}
                       </button>
                     </td>
                   </tr>
@@ -164,10 +176,10 @@ export default function ExplorerPage() {
                 onClick={() => setOffset(Math.max(0, offset - 50))}
                 id="prev-page-btn"
               >
-                ← Previous
+                Previous
               </button>
               <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                Showing {offset + 1}–{Math.min(offset + 50, totalSamples)} of {totalSamples.toLocaleString()}
+                Showing {offset + 1}—{Math.min(offset + 50, totalSamples)} of {totalSamples.toLocaleString()}
               </span>
               <button
                 className="btn btn-secondary"
@@ -175,7 +187,7 @@ export default function ExplorerPage() {
                 onClick={() => setOffset(offset + 50)}
                 id="next-page-btn"
               >
-                Next →
+                Next
               </button>
             </div>
           </>
@@ -190,7 +202,7 @@ export default function ExplorerPage() {
               Investigation Report — Sample #{selectedReport.sample_index}
             </div>
             <button className="btn btn-secondary" onClick={() => setSelectedReport(null)} style={{ padding: '4px 12px', fontSize: '0.78rem' }}>
-              ✕ Close
+              Close
             </button>
           </div>
 

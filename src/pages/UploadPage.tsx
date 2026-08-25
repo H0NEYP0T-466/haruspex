@@ -19,9 +19,9 @@ function getSeverityLabel(severity: number): string {
 
 function getSourceBadge(source: string) {
   const map: Record<string, { label: string; cls: string }> = {
-    correlated: { label: '★ Correlated', cls: 'badge-correlated' },
-    ai_explanation: { label: '🤖 AI', cls: 'badge-ai' },
-    forensic_analysis: { label: '🔍 Forensic', cls: 'badge-forensic' },
+    correlated: { label: 'Correlated', cls: 'badge-correlated' },
+    ai_explanation: { label: 'AI', cls: 'badge-ai' },
+    forensic_analysis: { label: 'Forensic', cls: 'badge-forensic' },
   };
   const info = map[source] || { label: source, cls: '' };
   return <span className={`evidence-source-badge ${info.cls}`}>{info.label}</span>;
@@ -39,7 +39,6 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const groupLabel = modelGroup === 'ember' ? 'EMBER' : 'BODMAS';
-  const groupIcon = modelGroup === 'ember' ? '🔥' : '🧬';
 
   const handleAnalyze = useCallback(async (file: File) => {
     setLoading(true);
@@ -86,10 +85,9 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
   return (
     <div>
       <div className="page-header">
-        <h2>🔬 Malware Analysis</h2>
+        <h2>Malware Analysis</h2>
         <p>Upload a PE file or analyze a random dataset sample</p>
         <div className="active-model-badge">
-          <span>{groupIcon}</span>
           <span>Using <strong>{groupLabel} Models</strong></span>
         </div>
       </div>
@@ -104,7 +102,7 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
           >
-            <div className="dropzone-icon">📁</div>
+            <div className="dropzone-icon">Drop file</div>
             <h3>Drop a PE file here or click to browse</h3>
             <p>Supports Windows PE executables (.exe, .dll)</p>
             <input
@@ -117,15 +115,15 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
           </div>
 
           <div style={{ textAlign: 'center', margin: 'var(--space-lg) 0' }}>
-            <span style={{ color: 'var(--text-muted)' }}>— or —</span>
+            <span style={{ color: 'var(--text-muted)' }}>or</span>
           </div>
 
           <div style={{ textAlign: 'center' }}>
             <button className="btn btn-primary" onClick={handleRandomAnalysis} id="demo-analyze-btn">
-              ⚡ Analyze Random Sample
+              Analyze Random Sample
             </button>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '8px' }}>
-              Picks a random sample from the BODMAS dataset and runs the full {groupLabel} pipeline
+              Picks a random sample from the {groupLabel} dataset and runs the full pipeline
             </p>
           </div>
         </>
@@ -137,7 +135,7 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
           <div className="spinner" />
           <p>Running HARUSPEX pipeline...</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            {groupIcon} {groupLabel} Model → Prediction → SHAP → Forensics → Correlation
+            {groupLabel} Model - Prediction - SHAP - Forensics - Correlation
           </p>
         </div>
       )}
@@ -145,7 +143,7 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
       {/* Error */}
       {error && (
         <div className="error-message" style={{ marginBottom: 'var(--space-lg)' }}>
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
@@ -164,7 +162,7 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)' }}>
         <h3>Investigation Report</h3>
-        <button className="btn btn-secondary" onClick={onReset}>← New Analysis</button>
+        <button className="btn btn-secondary" onClick={onReset}>New Analysis</button>
       </div>
 
       {/* Verdict */}
@@ -174,8 +172,8 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
             {report.prediction.verdict}
           </div>
           <div className="verdict-confidence">
-            Confidence: {(report.prediction.confidence * 100).toFixed(1)}% &nbsp;|&nbsp;
-            Risk Score: {(report.prediction.risk_score * 100).toFixed(1)}% &nbsp;|&nbsp;
+            Confidence: {(report.prediction.confidence * 100).toFixed(1)}% |
+            Risk Score: {(report.prediction.risk_score * 100).toFixed(1)}% |
             Model: {report.prediction.model}
           </div>
         </div>
@@ -188,7 +186,7 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
           <div className="stat-label">Total Evidence</div>
         </div>
         <div className="card stat-card">
-          <div className="stat-value cyan">{report.evidence_summary.correlated}</div>
+          <div className="stat-value blue">{report.evidence_summary.correlated}</div>
           <div className="stat-label">Correlated</div>
         </div>
         <div className="card stat-card">
@@ -205,7 +203,7 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
       {shapFeatures.length > 0 && (
         <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="card-header">
-            <div className="card-title">🧠 Top SHAP Feature Attributions</div>
+            <div className="card-title">Top SHAP Feature Attributions</div>
           </div>
           <div className="shap-bar-container">
             {shapFeatures.slice(0, 15).map((feat: ShapFeature, i: number) => (
@@ -227,7 +225,7 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
       {/* Evidence Items */}
       <div className="card">
         <div className="card-header">
-          <div className="card-title">📑 Evidence Items</div>
+          <div className="card-title">Evidence Items</div>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             {report.evidence_summary.correlated} correlated / {report.evidence_summary.total} total
           </span>
@@ -244,7 +242,7 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
               <div>
                 <div className="evidence-indicator">{item.indicator}</div>
                 {item.matched_forensic && (
-                  <div className="evidence-matched">↔ Forensic match: {item.matched_forensic}</div>
+                  <div className="evidence-matched">Forensic match: {item.matched_forensic}</div>
                 )}
               </div>
             </div>
@@ -256,7 +254,7 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
       {report.sample?.sha256 && (
         <div className="card" style={{ marginTop: 'var(--space-lg)' }}>
           <div className="card-header">
-            <div className="card-title">🔖 Sample Information</div>
+            <div className="card-title">Sample Information</div>
           </div>
           <table className="data-table">
             <tbody>

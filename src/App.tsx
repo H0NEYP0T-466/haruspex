@@ -18,12 +18,12 @@ const MODEL_GROUPS: Record<ModelGroup, ModelGroupMeta> = {
   bodmas: {
     label: 'BODMAS Models',
     description: 'Trained on BODMAS dataset',
-    icon: '🧬',
+    icon: '',
   },
   ember: {
     label: 'EMBER Models',
     description: 'Trained on EMBER 2018 dataset',
-    icon: '🔥',
+    icon: '',
   },
 };
 
@@ -123,15 +123,15 @@ function App() {
 
           <nav className="sidebar-nav">
             <NavLink to="/" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <span className="nav-icon">🔬</span>
+              <span className="nav-icon"></span>
               <span>Analyze</span>
             </NavLink>
             <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <span className="nav-icon">📊</span>
+              <span className="nav-icon"></span>
               <span>Dashboard</span>
             </NavLink>
             <NavLink to="/explorer" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <span className="nav-icon">🔍</span>
+              <span className="nav-icon"></span>
               <span>Explorer</span>
             </NavLink>
           </nav>
@@ -148,8 +148,8 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<UploadPage modelGroup={modelGroup} />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/explorer" element={<ExplorerPage />} />
+            <Route path="/dashboard" element={<DashboardPage modelGroup={modelGroup} />} />
+            <Route path="/explorer" element={<ExplorerPage modelGroup={modelGroup} />} />
           </Routes>
         </main>
       </div>

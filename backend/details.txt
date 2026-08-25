@@ -1,0 +1,152 @@
+========================================================================
+  HARUSPEX — Full Experiment Details
+  (Model Performance + Dataset Sizes)
+========================================================================
+
+Two phases, two directions:
+  Phase 1: Train on BODMAS  -> Test on BODMAS -> Cross-dataset on EMBER 2018
+  Phase 2: Train on EMBER   -> Test on EMBER  -> Cross-dataset on BODMAS
+
+Feature space is identical in both directions: 2381 EMBER-compatible
+features per sample.
+
+------------------------------------------------------------------------
+1. PHASE 1 — MODELS TRAINED ON BODMAS
+   Models: outputs/models/xgboost.json, outputs/models/lightgbm.json
+   Script: scripts/train.py (+ scripts/evaluate.py)
+------------------------------------------------------------------------
+
+TRAINING DATA: BODMAS (backend/dataset/BODMAS/bodmas.npz, 261 MB)
+  Full dataset .............. 134,435 samples x 2,381 features
+  Class balance ............. 77,142 benign / 57,293 malware (42.6% malware)
+  Malware families .......... 582
+  Metadata .................. bodmas_metadata.csv (sha, timestamp, family)
+                              bodmas_malware_category.csv (14 categories)
+
+  Random split (80/20 stratified, seed=42) — the split models are trained on:
+    Train ................... 107,548 samples (42.6% malware)
+      -> internal validation carve-out (10% of train, trainer.py):
+         10,755 val / 96,793 actually fitted
+    Test .................... 26,887 samples (42.6% malware)
+
+OTHER EVALUATION SPLITS ON BODMAS (same trained models, different partitions):
+  Family-held-out (zero-day by family):
+    Held-out families ....... gepys, benjamin, musecador, autoit
+    Train ................... 130,217 samples (40.8% malware)
+    Test .................... 4,218 samples (100% malware)
+  Temporal (zero-day by time), cutoff = 2020-06-01:
+    Train ................... 95,537 samples (41.5% malware)
+    Test .................... 38,898 samples (45.3% malware)
+
+RESULTS (BODMAS test set, n=26,887):
+                        accuracy    precision   recall      f1          auc_roc
+  XGBoost               0.9970      0.9979      0.9951      0.9965      0.9998
+  LightGBM              0.9972      0.9983      0.9950      0.9967      0.9999
+
+RESULTS (family-held-out, n=4,218):        acc=0.9998  f1=0.9999   auc=n/a (single class)
+RESULTS (temporal, n=38,898):
+  XGBoost               acc=0.9995  f1=0.9995   auc=1.0000
+  LightGBM              acc=0.9996  f1=0.9996   auc=1.0000
+
+CROSS-DATASET TEST: EMBER 2018 official test partition (X_test.dat/y_test.dat)
+  Available on disk ....... 200,000 rows x 2,381 features (fully labeled:
+                            100,000 benign / 100,000 malware)
+  Run of Aug 22 (testing_ember.txt):
+    Subsample used ........ 10,000 samples (default --max-ember-samples 10000;
+                            5,005 benign / 4,995 malware)
+    XGBoost ............... acc=0.8390  precision=0.9334  recall=0.7297  f1=0.8191  auc=0.9226
+    LightGBM .............. acc=0.8396  precision=0.9380  recall=0.7269  f1=0.8191  auc=0.9236
+  Run of Aug 24 (--max-ember-samples 0, full test partition):
+    Subsample used ........ full 200,000 samples
+    XGBoost ............... acc=0.8417  precision=0.9413  recall=0.7288  f1=0.8215  auc=0.9256
+    (LightGBM full-partition rerun was not completed in the logs)
+
+------------------------------------------------------------------------
+2. PHASE 2 — MODELS TRAINED ON EMBER 2018
+   Models: outputs/models/ember_xgboost.json, outputs/models/ember_lightgbm.json
+   Script: phase2/train_ember.py (after phase2/prepare_ember.py)
+------------------------------------------------------------------------
+
+TRAINING DATA: EMBER 2018 train partition (X_train.dat / y_train.dat, 7.62 GB)
+  Vectorized from ........... 6 raw shards (train_features_0..5.jsonl, ~7.7 GB)
+  Total vectorized rows ..... 800,000 x 2,381 features
+  Unlabeled rows dropped .... 200,000 (label = -1)
+  Usable labeled samples .... 600,000 (300,000 benign / 300,000 malware)
+  Random split (80/20 stratified, seed=42):
+    Train pool .............. 480,000
+      -> internal validation carve-out (10%): 48,000 val /
+         432,000 actually fitted (log: "Training XGBoost: 432000 samples")
+    Internal test ........... 120,000
+
+RESULTS (internal EMBER test split, n=120,000):
+                        accuracy    f1          auc_roc
+  ember_xgboost         0.9721      0.9721      0.9964
+  ember_lightgbm        0.9690      0.9689      0.9957
+  Best model ............ ember_xgboost
+
+SAME-DATASET TEST: EMBER official test partition (full, no subsampling)
+  Size ..................... 200,000 samples (100,000 benign / 100,000 malware)
+  ember_xgboost ............ acc=0.9610  f1=0.9612  auc=0.9927
+  ember_lightgbm ........... acc=0.9595  f1=0.9598  auc=0.9919
+
+CROSS-DATASET TEST: BODMAS (full dataset, no subsampling)
+  Size ..................... 134,435 samples (77,142 benign / 57,293 malware)
+  ember_xgboost ............ acc=0.9611  f1=0.9537  auc=0.9960
+  ember_lightgbm ........... acc=0.9617  f1=0.9542  auc=0.9962
+
+------------------------------------------------------------------------
+3. RAW DATASET FILES ON DISK (backend/dataset/)
+------------------------------------------------------------------------
+  BODMAS/
+    bodmas.npz ......................... 261 MB   134,435 x 2,381 (float32)
+    bodmas_metadata.csv ................ 12.7 MB  sha, timestamp, family
+    bodmas_malware_category.csv ........ 4.1 MB   sha256, category
+
+  ember2018/
+    X_test.dat ......................... 1.90 GB  200,000 x 2,381 (float32)
+    y_test.dat ......................... 800 KB   200,000 labels (all labeled)
+    X_train.dat ........................ 7.62 GB  800,000 x 2,381 (float32)
+    y_train.dat ........................ 3.2 MB   800,000 labels
+                                                  (600k labeled / 200k unlabeled)
+    test_features.jsonl ................ 1.87 GB  raw source for test partition
+    train_features_0.jsonl ............. 540 MB
+    train_features_1.jsonl ............. 1583 MB
+    train_features_2.jsonl ............. 1239 MB
+    train_features_3.jsonl ............. 1313 MB
+    train_features_4.jsonl ............. 1261 MB
+    train_features_5.jsonl ............. 1766 MB
+    ember_model_2018.txt ............... 127 MB   reference gradient-boosted model
+
+------------------------------------------------------------------------
+4. SUMMARY TABLE — WHAT WAS TRAINED/TESTED ON WHAT
+------------------------------------------------------------------------
+  Model             Trained on            Test set                    Accuracy
+  ---------------------------------------------------------------------------
+  xgboost           BODMAS 107,548        BODMAS 26,887               0.9970
+                                          EMBER 10,000 subsample      0.8390
+                                          EMBER 200,000 (full)        0.8417
+  lightgbm          BODMAS 107,548        BODMAS 26,887               0.9972
+                                          EMBER 10,000 subsample      0.8396
+                                          EMBER 200,000 (full)        not run
+  ---------------------------------------------------------------------------
+  ember_xgboost     EMBER 432,000         EMBER split 120,000         0.9721
+                                          EMBER official 200,000      0.9610
+                                          BODMAS 134,435 (full)       0.9611
+  ember_lightgbm    EMBER 432,000         EMBER split 120,000         0.9690
+                                          EMBER official 200,000      0.9595
+                                          BODMAS 134,435 (full)       0.9617
+
+------------------------------------------------------------------------
+5. KEY OBSERVATIONS
+------------------------------------------------------------------------
+  - BODMAS-trained models drop from ~99.7% to ~84% on EMBER 2018
+    (cross-domain generalization gap).
+  - EMBER-trained models hold up much better on BODMAS (~96%), likely due
+    to training on 4x more data (432K vs 97K fitted samples).
+  - The 10K vs 200K EMBER subsample barely changes cross-dataset accuracy
+    (XGB: 0.8390 vs 0.8417) — the 10K default subsample is representative.
+  - Sources: training_logs_p2.txt, testing_ember.txt,
+    outputs/reports/evaluation_results_*.json,
+    outputs/reports/phase2_training_summary.json
+
+========================================================================

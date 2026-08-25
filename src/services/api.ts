@@ -210,14 +210,16 @@ class HaruspexAPI {
     });
   }
 
-  async getDatasetInfo(): Promise<DatasetInfo> {
-    return this.request<DatasetInfo>('/dataset/info');
+  async getDatasetInfo(dataset?: string): Promise<DatasetInfo> {
+    const params = dataset ? `?dataset=${dataset}` : '';
+    return this.request<DatasetInfo>(`/dataset/info${params}`);
   }
 
   async listSamples(
     filters?: { family?: string; category?: string; label?: string },
     offset = 0,
     limit = 50,
+    dataset?: string,
   ): Promise<SampleListResponse> {
     const params = new URLSearchParams();
     params.set('offset', String(offset));
@@ -225,6 +227,7 @@ class HaruspexAPI {
     if (filters?.family) params.set('family', filters.family);
     if (filters?.category) params.set('category', filters.category);
     if (filters?.label) params.set('label', filters.label);
+    if (dataset) params.set('dataset', dataset);
     return this.request<SampleListResponse>(`/dataset/samples?${params}`);
   }
 }
