@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api, { type ModelInfo, type DatasetInfo } from '../services/api';
 
-const CHART_COLORS = ['#00d4ff', '#00ff88', '#ff4466', '#ff8844', '#aa66ff', '#ffcc00'];
+const CHART_COLORS = ['var(--accent)', 'var(--success-fg)', 'var(--danger-fg)', 'var(--attention-fg)', 'var(--done-fg)', '#9a6700'];
+
+const chartBg = 'var(--canvas-subtle)';
+const chartBorder = 'var(--border-default)';
+const chartLabel = 'var(--fg-default)';
 
 export default function DashboardPage() {
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
@@ -140,8 +144,9 @@ export default function DashboardPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: '#1a2235', border: '1px solid #2a3a55', borderRadius: '8px' }}
-                  labelStyle={{ color: '#e8edf5' }}
+                  contentStyle={{ background: chartBg, border: `1px solid ${chartBorder}`, borderRadius: '6px' }}
+                  labelStyle={{ color: chartLabel }}
+                  itemStyle={{ color: chartLabel }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -159,16 +164,17 @@ export default function DashboardPage() {
                 { name: 'Benign', count: datasetInfo.n_benign },
                 { name: 'Malware', count: datasetInfo.n_malware },
               ]}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3e" />
-                <XAxis dataKey="name" stroke="#8b95a8" />
-                <YAxis stroke="#8b95a8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
+                <XAxis dataKey="name" stroke="var(--fg-muted)" />
+                <YAxis stroke="var(--fg-muted)" />
                 <Tooltip
-                  contentStyle={{ background: '#1a2235', border: '1px solid #2a3a55', borderRadius: '8px' }}
-                  labelStyle={{ color: '#e8edf5' }}
+                  contentStyle={{ background: chartBg, border: `1px solid ${chartBorder}`, borderRadius: '6px' }}
+                  labelStyle={{ color: chartLabel }}
+                  itemStyle={{ color: chartLabel }}
                 />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  <Cell fill="#00ff88" />
-                  <Cell fill="#ff4466" />
+                  <Cell fill="var(--success-fg)" />
+                  <Cell fill="var(--danger-fg)" />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -184,12 +190,12 @@ export default function DashboardPage() {
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={familyData} layout="vertical" margin={{ left: 24 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3e" />
-              <XAxis type="number" stroke="#8b95a8" />
-              <YAxis type="category" dataKey="name" stroke="#8b95a8" width={120} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
+              <XAxis type="number" stroke="var(--fg-muted)" />
+              <YAxis type="category" dataKey="name" stroke="var(--fg-muted)" width={120} />
               <Tooltip
-                contentStyle={{ background: '#1a2235', border: '1px solid #2a3a55', borderRadius: '8px' }}
-                labelStyle={{ color: '#e8edf5' }}
+                contentStyle={{ background: chartBg, border: `1px solid ${chartBorder}`, borderRadius: "6px" }}
+                labelStyle={{ color: chartLabel }}
               />
               <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                 {familyData.map((_, i) => (
