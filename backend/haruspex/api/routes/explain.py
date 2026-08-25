@@ -23,19 +23,33 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 # ---------------------------------------------------------------------------
-# Static dataset metadata — these are fixed properties of the datasets,
-# not values that need to be recomputed on every request.
+# Static dataset metadata — computed once (see scripts/dataset-stats.py)
+# and hardcoded here. Never recomputed on every request.
 # ---------------------------------------------------------------------------
 
-# BODMAS: loaded on demand (has rich metadata: families, categories, etc.).
-_bodmas_dataset = None
-
-# EMBER 2018 — full dataset (train + test). Numbers are static; loaded
-# lazily only when a sample actually needs to be explained or listed.
-EMBER_TOTAL_SAMPLES = 1_000_000    # 800K train + 200K test
+# EMBER 2018 — full dataset (train + test combined).
+# Source: backend/dataset/ember2018/{X,y}_{train,test}.dat
+# Train: 800K rows (300K benign, 300K malware, 200K unlabeled=-1)
+# Test:  200K rows (100K benign, 100K malware)
+EMBER_TOTAL_SAMPLES = 1_000_000
 EMBER_N_FEATURES = 2381
-EMBER_N_BENIGN = 500_000           # approximate 50/50 split
-EMBER_N_MALWARE = 500_000
+EMBER_N_BENIGN = 400_000
+EMBER_N_MALWARE = 400_000
+
+# BODMAS — malware dataset.
+# Source: backend/dataset/BODMAS/bodmas.npz
+BODMAS_TOTAL_SAMPLES = 134_435
+BODMAS_N_FEATURES = 2381
+BODMAS_N_BENIGN = 77_142
+BODMAS_N_MALWARE = 57_293
+
+# ---------------------------------------------------------------------------
+# Lazy-load datasets only when actually needed (explain/list-samples).
+# Stats are served from the constants above.
+# ---------------------------------------------------------------------------
+
+_bodmas_dataset = None
+_ember_data: tuple | None = None
 
 
 def _load_bodmas():
@@ -48,24 +62,54 @@ def _load_bodmas():
 
 
 def _load_ember():
-    """Lazy-load EMBER full dataset (train + test). Cached."""
+    """Lazy-load EMBER full dataset (train + test). Cached.
+
+    Loads the feature matrices (X) and labels (y) for explanation, plus
+    the metadata DataFrame for sample info. This is ~9.5 GB of memmap
+    data — only loaded on first explain, never for listing.
+    """
     from haruspex.data.ember import load_ember
-    # Load both partitions and concatenate for the full dataset size.
     X_test, y_test, meta_test = load_ember(test_only=True)
-    # Train partition
     try:
         X_train, y_train, meta_train = load_ember(test_only=False)
+    except Exception:
+        X_train, y_train, meta_train = None, None, None
+    if X_train is not None:
         X = np.vstack([X_train, X_test])
         y = np.concatenate([y_train, y_test])
         meta = pd.concat([meta_train, meta_test], ignore_index=True)
-    except Exception:
-        # If train partition is unavailable, fall back to test only.
+    else:
         X, y, meta = X_test, y_test, meta_test
     return X, y, meta
 
 
-# Cache for EMBER after first load
-_ember_data: tuple | None = None
+def _load_ember_meta():
+    """Lazy-load EMBER metadata only (no feature matrix). Cached.
+
+    Used by /dataset/samples for pagination — avoids loading 9.5 GB of
+    feature data just to list SHA rows.
+    """
+    from haruspex.data.ember import load_ember
+    _, _, meta_test = load_ember(test_only=True)
+    try:
+        _, _, meta_train = load_ember(test_only=False)
+    except Exception:
+        meta_train = None
+    if meta_train is not None:
+        meta = pd.concat([meta_train, meta_test], ignore_index=True)
+    else:
+        meta = meta_test
+    return meta
+
+
+_ember_meta = None
+
+
+def _get_ember_meta():
+    global _ember_meta
+    if _ember_meta is None:
+        _ember_meta = _load_ember_meta()
+    return _ember_meta
 
 
 def _get_ember_data():
@@ -76,7 +120,7 @@ def _get_ember_data():
 
 
 # ---------------------------------------------------------------------------
-# Helpers shared by explain and random explain
+# Shared explanation pipeline
 # ---------------------------------------------------------------------------
 
 def _run_explanation(model, used_model: str, used_group: str, x_sample, feature_names, num_features: int):
@@ -86,22 +130,18 @@ def _run_explanation(model, used_model: str, used_group: str, x_sample, feature_
     from haruspex.forensics.ioc_extractor import IOCExtractor
     from haruspex.correlation.correlator import Correlator
 
-    # SHAP explanation
     shap_explainer = SHAPExplainer(model, feature_names=feature_names)
     shap_exp = shap_explainer.explain_sample(x_sample)
 
-    # Forensic analysis
     analyzer = StaticAnalyzer()
     forensic_report = analyzer.analyze_feature_vector(x_sample, feature_names)
 
     ioc_extractor = IOCExtractor()
     iocs = ioc_extractor.extract_from_analysis(forensic_report)
 
-    # Correlation
     correlator = Correlator()
     evidence = correlator.correlate(shap_exp, forensic_report, iocs, top_k=num_features)
 
-    # Prediction
     pred_label = int(model.predict(x_sample.reshape(1, -1))[0])
     pred_proba = float(model.predict_proba(x_sample.reshape(1, -1))[0])
     prediction = "malware" if pred_label == 1 else "benign"
@@ -126,8 +166,6 @@ def _run_explanation(model, used_model: str, used_group: str, x_sample, feature_
 # ---------------------------------------------------------------------------
 
 class ExplainRequest(BaseModel):
-    """Request body for sample explanation."""
-
     sample_index: int
     model_name: Optional[str] = None
     model_group: Optional[str] = None
@@ -136,12 +174,7 @@ class ExplainRequest(BaseModel):
 
 @router.post("/explain")
 async def explain_sample(request: ExplainRequest):
-    """Explain a specific dataset sample by index.
-
-    The dataset is selected from request.model_group:
-      - "bodmas" -> BODMAS dataset
-      - "ember"  -> EMBER dataset
-    """
+    """Explain a specific dataset sample by index."""
     from haruspex.api.main import get_model
 
     try:
@@ -149,15 +182,11 @@ async def explain_sample(request: ExplainRequest):
     except ValueError as e:
         raise HTTPException(status_code=503, detail=str(e))
 
-    # Load the dataset corresponding to the model group
     if used_group == "ember":
         X, y, meta = _get_ember_data()
         n_samples = X.shape[0]
         if request.sample_index < 0 or request.sample_index >= n_samples:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Sample index must be 0-{n_samples - 1}",
-            )
+            raise HTTPException(status_code=400, detail=f"Sample index must be 0-{n_samples - 1}")
         idx = request.sample_index
         x_sample = X[idx]
         true_label = int(y[idx])
@@ -165,10 +194,7 @@ async def explain_sample(request: ExplainRequest):
     else:
         dataset = _load_bodmas()
         if request.sample_index < 0 or request.sample_index >= dataset.n_samples:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Sample index must be 0-{dataset.n_samples - 1}",
-            )
+            raise HTTPException(status_code=400, detail=f"Sample index must be 0-{dataset.n_samples - 1}")
         idx = request.sample_index
         x_sample = dataset.X[idx]
         true_label = int(dataset.y[idx])
@@ -179,7 +205,6 @@ async def explain_sample(request: ExplainRequest):
         model, used_model, used_group, x_sample, feature_names, request.num_features,
     )
 
-    # Enrich report with sample metadata
     report_dict = report.to_dict()
     report_dict["sample"] = {
         **report_dict.get("sample", {}),
@@ -200,24 +225,15 @@ async def explain_sample(request: ExplainRequest):
 # ---------------------------------------------------------------------------
 
 class RandomExplainRequest(BaseModel):
-    """Request body for random sample explanation."""
-
     model_name: Optional[str] = None
     model_group: Optional[str] = None
-    label_filter: Optional[str] = None  # "malware", "benign", or None for any
+    label_filter: Optional[str] = None
     num_features: int = 20
 
 
 @router.post("/explain/random")
 async def explain_random_sample(request: RandomExplainRequest):
-    """Explain a random sample from the dataset.
-
-    The dataset is selected from request.model_group:
-      - "bodmas" -> BODMAS dataset
-      - "ember"  -> EMBER dataset
-
-    Optionally filter by label ("malware" or "benign").
-    """
+    """Explain a random sample from the dataset."""
     from haruspex.api.main import get_model
 
     try:
@@ -279,26 +295,18 @@ async def explain_random_sample(request: RandomExplainRequest):
 
 
 # ---------------------------------------------------------------------------
-# Dataset info
+# Dataset info — serves hardcoded stats; BODMAS families/categories
+# are read from metadata (structural, doesn't change).
 # ---------------------------------------------------------------------------
-
 
 @router.get("/dataset/info")
 async def dataset_info(dataset: str = "bodmas"):
-    """Return dataset summary information.
-
-    Query params:
-      - dataset: "bodmas" (default) or "ember"
-
-    BODMAS returns live stats from the loaded dataset (families, categories).
-    EMBER returns static, pre-computed values for the full EMBER 2018
-    dataset (train + test combined) — no loading or computation needed.
-    """
+    """Return dataset summary information."""
     from haruspex.data.bodmas import get_family_sample_counts
 
     if dataset == "ember":
         # Static metadata for the full EMBER 2018 dataset.
-        # EMBER has no family or category columns, so those are empty.
+        # EMBER has no family or category columns.
         return {
             "total_samples": EMBER_TOTAL_SAMPLES,
             "n_features": EMBER_N_FEATURES,
@@ -310,7 +318,7 @@ async def dataset_info(dataset: str = "bodmas"):
             "categories": {},
         }
 
-    # BODMAS — load and compute live stats
+    # BODMAS — structural metadata from the metadata CSV
     try:
         dataset_obj = _load_bodmas()
     except Exception as e:
@@ -321,10 +329,10 @@ async def dataset_info(dataset: str = "bodmas"):
     categories = dataset_obj.metadata["category"].value_counts().to_dict()
 
     return {
-        "total_samples": dataset_obj.n_samples,
-        "n_features": dataset_obj.n_features,
-        "n_benign": dataset_obj.n_benign,
-        "n_malware": dataset_obj.n_malware,
+        "total_samples": BODMAS_TOTAL_SAMPLES,
+        "n_features": BODMAS_N_FEATURES,
+        "n_benign": BODMAS_N_BENIGN,
+        "n_malware": BODMAS_N_MALWARE,
         "n_families": len(families),
         "families": sorted(families.tolist())[:50],
         "top_families": [
@@ -348,28 +356,21 @@ async def list_samples(
     limit: int = 50,
     dataset: str = "bodmas",
 ):
-    """List samples with optional filtering.
-
-    Query params:
-      - dataset: "bodmas" (default) or "ember"
-      - family, category: ignored for EMBER (no family/category metadata)
-      - label: "benign" or "malware"
-      - offset, limit: pagination
-    """
+    """List samples with optional filtering."""
     if dataset == "ember":
-        X, y, meta = _get_ember_data()
-        # Build a DataFrame that matches the BODMAS shape for the response
+        meta = _get_ember_meta()
         df = meta.copy()
         df["index"] = range(len(df))
-        df["label"] = ["malware" if v == 1 else "benign" for v in y]
-        # EMBER has no family/category — provide placeholder columns
+        # Build labels from the metadata's label column (already "malware"/"benign")
+        if "label" not in df.columns:
+            # Fallback: EMBER metadata should have it, but just in case
+            df["label"] = "unknown"
         if "family" not in df.columns:
             df["family"] = ""
         if "category" not in df.columns:
             df["category"] = "ember"
         if "timestamp" not in df.columns:
             df["timestamp"] = "1970-01-01"
-        # Apply label filter only (family/category filters don't apply to EMBER)
         if label:
             df = df[df["label"] == label]
         total = len(df)
@@ -391,9 +392,8 @@ async def list_samples(
     meta = dataset_obj.metadata.copy()
     meta["index"] = range(len(meta))
     if "label" not in meta.columns:
-        meta["label"] = ["malware" if y == 1 else "benign" for y in dataset_obj.y]
+        meta["label"] = ["malware" if v == 1 else "benign" for v in dataset_obj.y]
 
-    # Apply family/category filters (BODMAS only)
     if family:
         meta = meta[meta["family"] == family]
     if category:
