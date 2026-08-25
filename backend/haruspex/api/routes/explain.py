@@ -44,79 +44,184 @@ BODMAS_N_BENIGN = 77_142
 BODMAS_N_MALWARE = 57_293
 
 # ---------------------------------------------------------------------------
-# Lazy-load datasets only when actually needed (explain/list-samples).
-# Stats are served from the constants above.
+# ---------------------------------------------------------------------------
+# BODMAS lazy loader — memmap .dat files, never loads 1.2GB into RAM.
+# Reads individual rows on demand (~10KB per sample).
 # ---------------------------------------------------------------------------
 
-_bodmas_dataset = None
-_ember_data: tuple | None = None
+class _BodmasLazy:
+    """Lazy BODMAS dataset accessor backed by numpy memmaps.
 
-
-def _load_bodmas():
-    """Lazy-load BODMAS (cached for the process lifetime)."""
-    global _bodmas_dataset
-    if _bodmas_dataset is None:
-        from haruspex.data.bodmas import load_bodmas
-        _bodmas_dataset = load_bodmas()
-    return _bodmas_dataset
-
-
-def _load_ember():
-    """Lazy-load EMBER full dataset (train + test). Cached.
-
-    Loads the feature matrices (X) and labels (y) for explanation, plus
-    the metadata DataFrame for sample info. This is ~9.5 GB of memmap
-    data — only loaded on first explain, never for listing.
+    - Labels (y) are tiny (~0.5 MB) and loaded once.
+    - Metadata comes from CSVs (~3 MB), loaded once.
+    - Features (X) stay as a memmap; individual rows read on demand.
     """
-    from haruspex.data.ember import load_ember
-    X_test, y_test, meta_test = load_ember(test_only=True)
-    try:
-        X_train, y_train, meta_train = load_ember(test_only=False)
-    except Exception:
-        X_train, y_train, meta_train = None, None, None
-    if X_train is not None:
-        X = np.vstack([X_train, X_test])
-        y = np.concatenate([y_train, y_test])
-        meta = pd.concat([meta_train, meta_test], ignore_index=True)
-    else:
-        X, y, meta = X_test, y_test, meta_test
-    return X, y, meta
+
+    def __init__(self):
+        self._X_memmap = None
+        self._y = None
+        self._metadata = None
+        self._loaded = False
+
+    def _ensure_loaded(self):
+        if self._loaded:
+            return
+        from haruspex.config import (
+            BACKEND_DIR, NUM_FEATURES,
+            BODMAS_METADATA_CSV, BODMAS_CATEGORY_CSV,
+        )
+
+        bodmas_dir = BACKEND_DIR / "dataset" / "BODMAS"
+        x_dat = bodmas_dir / "bodmas_X.dat"
+        y_dat = bodmas_dir / "bodmas_y.dat"
+
+        if not (x_dat.exists() and y_dat.exists()):
+            raise FileNotFoundError(
+                f"BODMAS .dat files not found in {bodmas_dir}. "
+                "Run the conversion: python -c \"import numpy as np; "
+                "d=np.load('dataset/BODMAS/bodmas.npz',allow_pickle=True); "
+                "d['X'].tofile('dataset/BODMAS/bodmas_X.dat'); "
+                "d['y'].tofile('dataset/BODMAS/bodmas_y.dat')\""
+            )
+
+        # Labels — tiny, load fully
+        self._y = np.fromfile(str(y_dat), dtype=np.int32)
+
+        # Features — memmap, never materialized
+        self._X_memmap = np.memmap(
+            str(x_dat), dtype=np.float32, mode="r"
+        ).reshape(len(self._y), NUM_FEATURES)
+
+        # Metadata — from CSVs (~3 MB)
+        metadata = pd.read_csv(str(BODMAS_METADATA_CSV))
+        categories = pd.read_csv(str(BODMAS_CATEGORY_CSV))
+        metadata = metadata.merge(
+            categories, left_on="sha", right_on="sha256", how="left"
+        ).drop(columns=["sha256"], errors="ignore")
+        metadata["family"] = metadata["family"].fillna("")
+        metadata["category"] = metadata["category"].fillna("benign")
+        self._metadata = metadata
+
+        self._loaded = True
+        logger.info(
+            "BODMAS lazy loader ready: %d samples (memmap, no full materialization)",
+            len(self._y),
+        )
+
+    @property
+    def n_samples(self) -> int:
+        self._ensure_loaded()
+        return len(self._y)
+
+    @property
+    def y(self) -> np.ndarray:
+        self._ensure_loaded()
+        return self._y
+
+    @property
+    def metadata(self) -> pd.DataFrame:
+        self._ensure_loaded()
+        return self._metadata
+
+    def get_sample(self, idx: int) -> np.ndarray:
+        """Read a single sample's feature vector from the memmap (~10KB)."""
+        self._ensure_loaded()
+        return np.asarray(self._X_memmap[idx], dtype=np.float32)
+
+    def get_meta(self, idx: int) -> dict:
+        """Get metadata dict for sample at idx."""
+        self._ensure_loaded()
+        row = self._metadata.iloc[idx]
+        return {
+            "sha": str(row.get("sha", "")),
+            "family": str(row.get("family", "")),
+            "category": str(row.get("category", "")),
+        }
 
 
-def _load_ember_meta():
-    """Lazy-load EMBER metadata only (no feature matrix). Cached.
-
-    Used by /dataset/samples for pagination — avoids loading 9.5 GB of
-    feature data just to list SHA rows.
-    """
-    from haruspex.data.ember import load_ember
-    _, _, meta_test = load_ember(test_only=True)
-    try:
-        _, _, meta_train = load_ember(test_only=False)
-    except Exception:
-        meta_train = None
-    if meta_train is not None:
-        meta = pd.concat([meta_train, meta_test], ignore_index=True)
-    else:
-        meta = meta_test
-    return meta
+_bodmas_lazy = _BodmasLazy()
 
 
-_ember_meta = None
+# ---------------------------------------------------------------------------
+# EMBER lazy loader — same pattern, memmap .dat files.
+# ---------------------------------------------------------------------------
+
+class _EmberLazy:
+    """Lazy EMBER dataset accessor backed by numpy memmaps."""
+
+    def __init__(self):
+        self._X_memmap = None
+        self._y = None
+        self._valid_idx = None
+        self._loaded = False
+
+    def _ensure_loaded(self):
+        if self._loaded:
+            return
+        from haruspex.config import BACKEND_DIR, NUM_FEATURES
+
+        ember_dir = BACKEND_DIR / "dataset" / "ember2018"
+        x_dat = ember_dir / "X_test.dat"
+        y_dat = ember_dir / "y_test.dat"
+
+        if not (x_dat.exists() and y_dat.exists()):
+            raise FileNotFoundError(f"EMBER test .dat files not found in {ember_dir}")
+
+        y_raw = np.memmap(str(y_dat), dtype=np.float32, mode="r")
+        self._valid_idx = np.where((y_raw != -1) & (~np.isnan(y_raw)))[0]
+        self._y = np.asarray(y_raw[self._valid_idx], dtype=np.int32)
+
+        self._X_memmap = np.memmap(
+            str(x_dat), dtype=np.float32, mode="r"
+        ).reshape(-1, NUM_FEATURES)
+
+        self._loaded = True
+        logger.info(
+            "EMBER lazy loader ready: %d labeled samples (memmap, no full materialization)",
+            len(self._y),
+        )
+
+    @property
+    def n_samples(self) -> int:
+        self._ensure_loaded()
+        return len(self._y)
+
+    @property
+    def y(self) -> np.ndarray:
+        self._ensure_loaded()
+        return self._y
+
+    def get_sample(self, idx: int) -> np.ndarray:
+        """Read a single sample's feature vector from the memmap."""
+        self._ensure_loaded()
+        raw_idx = self._valid_idx[idx]
+        return np.asarray(self._X_memmap[raw_idx], dtype=np.float32)
+
+    def get_meta(self, idx: int) -> dict:
+        self._ensure_loaded()
+        raw_idx = self._valid_idx[idx]
+        label = "malware" if self._y[idx] == 1 else "benign"
+        return {
+            "sha": f"ember_test_{raw_idx}",
+            "family": "",
+            "category": label,
+            "label": label,
+            "dataset": "EMBER_2018",
+        }
+
+    def get_metadata_df(self) -> pd.DataFrame:
+        self._ensure_loaded()
+        return pd.DataFrame({
+            "sha": [f"ember_test_{i}" for i in self._valid_idx],
+            "family": "",
+            "category": np.where(self._y == 1, "malware", "benign"),
+            "label": np.where(self._y == 1, "malware", "benign"),
+            "timestamp": "2018-01-01",
+            "dataset": "EMBER_2018",
+        })
 
 
-def _get_ember_meta():
-    global _ember_meta
-    if _ember_meta is None:
-        _ember_meta = _load_ember_meta()
-    return _ember_meta
-
-
-def _get_ember_data():
-    global _ember_data
-    if _ember_data is None:
-        _ember_data = _load_ember()
-    return _ember_data
+_ember_lazy = _EmberLazy()
 
 
 # ---------------------------------------------------------------------------
@@ -183,22 +288,19 @@ async def explain_sample(request: ExplainRequest):
         raise HTTPException(status_code=503, detail=str(e))
 
     if used_group == "ember":
-        X, y, meta = _get_ember_data()
-        n_samples = X.shape[0]
-        if request.sample_index < 0 or request.sample_index >= n_samples:
-            raise HTTPException(status_code=400, detail=f"Sample index must be 0-{n_samples - 1}")
+        if request.sample_index < 0 or request.sample_index >= _ember_lazy.n_samples:
+            raise HTTPException(status_code=400, detail=f"Sample index must be 0-{_ember_lazy.n_samples - 1}")
         idx = request.sample_index
-        x_sample = X[idx]
-        true_label = int(y[idx])
-        sample_meta = meta.iloc[idx]
+        x_sample = _ember_lazy.get_sample(idx)
+        true_label = int(_ember_lazy.y[idx])
+        sample_meta = _ember_lazy.get_meta(idx)
     else:
-        dataset = _load_bodmas()
-        if request.sample_index < 0 or request.sample_index >= dataset.n_samples:
-            raise HTTPException(status_code=400, detail=f"Sample index must be 0-{dataset.n_samples - 1}")
+        if request.sample_index < 0 or request.sample_index >= _bodmas_lazy.n_samples:
+            raise HTTPException(status_code=400, detail=f"Sample index must be 0-{_bodmas_lazy.n_samples - 1}")
         idx = request.sample_index
-        x_sample = dataset.X[idx]
-        true_label = int(dataset.y[idx])
-        sample_meta = dataset.metadata.iloc[idx]
+        x_sample = _bodmas_lazy.get_sample(idx)
+        true_label = int(_bodmas_lazy.y[idx])
+        sample_meta = _bodmas_lazy.get_meta(idx)
 
     feature_names = get_feature_names()
     report, prediction, confidence = _run_explanation(
@@ -242,21 +344,21 @@ async def explain_random_sample(request: RandomExplainRequest):
         raise HTTPException(status_code=503, detail=str(e))
 
     if used_group == "ember":
-        X, y, meta = _get_ember_data()
+        y = _ember_lazy.y  # tiny array, already in RAM
         if request.label_filter == "malware":
             valid_indices = np.where(y == 1)[0]
         elif request.label_filter == "benign":
             valid_indices = np.where(y == 0)[0]
         else:
-            valid_indices = np.arange(X.shape[0])
+            valid_indices = np.arange(_ember_lazy.n_samples)
     else:
-        dataset = _load_bodmas()
+        y = _bodmas_lazy.y
         if request.label_filter == "malware":
-            valid_indices = np.where(dataset.y == 1)[0]
+            valid_indices = np.where(y == 1)[0]
         elif request.label_filter == "benign":
-            valid_indices = np.where(dataset.y == 0)[0]
+            valid_indices = np.where(y == 0)[0]
         else:
-            valid_indices = np.arange(dataset.n_samples)
+            valid_indices = np.arange(_bodmas_lazy.n_samples)
 
     if len(valid_indices) == 0:
         raise HTTPException(status_code=404, detail="No samples match the filter.")
@@ -264,15 +366,13 @@ async def explain_random_sample(request: RandomExplainRequest):
     idx = int(stdlib_random.choice(valid_indices))
 
     if used_group == "ember":
-        X, y, meta = _get_ember_data()
-        x_sample = X[idx]
-        true_label = int(y[idx])
-        sample_meta = meta.iloc[idx]
+        x_sample = _ember_lazy.get_sample(idx)  # reads ONE row from memmap (~10KB)
+        true_label = int(_ember_lazy.y[idx])
+        sample_meta = _ember_lazy.get_meta(idx)
     else:
-        dataset = _load_bodmas()
-        x_sample = dataset.X[idx]
-        true_label = int(dataset.y[idx])
-        sample_meta = dataset.metadata.iloc[idx]
+        x_sample = _bodmas_lazy.get_sample(idx)
+        true_label = int(_bodmas_lazy.y[idx])
+        sample_meta = _bodmas_lazy.get_meta(idx)
 
     feature_names = get_feature_names()
     report, prediction, confidence = _run_explanation(
@@ -318,15 +418,15 @@ async def dataset_info(dataset: str = "bodmas"):
             "categories": {},
         }
 
-    # BODMAS — structural metadata from the metadata CSV
+    # BODMAS — metadata from lazy loader (CSVs only, ~3 MB)
     try:
-        dataset_obj = _load_bodmas()
+        metadata = _bodmas_lazy.metadata
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load dataset: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load metadata: {e}")
 
-    families = dataset_obj.metadata["family"].replace("", None).dropna().unique()
-    family_counts = get_family_sample_counts(dataset_obj.metadata)
-    categories = dataset_obj.metadata["category"].value_counts().to_dict()
+    families = metadata["family"].replace("", None).dropna().unique()
+    family_counts = get_family_sample_counts(metadata)
+    categories = metadata["category"].value_counts().to_dict()
 
     return {
         "total_samples": BODMAS_TOTAL_SAMPLES,
@@ -358,19 +458,8 @@ async def list_samples(
 ):
     """List samples with optional filtering."""
     if dataset == "ember":
-        meta = _get_ember_meta()
-        df = meta.copy()
+        df = _ember_lazy.get_metadata_df()  # built from tiny label array, no feature data
         df["index"] = range(len(df))
-        # Build labels from the metadata's label column (already "malware"/"benign")
-        if "label" not in df.columns:
-            # Fallback: EMBER metadata should have it, but just in case
-            df["label"] = "unknown"
-        if "family" not in df.columns:
-            df["family"] = ""
-        if "category" not in df.columns:
-            df["category"] = "ember"
-        if "timestamp" not in df.columns:
-            df["timestamp"] = "1970-01-01"
         if label:
             df = df[df["label"] == label]
         total = len(df)
@@ -387,12 +476,11 @@ async def list_samples(
             })
         return {"total": total, "offset": offset, "limit": limit, "samples": samples}
 
-    # BODMAS
-    dataset_obj = _load_bodmas()
-    meta = dataset_obj.metadata.copy()
+    # BODMAS — use lazy loader metadata (no 1.2GB feature matrix)
+    meta = _bodmas_lazy.metadata.copy()
     meta["index"] = range(len(meta))
     if "label" not in meta.columns:
-        meta["label"] = ["malware" if v == 1 else "benign" for v in dataset_obj.y]
+        meta["label"] = meta["category"].apply(lambda c: "benign" if c == "benign" else "malware")
 
     if family:
         meta = meta[meta["family"] == family]
