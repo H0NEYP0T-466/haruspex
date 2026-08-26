@@ -92,15 +92,27 @@ def evaluate_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_proba: np.ndarray
 def find_bodmas_dir() -> Path:
     """Find BODMAS dataset path on local system or Kaggle dataset mounts."""
     possible_paths = [
-        _BACKEND_DIR / "dataset" / "BODMAS",
+        Path("/kaggle/input/datasets/h0neyp0t/bodmas"),
+        Path("/kaggle/input/h0neyp0t/bodmas"),
         Path("/kaggle/input/bodmas/BODMAS"),
         Path("/kaggle/input/bodmas"),
         Path("/kaggle/input/haruspex-dataset/BODMAS"),
+        _BACKEND_DIR / "dataset" / "BODMAS",
     ]
     for p in possible_paths:
         if p.exists() and ((p / "bodmas_X.dat").exists() or (p / "bodmas.npz").exists()):
             logger.info("Found BODMAS dataset at: %s", p)
             return p
+
+    # Dynamic search under /kaggle/input if available
+    kaggle_input = Path("/kaggle/input")
+    if kaggle_input.exists():
+        for root, _, files in os.walk(kaggle_input):
+            if "bodmas.npz" in files or "bodmas_X.dat" in files:
+                found_path = Path(root)
+                logger.info("Dynamically discovered BODMAS dataset at: %s", found_path)
+                return found_path
+
     logger.info("Using default BODMAS dataset directory: %s", _BACKEND_DIR / "dataset" / "BODMAS")
     return _BACKEND_DIR / "dataset" / "BODMAS"
 
@@ -118,6 +130,15 @@ def find_ember_dir() -> Path:
         if p.exists() and (p / "X_test.dat").exists():
             logger.info("Found EMBER dataset at: %s", p)
             return p
+
+    kaggle_input = Path("/kaggle/input")
+    if kaggle_input.exists():
+        for root, _, files in os.walk(kaggle_input):
+            if "X_test.dat" in files or "test_features.jsonl" in files:
+                found_path = Path(root)
+                logger.info("Dynamically discovered EMBER dataset at: %s", found_path)
+                return found_path
+
     return _BACKEND_DIR / "dataset" / "ember2018"
 
 
