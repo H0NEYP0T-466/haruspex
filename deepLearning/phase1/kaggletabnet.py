@@ -120,14 +120,14 @@ def find_bodmas_dir() -> Path:
 def find_ember_dir() -> Path:
     """Find EMBER dataset path on local system or Kaggle dataset mounts."""
     possible_paths = [
-        _BACKEND_DIR / "dataset" / "ember2018",
-        Path("/kaggle/input/ember2018/ember2018"),
-        Path("/kaggle/input/ember2018"),
-        Path("/kaggle/input/ember-2018/ember2018"),
+        Path("/kaggle/input/datasets/h0neyp0t/Ember_2018"),
+        Path("/kaggle/input/Ember_2018"),
+        Path("/kaggle/input/ember_2018"),
         Path("/kaggle/input/ember-2018"),
+        _BACKEND_DIR / "dataset" / "ember2018",
     ]
     for p in possible_paths:
-        if p.exists() and (p / "X_test.dat").exists():
+        if p.exists() and ((p / "X_test.dat").exists() or (p / "test_features.jsonl").exists()):
             logger.info("Found EMBER dataset at: %s", p)
             return p
 

@@ -92,12 +92,10 @@ def evaluate_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_proba: np.ndarray
 def find_ember_dir() -> Path:
     """Find EMBER dataset path on local system or Kaggle dataset mounts."""
     possible_paths = [
-        Path("/kaggle/input/ember-2018"),
-        Path("/kaggle/input/ember_2018"),
+        Path("/kaggle/input/datasets/h0neyp0t/Ember_2018"),
         Path("/kaggle/input/Ember_2018"),
-        Path("/kaggle/input/datasets/h0neyp0t/ember-2018"),
-        Path("/kaggle/input/datasets/h0neyp0t/ember_2018"),
-        Path("/kaggle/input/ember2018"),
+        Path("/kaggle/input/ember_2018"),
+        Path("/kaggle/input/ember-2018"),
         _BACKEND_DIR / "dataset" / "ember2018",
     ]
     for p in possible_paths:
