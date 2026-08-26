@@ -1,0 +1,12 @@
+[2026-08-26 10:42:09,740] INFO ========================================================================
+[2026-08-26 10:42:09,740] INFO   HARUSPEX Phase 1 — Train Group-wise Residual MLP on BODMAS
+[2026-08-26 10:42:09,740] INFO ========================================================================
+[2026-08-26 10:42:09,741] INFO [1/5] Loading BODMAS dataset...
+[2026-08-26 10:42:09,741] INFO Loading BODMAS features X and y from .dat memmaps: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_X.dat
+[2026-08-26 10:42:10,515] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-26 10:42:10,518] INFO [2/5] Performing Random Split (80/20)...
+[2026-08-26 10:42:10,597] INFO Random Split (seed=42): 107548 train, 26887 test
+[2026-08-26 10:42:11,101] INFO [3/5] Fitting Group-wise Residual MLP Model on BODMAS...
+[2026-08-26 10:42:13,100] INFO Training group_mlp_bodmas on device: cpu (96794 samples)
+[2026-08-26 10:44:14,588] INFO Epoch   1/100: train_loss=0.4894, train_acc=0.9675, val_loss=0.3120, val_acc=0.9694
+[2026-08-26 11:01:32,600] INFO Epoch  10/100: train_loss=0.0770, train_acc=0.9984, val_loss=0.1368, val_acc=0.9948

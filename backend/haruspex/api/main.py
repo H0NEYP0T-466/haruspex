@@ -68,7 +68,7 @@ def get_model(model_name: str | None = None, model_group: str | None = None) -> 
     if model_name and model_name in group_store:
         return group_store[model_name], model_name, group
     elif "_default" in group_store:
-        name = next((k for k in ["xgboost", "lightgbm"] if k in group_store), "unknown")
+        name = next((k for k in ["xgboost", "lightgbm", "mlp", "tabnet"] if k in group_store), "unknown")
         return group_store["_default"], name, group
     else:
         raise ValueError(f"No models available in group '{group}'.")
@@ -82,13 +82,18 @@ async def lifespan(app: FastAPI):
 
     # Model groups: (group_name, file_prefix)
     model_groups = [
-        ("bodmas", ""),          # xgboost.json, lightgbm.json
-        ("ember", "ember_"),     # ember_xgboost.json, ember_lightgbm.json
+        ("bodmas", ""),          # xgboost.json, lightgbm.json, mlp.pth, tabnet.zip
+        ("ember", "ember_"),     # ember_xgboost.json, ember_lightgbm.json, ember_mlp.pth, ember_tabnet.zip
     ]
+
+    from deepLearning.models.group_mlp import GroupMLPDetector
+    from deepLearning.models.tabnet_model import TabNetDetector
 
     model_classes = {
         "xgboost": XGBoostDetector,
         "lightgbm": LightGBMDetector,
+        "mlp": GroupMLPDetector,
+        "tabnet": TabNetDetector,
     }
 
     total_loaded = 0

@@ -60,6 +60,9 @@ def save_model(model: Any, name: str, directory: Optional[Path] = None) -> Path:
 def load_model(name: str, model_class: Any, directory: Optional[Path] = None) -> Any:
     """Load a trained model from disk.
 
+    Supports JSON, PyTorch (.pth/.pt), TabNet (.zip), and pickle formats.
+    Searches config.MODEL_DIR as well as deepLearning/ phase model directories.
+
     Args:
         name: Base filename (without extension).
         model_class: The model class to instantiate and load into.
@@ -69,26 +72,49 @@ def load_model(name: str, model_class: Any, directory: Optional[Path] = None) ->
         Loaded model instance.
     """
     source_dir = directory or MODEL_DIR
+    search_dirs = [source_dir]
 
-    # Try JSON first (native format), then pickle
-    json_path = source_dir / f"{name}.json"
-    pkl_path = source_dir / f"{name}.pkl"
+    from haruspex.config import PROJECT_ROOT
+    dl_p1 = PROJECT_ROOT / "deepLearning" / "phase1" / "models"
+    dl_p2 = PROJECT_ROOT / "deepLearning" / "phase2" / "models"
 
-    if json_path.exists():
-        model = model_class()
-        model.load(str(json_path))
-        logger.info("Model loaded from %s", json_path)
-        return model
-    elif pkl_path.exists():
-        with open(pkl_path, "rb") as f:
-            model = pickle.load(f)  # noqa: S301
-        logger.info("Model loaded from %s", pkl_path)
-        return model
-    else:
-        raise FileNotFoundError(
-            f"No model file found for '{name}' in {source_dir}. "
-            f"Looked for {json_path} and {pkl_path}."
-        )
+    if dl_p1.exists() and dl_p1 not in search_dirs:
+        search_dirs.append(dl_p1)
+    if dl_p2.exists() and dl_p2 not in search_dirs:
+        search_dirs.append(dl_p2)
+
+    possible_exts = [".json", ".pth", ".pt", ".zip", ".pkl"]
+
+    for s_dir in search_dirs:
+        # Check explicit path or extension
+        for ext in possible_exts:
+            candidate = s_dir / f"{name}{ext}"
+            if candidate.exists():
+                if ext == ".pkl":
+                    with open(candidate, "rb") as f:
+                        model = pickle.load(f)  # noqa: S301
+                    logger.info("Model loaded from %s", candidate)
+                    return model
+                else:
+                    model = model_class()
+                    model.load(str(candidate))
+                    logger.info("Model loaded from %s", candidate)
+                    return model
+        
+        # Check base path directly
+        candidate_base = s_dir / name
+        if candidate_base.exists():
+            try:
+                model = model_class()
+                model.load(str(candidate_base))
+                logger.info("Model loaded from %s", candidate_base)
+                return model
+            except Exception:
+                pass
+
+    raise FileNotFoundError(
+        f"No model file found for '{name}' in {[str(d) for d in search_dirs]}."
+    )
 
 
 def list_saved_models(directory: Optional[Path] = None) -> list[dict[str, str]]:

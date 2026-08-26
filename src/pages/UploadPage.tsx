@@ -31,11 +31,19 @@ interface UploadPageProps {
   modelGroup: string;
 }
 
+const MODEL_ALGORITHMS = [
+  { id: 'xgboost', label: 'XGBoost', desc: 'Gradient Boosted Trees (ML Baseline)' },
+  { id: 'lightgbm', label: 'LightGBM', desc: 'Fast Gradient Boosting (ML Baseline)' },
+  { id: 'mlp', label: 'Group-MLP', desc: 'Group-wise Residual MLP (Deep Learning)' },
+  { id: 'tabnet', label: 'TabNet', desc: 'Sequential Attention Network (Deep Learning)' },
+];
+
 export default function UploadPage({ modelGroup }: UploadPageProps) {
   const [report, setReport] = useState<PredictionReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string>('xgboost');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const groupLabel = modelGroup === 'ember' ? 'EMBER' : 'BODMAS';
@@ -46,14 +54,14 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
     setReport(null);
 
     try {
-      const result = await api.predictFromFile(file, undefined, modelGroup);
+      const result = await api.predictFromFile(file, selectedModel, modelGroup);
       setReport(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setLoading(false);
     }
-  }, [modelGroup]);
+  }, [modelGroup, selectedModel]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -73,14 +81,14 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
     setError(null);
     setReport(null);
     try {
-      const result = await api.explainRandom(undefined, modelGroup);
+      const result = await api.explainRandom(selectedModel, modelGroup);
       setReport(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Random analysis failed. Is the API running?');
     } finally {
       setLoading(false);
     }
-  }, [modelGroup]);
+  }, [modelGroup, selectedModel]);
 
   return (
     <div>
@@ -88,9 +96,39 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
         <h2>Malware Analysis</h2>
         <p>Upload a PE file or analyze a random dataset sample</p>
         <div className="active-model-badge">
-          <span>Using <strong>{groupLabel} Models</strong></span>
+          <span>Using <strong>{groupLabel} Dataset ({selectedModel.toUpperCase()})</strong></span>
         </div>
       </div>
+
+      {/* Model Selector Bar */}
+      {!report && !loading && (
+        <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
+          <div className="card-header" style={{ marginBottom: 'var(--space-sm)' }}>
+            <div className="card-title">Select Model Architecture</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-sm)' }}>
+            {MODEL_ALGORITHMS.map((algo) => (
+              <button
+                key={algo.id}
+                type="button"
+                className={`model-group-option ${selectedModel === algo.id ? 'active' : ''}`}
+                onClick={() => setSelectedModel(algo.id)}
+                style={{
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-color)',
+                  padding: 'var(--space-sm) var(--space-md)',
+                }}
+              >
+                <div className="model-group-info">
+                  <span className="model-group-name">{algo.label}</span>
+                  <span className="model-group-desc">{algo.desc}</span>
+                </div>
+                {selectedModel === algo.id && <span className="model-group-check">✓</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Upload zone */}
       {!report && !loading && (
