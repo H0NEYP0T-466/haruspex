@@ -9,6 +9,7 @@ dataset/
 *.tar.gz
 *.zip
 *.7z
+deepLearning/phase1/models/
 
 # --- Model & Output Artifacts ---
 outputs/
