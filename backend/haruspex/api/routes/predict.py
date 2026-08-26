@@ -77,7 +77,7 @@ async def predict(
     try:
         model, used_model, used_group = get_model(model_name, model_group)
     except ValueError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     static_analyzer = StaticAnalyzer()
     ioc_extractor = IOCExtractor()

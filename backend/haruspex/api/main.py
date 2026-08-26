@@ -49,29 +49,36 @@ def get_model(model_name: str | None = None, model_group: str | None = None) -> 
     """Resolve a model from the store.
 
     Args:
-        model_name: Optional model name ("xgboost" or "lightgbm").
+        model_name: Optional model name ("xgboost", "lightgbm", "mlp", "tabnet").
         model_group: Optional group name ("bodmas" or "ember").
 
     Returns:
         Tuple of (model, used_model_name, used_group_name).
 
     Raises:
-        ValueError: If no models are available.
+        ValueError: If requested model/group is not loaded.
     """
     # Determine group
     group = model_group or _model_store.get("_active_group", "bodmas")
     if group not in _model_store or not isinstance(_model_store.get(group), dict):
-        # Fallback to any available group
         available = [k for k in _model_store if not k.startswith("_") and isinstance(_model_store[k], dict)]
         if not available:
-            raise ValueError("No models loaded. Run train.py first.")
+            raise ValueError("No models loaded. Please train models first.")
         group = available[0]
 
     group_store = _model_store[group]
 
     # Determine model within group
-    if model_name and model_name in group_store:
-        return group_store[model_name], model_name, group
+    if model_name:
+        clean_name = model_name.lower().strip()
+        if clean_name in group_store:
+            return group_store[clean_name], clean_name, group
+        else:
+            avail = [k for k in group_store if not k.startswith("_")]
+            raise ValueError(
+                f"Model '{model_name}' is not trained or loaded in group '{group}'. "
+                f"Available models in '{group}': {', '.join(avail) if avail else 'none'}"
+            )
     elif "_default" in group_store:
         name = next((k for k in ["xgboost", "lightgbm", "mlp", "tabnet"] if k in group_store), "unknown")
         return group_store["_default"], name, group

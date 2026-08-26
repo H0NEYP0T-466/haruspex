@@ -285,7 +285,7 @@ async def explain_sample(request: ExplainRequest):
     try:
         model, used_model, used_group = get_model(request.model_name, request.model_group)
     except ValueError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     if used_group == "ember":
         if request.sample_index < 0 or request.sample_index >= _ember_lazy.n_samples:
@@ -341,7 +341,7 @@ async def explain_random_sample(request: RandomExplainRequest):
     try:
         model, used_model, used_group = get_model(request.model_name, request.model_group)
     except ValueError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     if used_group == "ember":
         y = _ember_lazy.y  # tiny array, already in RAM

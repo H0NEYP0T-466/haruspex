@@ -1,0 +1,97 @@
+/kaggle/working/haruspex
+[Kaggle Setup] Installing pytorch-tabnet...
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.5/44.5 kB 2.5 MB/s eta 0:00:00
+[2026-08-26 07:36:17,989] INFO ========================================================================
+[2026-08-26 07:36:17,989] INFO   HARUSPEX Kaggle Pipeline — TabNet Training on GPU T4 (BODMAS)
+[2026-08-26 07:36:17,989] INFO ========================================================================
+[2026-08-26 07:36:17,989] INFO PyTorch Execution Device: cuda (CUDA Available: True)
+[2026-08-26 07:36:18,038] INFO GPU Model: Tesla T4
+[2026-08-26 07:36:18,038] INFO [1/5] Loading BODMAS dataset...
+[2026-08-26 07:36:18,043] INFO Found BODMAS dataset at: /kaggle/input/datasets/h0neyp0t/bodmas
+[2026-08-26 07:36:18,043] INFO Loading BODMAS from npz: /kaggle/input/datasets/h0neyp0t/bodmas/bodmas.npz
+[2026-08-26 07:36:24,475] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-26 07:36:24,477] INFO [2/5] Performing Random Split (80/20)...
+[2026-08-26 07:36:24,530] INFO Random Split (seed=42): 107548 train, 26887 test
+[2026-08-26 07:36:24,971] INFO [3/5] Fitting TabNet Model on GPU T4...
+/usr/local/lib/python3.12/dist-packages/pytorch_tabnet/abstract_model.py:82: UserWarning: Device used : cuda
+  warnings.warn(f"Device used : {self.device}")
+[2026-08-26 07:36:24,975] INFO Training tabnet_bodmas on device: cuda (96794 samples)
+epoch 0  | loss: 0.55468 | val_accuracy: 0.82955 | val_logloss: 0.39674 |  0:00:09s
+epoch 1  | loss: 0.17088 | val_accuracy: 0.82072 | val_logloss: 0.56376 |  0:00:17s
+epoch 2  | loss: 0.09661 | val_accuracy: 0.95397 | val_logloss: 0.13639 |  0:00:26s
+epoch 3  | loss: 0.0564  | val_accuracy: 0.9708  | val_logloss: 0.08499 |  0:00:34s
+epoch 4  | loss: 0.03628 | val_accuracy: 0.97415 | val_logloss: 0.07707 |  0:00:43s
+epoch 5  | loss: 0.0328  | val_accuracy: 0.97833 | val_logloss: 0.0881  |  0:00:51s
+epoch 6  | loss: 0.02731 | val_accuracy: 0.97973 | val_logloss: 0.07044 |  0:01:00s
+epoch 7  | loss: 0.02269 | val_accuracy: 0.98187 | val_logloss: 0.06073 |  0:01:08s
+epoch 8  | loss: 0.02568 | val_accuracy: 0.98698 | val_logloss: 0.04295 |  0:01:17s
+epoch 9  | loss: 0.02641 | val_accuracy: 0.99098 | val_logloss: 0.04048 |  0:01:25s
+epoch 10 | loss: 0.02264 | val_accuracy: 0.992   | val_logloss: 0.03234 |  0:01:34s
+epoch 11 | loss: 0.01879 | val_accuracy: 0.99182 | val_logloss: 0.03373 |  0:01:43s
+epoch 12 | loss: 0.01607 | val_accuracy: 0.99182 | val_logloss: 0.03287 |  0:01:52s
+epoch 13 | loss: 0.01462 | val_accuracy: 0.99182 | val_logloss: 0.03183 |  0:02:00s
+epoch 14 | loss: 0.01316 | val_accuracy: 0.99284 | val_logloss: 0.03258 |  0:02:09s
+epoch 15 | loss: 0.01667 | val_accuracy: 0.99172 | val_logloss: 0.03799 |  0:02:18s
+epoch 16 | loss: 0.01597 | val_accuracy: 0.9868  | val_logloss: 0.05194 |  0:02:26s
+epoch 17 | loss: 0.01335 | val_accuracy: 0.99275 | val_logloss: 0.03559 |  0:02:35s
+epoch 18 | loss: 0.01508 | val_accuracy: 0.99172 | val_logloss: 0.03662 |  0:02:44s
+epoch 19 | loss: 0.01355 | val_accuracy: 0.9933  | val_logloss: 0.03365 |  0:02:52s
+epoch 20 | loss: 0.01118 | val_accuracy: 0.99256 | val_logloss: 0.03249 |  0:03:01s
+epoch 21 | loss: 0.01116 | val_accuracy: 0.99358 | val_logloss: 0.03127 |  0:03:10s
+epoch 22 | loss: 0.01094 | val_accuracy: 0.9934  | val_logloss: 0.02842 |  0:03:18s
+epoch 23 | loss: 0.01022 | val_accuracy: 0.99386 | val_logloss: 0.03219 |  0:03:27s
+epoch 24 | loss: 0.011   | val_accuracy: 0.99358 | val_logloss: 0.02779 |  0:03:36s
+epoch 25 | loss: 0.00972 | val_accuracy: 0.99312 | val_logloss: 0.03413 |  0:03:44s
+epoch 26 | loss: 0.00936 | val_accuracy: 0.99321 | val_logloss: 0.03185 |  0:03:53s
+epoch 27 | loss: 0.00934 | val_accuracy: 0.99414 | val_logloss: 0.02688 |  0:04:02s
+epoch 28 | loss: 0.00908 | val_accuracy: 0.99284 | val_logloss: 0.03244 |  0:04:11s
+epoch 29 | loss: 0.01118 | val_accuracy: 0.99442 | val_logloss: 0.02851 |  0:04:19s
+epoch 30 | loss: 0.00826 | val_accuracy: 0.99293 | val_logloss: 0.02957 |  0:04:28s
+epoch 31 | loss: 0.00813 | val_accuracy: 0.99442 | val_logloss: 0.02854 |  0:04:37s
+epoch 32 | loss: 0.00716 | val_accuracy: 0.99405 | val_logloss: 0.03053 |  0:04:45s
+epoch 33 | loss: 0.00684 | val_accuracy: 0.99405 | val_logloss: 0.03057 |  0:04:54s
+epoch 34 | loss: 0.00758 | val_accuracy: 0.99386 | val_logloss: 0.02754 |  0:05:02s
+epoch 35 | loss: 0.00637 | val_accuracy: 0.99349 | val_logloss: 0.02912 |  0:05:11s
+epoch 36 | loss: 0.00742 | val_accuracy: 0.99414 | val_logloss: 0.0269  |  0:05:20s
+epoch 37 | loss: 0.00657 | val_accuracy: 0.9934  | val_logloss: 0.02876 |  0:05:28s
+epoch 38 | loss: 0.00625 | val_accuracy: 0.99479 | val_logloss: 0.02331 |  0:05:37s
+epoch 39 | loss: 0.00675 | val_accuracy: 0.99377 | val_logloss: 0.02679 |  0:05:46s
+epoch 40 | loss: 0.00605 | val_accuracy: 0.99526 | val_logloss: 0.02374 |  0:05:54s
+epoch 41 | loss: 0.00491 | val_accuracy: 0.99414 | val_logloss: 0.03377 |  0:06:03s
+epoch 42 | loss: 0.00488 | val_accuracy: 0.99498 | val_logloss: 0.02861 |  0:06:12s
+epoch 43 | loss: 0.00647 | val_accuracy: 0.99358 | val_logloss: 0.04008 |  0:06:20s
+epoch 44 | loss: 0.0058  | val_accuracy: 0.99405 | val_logloss: 0.02848 |  0:06:29s
+epoch 45 | loss: 0.00666 | val_accuracy: 0.99396 | val_logloss: 0.03088 |  0:06:38s
+epoch 46 | loss: 0.00617 | val_accuracy: 0.99451 | val_logloss: 0.02946 |  0:06:46s
+epoch 47 | loss: 0.00505 | val_accuracy: 0.99405 | val_logloss: 0.02867 |  0:06:55s
+epoch 48 | loss: 0.00508 | val_accuracy: 0.99405 | val_logloss: 0.03124 |  0:07:04s
+epoch 49 | loss: 0.00638 | val_accuracy: 0.99312 | val_logloss: 0.03242 |  0:07:12s
+epoch 50 | loss: 0.00599 | val_accuracy: 0.99377 | val_logloss: 0.03226 |  0:07:21s
+epoch 51 | loss: 0.00519 | val_accuracy: 0.99386 | val_logloss: 0.03453 |  0:07:30s
+epoch 52 | loss: 0.00456 | val_accuracy: 0.99414 | val_logloss: 0.03518 |  0:07:38s
+epoch 53 | loss: 0.00548 | val_accuracy: 0.99228 | val_logloss: 0.03692 |  0:07:47s
+
+Early stopping occurred at epoch 53 with best_epoch = 38 and best_val_logloss = 0.02331
+/usr/local/lib/python3.12/dist-packages/pytorch_tabnet/callbacks.py:172: UserWarning: Best weights from best epoch are automatically used!
+  warnings.warn(wrn_msg)
+Successfully saved model at /kaggle/working/deepLearning/phase1/models/tabnet.zip
+[2026-08-26 07:46:43,459] INFO Saved tabnet_bodmas model to /kaggle/working/deepLearning/phase1/models/tabnet
+[2026-08-26 07:46:43,459] INFO TabNet model saved to /kaggle/working/deepLearning/phase1/models/tabnet
+[2026-08-26 07:46:43,459] INFO [4/5] Running Evaluation Protocols...
+[2026-08-26 07:46:46,103] INFO   Protocol 1 (Random Split): acc=0.9946, f1=0.9937, auc=0.9985
+[2026-08-26 07:46:46,291] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_random_cm.png
+[2026-08-26 07:46:46,469] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_random_roc.png
+[2026-08-26 07:46:46,479] INFO Family-Held-Out Split (gepys, benjamin, musecador, autoit): 130217 train, 4218 test (all malware)
+/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_ranking.py:379: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+  warnings.warn(
+[2026-08-26 07:46:47,357] INFO   Protocol 2 (Family-Held-Out): acc=0.9991, f1=0.9995, auc=nan
+[2026-08-26 07:46:47,459] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_family_cm.png
+[2026-08-26 07:46:47,563] INFO Temporal Split (cutoff=2020-06-01): 95537 train, 38898 test
+[2026-08-26 07:46:51,814] INFO   Protocol 3 (Temporal Split): acc=0.9981, f1=0.9979, auc=0.9996
+[2026-08-26 07:46:51,923] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_temporal_cm.png
+[2026-08-26 07:46:52,095] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_temporal_roc.png
+[2026-08-26 07:46:52,095] INFO   Protocol 4: Checking EMBER test partition for Cross-Dataset Generalization...
+[2026-08-26 07:46:52,101] WARNING   Protocol 4 (Cross-Dataset EMBER) skipped: EMBER test files not found: /kaggle/working/haruspex/backend/dataset/ember2018/X_test.dat, /kaggle/working/haruspex/backend/dataset/ember2018/y_test.dat
+[2026-08-26 07:46:52,101] INFO [5/5] Generating TabNet Feature Importances & Reports...
+[2026-08-26 07:46:52,395] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_feature_importance.png
+[2026-08-26 07:46:52,396] INFO Kaggle TabNet Training Finished Successfully! Artifacts saved to /kaggle/working/deepLearning/phase1

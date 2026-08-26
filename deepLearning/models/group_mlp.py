@@ -489,7 +489,7 @@ class GroupMLPDetector(MalwareDetector):
 
         with torch.no_grad():
             for i in range(0, len(X), batch_size):
-                bx = torch.as_tensor(X[i : i + batch_size], dtype=torch.float32, device=self.device)
+                bx = torch.as_tensor(np.array(X[i : i + batch_size], copy=True), dtype=torch.float32, device=self.device)
                 bin_logits, _, _, _, _ = self.net(bx)
                 prob = torch.sigmoid(bin_logits)
                 probas.append(prob.cpu().numpy())
@@ -507,7 +507,7 @@ class GroupMLPDetector(MalwareDetector):
 
         with torch.no_grad():
             for i in range(0, len(X), batch_size):
-                bx = torch.as_tensor(X[i : i + batch_size], dtype=torch.float32, device=self.device)
+                bx = torch.as_tensor(np.array(X[i : i + batch_size], copy=True), dtype=torch.float32, device=self.device)
                 _, _, _, gate_w, _ = self.net(bx)
                 gates.append(gate_w.cpu().numpy())
 
@@ -524,15 +524,28 @@ class GroupMLPDetector(MalwareDetector):
 
         with torch.no_grad():
             for i in range(0, len(X), batch_size):
-                bx = torch.as_tensor(X[i : i + batch_size], dtype=torch.float32, device=self.device)
+                bx = torch.as_tensor(np.array(X[i : i + batch_size], copy=True), dtype=torch.float32, device=self.device)
                 _, _, _, _, attn_w = self.net(bx)
                 attns.append(attn_w.cpu().numpy())
 
         return np.vstack(attns)
 
+    def get_gradient_saliency(self, X: np.ndarray) -> np.ndarray:
+        """Compute Gradient x Input feature attributions in milliseconds."""
+        if not self._fitted or self.net is None:
+            raise RuntimeError("Model must be fitted.")
+        self.net.eval()
+        x_flat = np.array(X, copy=True).ravel()
+        tx = torch.as_tensor(x_flat.reshape(1, -1), dtype=torch.float32, device=self.device).requires_grad_(True)
+        logits, _, _, _, _ = self.net(tx)
+        prob = torch.sigmoid(logits)
+        prob.backward()
+        assert tx.grad is not None
+        saliency = (tx.grad * tx).abs().detach().cpu().numpy().flatten()
+        return saliency
+
     def get_feature_importance(self) -> np.ndarray:
         """Return global feature importances by mapping group gate weights back to features."""
-        # Simple proxy: uniform weight if not fitted, or gate weight per feature
         return np.ones(NUM_FEATURES) / NUM_FEATURES
 
     def save(self, path: str) -> None:
