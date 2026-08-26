@@ -128,8 +128,25 @@ class TabNetHyperparameters:
     lr: float = 2e-2
 
 
+def _get_tabnet_params() -> TabNetHyperparameters:
+    import torch
+    is_cuda = torch.cuda.is_available()
+    return TabNetHyperparameters(
+        n_d=64 if is_cuda else 32,
+        n_a=64 if is_cuda else 32,
+        n_steps=5 if is_cuda else 3,
+        gamma=1.5 if is_cuda else 1.3,
+        lambda_sparse=1e-3,
+        batch_size_bodmas=1024 if is_cuda else 2048,
+        batch_size_ember=2048 if is_cuda else 4096,
+        max_epochs=100,
+        patience=15,
+        lr=2e-2,
+    )
+
+
 GROUP_MLP_PARAMS = GroupMLPHyperparameters()
-TABNET_PARAMS = TabNetHyperparameters()
+TABNET_PARAMS = _get_tabnet_params()
 
 # ---------------------------------------------------------------------------
 # PyTorch Device & Threading Helper

@@ -135,7 +135,7 @@ class TabNetDetector(MalwareDetector):
             max_epochs=self.max_epochs,
             patience=self.patience,
             batch_size=self.batch_size,
-            virtual_batch_size=min(128, self.batch_size),
+            virtual_batch_size=min(256, self.batch_size),
             num_workers=0,
             drop_last=False,
         )

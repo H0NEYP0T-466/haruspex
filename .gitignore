@@ -10,6 +10,10 @@ dataset/
 *.zip
 *.7z
 deepLearning/phase1/models/
+deepLearning/phase2/models/
+deepLearning/*/models/
+*.pth
+*.pt
 
 # --- Model & Output Artifacts ---
 outputs/

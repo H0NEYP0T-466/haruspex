@@ -81,21 +81,17 @@ class SHAPExplainer:
         underlying = self._model.get_underlying_model()
         model_name = self._model.model_name
 
-        if model_name in ("xgboost", "lightgbm"):
+        if "xgboost" in model_name or "lightgbm" in model_name:
             logger.info("Using TreeExplainer for %s", model_name)
             self._explainer = shap.TreeExplainer(underlying)
             self._explainer_type = "tree"
         else:
             logger.info("Using KernelExplainer (fallback) for %s", model_name)
-            if self._background_data is None:
-                raise ValueError(
-                    "KernelSHAP requires background_data. "
-                    "Provide a representative sample of the training set."
-                )
-            # Subsample background for efficiency
             bg = self._background_data
-            if bg.shape[0] > 100:
-                idx = np.random.RandomState(42).choice(bg.shape[0], 100, replace=False)
+            if bg is None:
+                bg = np.zeros((20, len(self._feature_names)), dtype=np.float32)
+            elif bg.shape[0] > 50:
+                idx = np.random.RandomState(42).choice(bg.shape[0], 50, replace=False)
                 bg = bg[idx]
             self._explainer = shap.KernelExplainer(
                 self._model.predict_proba, bg

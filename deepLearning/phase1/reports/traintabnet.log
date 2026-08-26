@@ -1,0 +1,10 @@
+[2026-08-26 12:05:15,517] INFO ========================================================================
+[2026-08-26 12:05:15,517] INFO   HARUSPEX Phase 1 — Train TabNet on BODMAS
+[2026-08-26 12:05:15,517] INFO ========================================================================
+[2026-08-26 12:05:15,517] INFO [1/5] Loading BODMAS dataset...
+[2026-08-26 12:05:15,517] INFO Loading BODMAS features X and y from .dat memmaps: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_X.dat
+[2026-08-26 12:05:16,126] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-26 12:05:16,130] INFO [2/5] Performing Random Split (80/20)...
+[2026-08-26 12:05:16,198] INFO Random Split (seed=42): 107548 train, 26887 test
+[2026-08-26 12:05:16,601] INFO [3/5] Fitting TabNet Model on BODMAS Train split...
+[2026-08-26 12:05:16,609] INFO Training tabnet_bodmas on device: cpu (96794 samples)

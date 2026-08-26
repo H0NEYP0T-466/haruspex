@@ -120,6 +120,10 @@ class LightGBMDetector(MalwareDetector):
         self._fitted = True
         logger.info("LightGBM model loaded from %s", path)
 
-    def get_underlying_model(self) -> LGBMClassifier:
-        """Return the underlying LGBMClassifier for SHAP/LIME."""
+    def get_underlying_model(self) -> Any:
+        """Return the underlying LightGBM Booster for SHAP/LIME compatibility."""
+        if hasattr(self._model, "_Booster") and self._model._Booster is not None:
+            return self._model._Booster
+        if hasattr(self._model, "booster_") and self._model.booster_ is not None:
+            return self._model.booster_
         return self._model

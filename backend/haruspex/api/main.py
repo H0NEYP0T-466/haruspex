@@ -10,8 +10,13 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Ensure backend/ is on the path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+# Ensure backend/ and project root (for deepLearning) are on sys.path
+_backend_dir = Path(__file__).resolve().parent.parent.parent
+_project_root = _backend_dir.parent
+
+for p in [_backend_dir, _project_root]:
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
 
 from haruspex.api.routes.explain import router as explain_router
 from haruspex.api.routes.predict import router as predict_router
