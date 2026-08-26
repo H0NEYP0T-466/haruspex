@@ -1,0 +1,46 @@
+󰣇 HARUSPEX/deepLearning/phase1   master  !? ❯ python trainMLP.py                                                                 venv 3.14.6  10:42 
+[2026-08-26 10:42:09,740] INFO ========================================================================
+[2026-08-26 10:42:09,740] INFO   HARUSPEX Phase 1 — Train Group-wise Residual MLP on BODMAS
+[2026-08-26 10:42:09,740] INFO ========================================================================
+[2026-08-26 10:42:09,741] INFO [1/5] Loading BODMAS dataset...
+[2026-08-26 10:42:09,741] INFO Loading BODMAS features X and y from .dat memmaps: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_X.dat
+[2026-08-26 10:42:10,515] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-26 10:42:10,518] INFO [2/5] Performing Random Split (80/20)...
+[2026-08-26 10:42:10,597] INFO Random Split (seed=42): 107548 train, 26887 test
+[2026-08-26 10:42:11,101] INFO [3/5] Fitting Group-wise Residual MLP Model on BODMAS...
+[2026-08-26 10:42:13,100] INFO Training group_mlp_bodmas on device: cpu (96794 samples)
+[2026-08-26 10:44:14,588] INFO Epoch   1/100: train_loss=0.4894, train_acc=0.9675, val_loss=0.3120, val_acc=0.9694
+[2026-08-26 11:01:32,600] INFO Epoch  10/100: train_loss=0.0770, train_acc=0.9984, val_loss=0.1368, val_acc=0.9948
+[2026-08-26 11:23:19,549] INFO Epoch  20/100: train_loss=0.0543, train_acc=0.9994, val_loss=0.1290, val_acc=0.9954
+[2026-08-26 11:41:26,384] INFO Epoch  30/100: train_loss=0.0450, train_acc=0.9998, val_loss=0.1348, val_acc=0.9962
+[2026-08-26 11:50:33,854] INFO Early stopping triggered at epoch 35
+[2026-08-26 11:50:33,907] INFO Saved group_mlp_bodmas checkpoint to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/models/mlp.pth
+[2026-08-26 11:50:33,907] INFO [4/5] Running Evaluation Protocols...
+[2026-08-26 11:50:48,950] INFO   Protocol 1 (Random Split): acc=0.9955, f1=0.9947, auc=0.9993
+[2026-08-26 11:50:49,339] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_random_cm.png
+[2026-08-26 11:50:49,588] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_random_roc.png
+[2026-08-26 11:50:49,595] INFO Family-Held-Out Split (gepys, benjamin, musecador, autoit): 130217 train, 4218 test (all malware)
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_ranking.py:469: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
+  warnings.warn(
+[2026-08-26 11:50:53,973] INFO   Protocol 2 (Family-Held-Out): acc=1.0000, f1=1.0000, auc=nan
+/home/honeypot/Projects/FAST_API/HARUSPEX/backend/venv/lib/python3.14/site-packages/sklearn/metrics/_classification.py:614: UserWarning: A single label was found in 'y_true' and 'y_pred'. For the confusion matrix to have the correct shape, use the 'labels' parameter to pass all known labels.
+  warnings.warn(
+[2026-08-26 11:50:54,202] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_family_cm.png
+[2026-08-26 11:50:54,379] INFO Temporal Split (cutoff=2020-06-01): 95537 train, 38898 test
+[2026-08-26 11:51:18,579] INFO   Protocol 3 (Temporal Split): acc=0.9995, f1=0.9994, auc=0.9999
+[2026-08-26 11:51:18,781] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_temporal_cm.png
+[2026-08-26 11:51:19,052] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_temporal_roc.png
+[2026-08-26 11:51:19,053] INFO   Protocol 4: Loading EMBER test partition for Cross-Dataset Generalization...
+[2026-08-26 11:51:19,053] INFO Loading EMBER (test partition) from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/ember2018/X_test.dat
+[2026-08-26 11:51:34,170] INFO EMBER (test) dataset loaded: 200000 labeled samples (100000 benign, 100000 malware)
+[2026-08-26 11:53:30,760] INFO   Protocol 4 (Cross-Dataset EMBER): acc=0.8135, f1=0.7811, auc=0.8715
+[2026-08-26 11:53:31,029] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_cross_cm.png
+[2026-08-26 11:53:31,415] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_cross_roc.png
+[2026-08-26 11:53:31,416] INFO [5/5] Generating Group-MLP Visualizations (Gating Distributions & Attention Heatmaps)...
+[2026-08-26 11:53:33,968] INFO Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-08-26 11:53:34,001] INFO Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-08-26 11:53:34,550] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_gate_distribution.png
+[2026-08-26 11:53:36,245] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_attention_heatmap.png
+[2026-08-26 11:53:37,753] INFO Saved plot to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/plots/mlp_family_gate_profiles.png
+[2026-08-26 11:53:37,755] INFO Phase 1 Group-MLP Training & Evaluation Complete! Results saved to /home/honeypot/Projects/FAST_API/HARUSPEX/deepLearning/phase1/reports
+󰣇 HARUSPEX/deepLearning/phase1   master  !? ❯  

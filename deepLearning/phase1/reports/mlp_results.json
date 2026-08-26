@@ -1,0 +1,35 @@
+{
+  "model_name": "group_mlp_bodmas",
+  "training_dataset": "BODMAS",
+  "eval_protocols": {
+    "random_split": {
+      "accuracy": 0.9954996838620895,
+      "precision": 0.9951091703056768,
+      "recall": 0.9943276027576577,
+      "f1": 0.9947182330088612,
+      "auc": 0.999268454658709
+    },
+    "family_held_out": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "auc": NaN
+    },
+    "temporal_split": {
+      "accuracy": 0.9994858347472878,
+      "precision": 0.9996591683708248,
+      "recall": 0.9992050874403816,
+      "f1": 0.9994320763289414,
+      "auc": 0.9998794950074721
+    },
+    "cross_dataset": {
+      "accuracy": 0.813545,
+      "precision": 0.9458260461545024,
+      "recall": 0.66519,
+      "f1": 0.7810648803198516,
+      "auc": 0.8715145187
+    }
+  },
+  "elapsed_seconds": 4288.012827634811
+}

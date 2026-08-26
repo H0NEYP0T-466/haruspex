@@ -1,0 +1,32 @@
+========================================================================
+  HARUSPEX Phase 1 — Group-wise Residual MLP Results (BODMAS Trained)
+========================================================================
+
+Protocol: random_split
+  Accuracy:  0.9955
+  Precision: 0.9951
+  Recall:    0.9943
+  F1-Score:  0.9947
+  AUC-ROC:   0.9993
+
+Protocol: family_held_out
+  Accuracy:  1.0000
+  Precision: 1.0000
+  Recall:    1.0000
+  F1-Score:  1.0000
+  AUC-ROC:   nan
+
+Protocol: temporal_split
+  Accuracy:  0.9995
+  Precision: 0.9997
+  Recall:    0.9992
+  F1-Score:  0.9994
+  AUC-ROC:   0.9999
+
+Protocol: cross_dataset
+  Accuracy:  0.8135
+  Precision: 0.9458
+  Recall:    0.6652
+  F1-Score:  0.7811
+  AUC-ROC:   0.8715
+
