@@ -152,22 +152,36 @@ class TabNetDetector(MalwareDetector):
             "best_epoch": self.model.best_cost if hasattr(self.model, "best_cost") else self.max_epochs,
         }
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        """Predict binary labels (0 = benign, 1 = malware)."""
+    def predict(self, X: np.ndarray, batch_size: int = 4096) -> np.ndarray:
+        """Predict binary labels (0 = benign, 1 = malware) in memory-safe batches."""
         if not self._fitted or self.model is None:
             raise RuntimeError("Model must be fitted before predicting.")
-        preds = self.model.predict(X)
-        return preds.astype(np.int32)
+        if len(X) <= batch_size:
+            preds = self.model.predict(X)
+            return preds.astype(np.int32)
+        preds_list = []
+        for i in range(0, len(X), batch_size):
+            bx = X[i : i + batch_size]
+            p = self.model.predict(bx)
+            preds_list.append(p.astype(np.int32))
+        return np.concatenate(preds_list, axis=0)
 
-    def predict_proba(self, X: np.ndarray) -> np.ndarray:
-        """Predict positive class probabilities (malware)."""
+    def predict_proba(self, X: np.ndarray, batch_size: int = 4096) -> np.ndarray:
+        """Predict positive class probabilities (malware) in memory-safe batches."""
         if not self._fitted or self.model is None:
             raise RuntimeError("Model must be fitted before predicting.")
-        probas = self.model.predict_proba(X)
-        # Handle 2D output (n_samples, 2)
-        if probas.ndim == 2 and probas.shape[1] == 2:
-            return probas[:, 1].astype(np.float32)
-        return probas.astype(np.float32)
+        if len(X) <= batch_size:
+            probas = self.model.predict_proba(X)
+            if probas.ndim == 2 and probas.shape[1] == 2:
+                return probas[:, 1].astype(np.float32)
+            return probas.astype(np.float32)
+        probas_list = []
+        for i in range(0, len(X), batch_size):
+            bx = X[i : i + batch_size]
+            p = self.model.predict_proba(bx)
+            p_pos = p[:, 1].astype(np.float32) if p.ndim == 2 and p.shape[1] == 2 else p.astype(np.float32)
+            probas_list.append(p_pos)
+        return np.concatenate(probas_list, axis=0)
 
     def get_feature_importance(self) -> np.ndarray:
         """Return feature importances from TabNet's attention masks."""

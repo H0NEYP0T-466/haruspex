@@ -175,15 +175,14 @@ def main():
     )
     tabnet.fit(X_tr, y_tr, X_val, y_val)
 
-    # Save model zip checkpoint
-    model_save_path = str(models_dir / "ember_tabnet")
-    tabnet.save(model_save_path)
-    logger.info("TabNet EMBER model saved to %s", model_save_path)
+    # Free training split memory before test evaluation
+    del X_tr, y_tr, X_val, y_val
+    gc.collect()
 
     # 3. Evaluate EMBER Test Partition
     logger.info("[3/4] Evaluating on EMBER 2018 Test Partition...")
-    test_preds = tabnet.predict(ember_test.X)
-    test_proba = tabnet.predict_proba(ember_test.X)
+    test_preds = tabnet.predict(ember_test.X, batch_size=4096)
+    test_proba = tabnet.predict_proba(ember_test.X, batch_size=4096)
     ember_results = evaluate_metrics(ember_test.y, test_preds, test_proba)
     logger.info("  EMBER 2018 Test Performance: acc=%.4f, f1=%.4f, auc=%.4f",
                 ember_results["accuracy"], ember_results["f1"], ember_results["auc"])
