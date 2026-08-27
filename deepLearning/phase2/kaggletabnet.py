@@ -210,7 +210,7 @@ def main():
 
     # Generate Feature Importance
     logger.info("Generating TabNet Feature Importances...")
-    importance = tabnet.get_feature_importance()
+    importance = tabnet.get_feature_importance(ember_test.X)
     plot_feature_importance(importance, ember_train.feature_names, top_k=20, title="TabNet Feature Importance (EMBER 2018)", save_path=plots_dir / "ember_tabnet_feature_importance.png")
 
     report_dict = {

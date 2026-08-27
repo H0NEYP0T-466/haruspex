@@ -240,7 +240,7 @@ def main():
 
     # 4. Feature Importance & Reports
     logger.info("[5/5] Generating TabNet Feature Importances & Reports...")
-    importance = tabnet.get_feature_importance()
+    importance = tabnet.get_feature_importance(bodmas.X)
     plot_feature_importance(importance, bodmas.feature_names, top_k=20, title="TabNet Feature Importance (BODMAS)", save_path=plots_dir / "tabnet_feature_importance.png")
 
     report_dict = {

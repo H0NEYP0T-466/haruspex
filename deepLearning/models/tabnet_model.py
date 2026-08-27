@@ -186,10 +186,20 @@ class TabNetDetector(MalwareDetector):
             probas_list.append(p_pos)
         return np.concatenate(probas_list, axis=0)
 
-    def get_feature_importance(self) -> np.ndarray:
-        """Return feature importances from TabNet's attention masks."""
+    def get_feature_importance(self, X_sample: Optional[np.ndarray] = None) -> np.ndarray:
+        """Return feature importances safely without RAM spikes."""
         if not self._fitted or self.model is None:
             return np.ones(NUM_FEATURES) / NUM_FEATURES
+        if X_sample is not None and hasattr(self.model, "explain"):
+            try:
+                # Sample up to 2000 items to prevent RAM explosion
+                subset = X_sample[:2000] if len(X_sample) > 2000 else X_sample
+                masks, _ = self.model.explain(subset)
+                imp = np.mean(masks, axis=0)
+                norm = np.sum(imp) + 1e-9
+                return imp / norm
+            except Exception as e:
+                logger.warning("Subset feature importance calculation failed: %s", e)
         if hasattr(self.model, "feature_importances_"):
             return self.model.feature_importances_
         return np.ones(NUM_FEATURES) / NUM_FEATURES
