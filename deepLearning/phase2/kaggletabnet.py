@@ -10,6 +10,7 @@ Instructions for Kaggle:
 
 from __future__ import annotations
 
+import gc
 import os
 import sys
 import time
@@ -175,8 +176,12 @@ def main():
     )
     tabnet.fit(X_tr, y_tr, X_val, y_val)
 
-    # Free training split memory before test evaluation
-    del X_tr, y_tr, X_val, y_val
+    # Free training split memory before test evaluation. Note X_tr/X_val are numpy
+    # *views* into ember_train.X, so the full ~5.7GB train buffer is only actually
+    # released once ember_train itself is also dropped (done below, after we've
+    # captured the only field we still need from it: feature_names).
+    ember_feature_names = ember_train.feature_names
+    del X_tr, y_tr, X_val, y_val, ember_train
     gc.collect()
 
     # 3. Evaluate EMBER Test Partition
@@ -211,7 +216,7 @@ def main():
     # Generate Feature Importance
     logger.info("Generating TabNet Feature Importances...")
     importance = tabnet.get_feature_importance(ember_test.X)
-    plot_feature_importance(importance, ember_train.feature_names, top_k=20, title="TabNet Feature Importance (EMBER 2018)", save_path=plots_dir / "ember_tabnet_feature_importance.png")
+    plot_feature_importance(importance, ember_feature_names, top_k=20, title="TabNet Feature Importance (EMBER 2018)", save_path=plots_dir / "ember_tabnet_feature_importance.png")
 
     report_dict = {
         "model_name": tabnet.model_name,

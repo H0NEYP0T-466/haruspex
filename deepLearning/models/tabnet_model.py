@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 
 import numpy as np
 import torch
@@ -138,6 +138,14 @@ class TabNetDetector(MalwareDetector):
             virtual_batch_size=min(256, self.batch_size),
             num_workers=0,
             drop_last=False,
+            # IMPORTANT: pytorch-tabnet's internal compute_importance=True (default)
+            # runs explain() over the FULL X_train after training finishes, using an
+            # O(n_batches^2) np.vstack accumulation per decision step (n_steps=5 on
+            # GPU). On large datasets (e.g. 500K+ rows) this causes a massive RAM
+            # spike right after early stopping and can OOM-kill the process/notebook.
+            # We disable it here and compute importances ourselves afterwards on a
+            # small, safe subsample via get_feature_importance().
+            compute_importance=False,
         )
 
         self._fitted = True
