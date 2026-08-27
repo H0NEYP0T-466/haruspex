@@ -163,10 +163,10 @@ def main():
     X_tr, y_tr = ember_train.X[:-n_val], ember_train.y[:-n_val]
     X_val, y_val = ember_train.X[-n_val:], ember_train.y[-n_val:]
 
-    batch_size = 2048 if torch.cuda.is_available() else 1024
+    batch_size = 8192 if torch.cuda.is_available() else 1024
 
     # 2. Fit TabNet Classifier
-    logger.info("[2/4] Fitting TabNet Model on EMBER...")
+    logger.info("[2/4] Fitting TabNet Model on EMBER (batch_size=%d)...", batch_size)
     tabnet = TabNetDetector(
         model_name_suffix="ember",
         max_epochs=100,

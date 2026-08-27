@@ -142,14 +142,17 @@ class TabNetDetector(MalwareDetector):
 
         self._fitted = True
 
-        # Extract training metrics
-        test_pred = self.predict(X_val if X_val is not None else X_train)
-        target = y_val if y_val is not None else y_train
-        acc = float(np.mean(test_pred == target))
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        best_cost = self.model.best_cost if hasattr(self.model, "best_cost") else self.max_epochs
+        best_acc = 0.0
+        if hasattr(self.model, "history") and "val_accuracy" in self.model.history:
+            best_acc = float(self.model.history["val_accuracy"][-1])
 
         return {
-            "train_accuracy": acc,
-            "best_epoch": self.model.best_cost if hasattr(self.model, "best_cost") else self.max_epochs,
+            "train_accuracy": best_acc,
+            "best_epoch": best_cost,
         }
 
     def predict(self, X: np.ndarray, batch_size: int = 4096) -> np.ndarray:
