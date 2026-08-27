@@ -1,0 +1,20 @@
+{
+  "model_name": "group_mlp_ember",
+  "training_dataset": "EMBER 2018",
+  "device_used": "cuda",
+  "ember_test": {
+    "accuracy": 0.937125,
+    "precision": 0.9560178182083728,
+    "recall": 0.91641,
+    "f1": 0.9357949932859178,
+    "auc": 0.9753042706999999
+  },
+  "cross_dataset_bodmas": {
+    "accuracy": 0.9753263659017369,
+    "precision": 0.9692422714469521,
+    "recall": 0.9729809924423577,
+    "f1": 0.9711080334822789,
+    "auc": 0.9939863730773016
+  },
+  "elapsed_seconds": 628.6198363304138
+}

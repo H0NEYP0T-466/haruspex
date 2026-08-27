@@ -1,0 +1,56 @@
+[2026-08-27 04:11:41,550] INFO ========================================================================
+[2026-08-27 04:11:41,550] INFO   HARUSPEX Kaggle Phase 2 — Group-MLP Training on EMBER 2018 (GPU T4)
+[2026-08-27 04:11:41,550] INFO ========================================================================
+[2026-08-27 04:11:41,551] INFO PyTorch Execution Device: cuda (CUDA Available: True)
+[2026-08-27 04:11:41,597] INFO GPU Model: Tesla T4
+[2026-08-27 04:11:41,597] INFO [1/4] Loading EMBER dataset (Train & Test partitions)...
+[2026-08-27 04:11:41,644] INFO Found EMBER dataset at: /kaggle/input/datasets/h0neyp0t/ember-2018
+[2026-08-27 04:11:41,646] INFO Loading EMBER (train partition) from /kaggle/input/datasets/h0neyp0t/ember-2018/X_train.dat
+[2026-08-27 04:13:12,005] INFO EMBER (train) dataset loaded: 600000 labeled samples (300000 benign, 300000 malware)
+[2026-08-27 04:13:12,096] INFO Loading EMBER (test partition) from /kaggle/input/datasets/h0neyp0t/ember-2018/X_test.dat
+[2026-08-27 04:13:12,851] INFO EMBER (test) dataset loaded: 200000 labeled samples (100000 benign, 100000 malware)
+[2026-08-27 04:13:12,870] INFO [2/4] Fitting Group-wise Residual MLP Model on EMBER...
+[2026-08-27 04:13:14,500] INFO Training group_mlp_ember on device: cuda (540000 samples)
+[2026-08-27 04:13:38,104] INFO Epoch   1/100: train_loss=0.2481, train_acc=0.9052, val_loss=0.1486, val_acc=0.9369
+[2026-08-27 04:14:01,233] INFO Epoch   2/100: train_loss=0.1236, train_acc=0.9509, val_loss=0.1367, val_acc=0.9444
+[2026-08-27 04:14:24,728] INFO Epoch   3/100: train_loss=0.1057, train_acc=0.9584, val_loss=0.1337, val_acc=0.9478
+[2026-08-27 04:14:48,287] INFO Epoch   4/100: train_loss=0.0944, train_acc=0.9632, val_loss=0.1502, val_acc=0.9452
+[2026-08-27 04:15:11,967] INFO Epoch   5/100: train_loss=0.0874, train_acc=0.9660, val_loss=0.1342, val_acc=0.9525
+[2026-08-27 04:15:36,107] INFO Epoch   6/100: train_loss=0.0817, train_acc=0.9681, val_loss=0.1259, val_acc=0.9551
+[2026-08-27 04:15:59,906] INFO Epoch   7/100: train_loss=0.0768, train_acc=0.9702, val_loss=0.1206, val_acc=0.9564
+[2026-08-27 04:16:23,619] INFO Epoch   8/100: train_loss=0.0727, train_acc=0.9720, val_loss=0.1367, val_acc=0.9550
+[2026-08-27 04:16:47,449] INFO Epoch   9/100: train_loss=0.0699, train_acc=0.9730, val_loss=0.1324, val_acc=0.9548
+[2026-08-27 04:17:11,370] INFO Epoch  10/100: train_loss=0.0667, train_acc=0.9741, val_loss=0.1277, val_acc=0.9601
+[2026-08-27 04:17:35,037] INFO Epoch  11/100: train_loss=0.0642, train_acc=0.9749, val_loss=0.1383, val_acc=0.9589
+[2026-08-27 04:17:58,869] INFO Epoch  12/100: train_loss=0.0543, train_acc=0.9794, val_loss=0.1436, val_acc=0.9602
+[2026-08-27 04:18:22,688] INFO Epoch  13/100: train_loss=0.0522, train_acc=0.9797, val_loss=0.1520, val_acc=0.9595
+[2026-08-27 04:18:46,184] INFO Epoch  14/100: train_loss=0.0506, train_acc=0.9804, val_loss=0.1448, val_acc=0.9630
+[2026-08-27 04:19:09,864] INFO Epoch  15/100: train_loss=0.0499, train_acc=0.9807, val_loss=0.1576, val_acc=0.9612
+[2026-08-27 04:19:33,481] INFO Epoch  16/100: train_loss=0.0437, train_acc=0.9831, val_loss=0.1593, val_acc=0.9634
+[2026-08-27 04:19:57,304] INFO Epoch  17/100: train_loss=0.0423, train_acc=0.9836, val_loss=0.1589, val_acc=0.9643
+[2026-08-27 04:20:21,070] INFO Epoch  18/100: train_loss=0.0417, train_acc=0.9838, val_loss=0.1772, val_acc=0.9625
+[2026-08-27 04:20:44,816] INFO Epoch  19/100: train_loss=0.0408, train_acc=0.9842, val_loss=0.1779, val_acc=0.9635
+[2026-08-27 04:21:08,419] INFO Epoch  20/100: train_loss=0.0376, train_acc=0.9854, val_loss=0.1923, val_acc=0.9640
+[2026-08-27 04:21:32,120] INFO Epoch  21/100: train_loss=0.0366, train_acc=0.9858, val_loss=0.1908, val_acc=0.9650
+[2026-08-27 04:21:55,909] INFO Early stopping triggered at epoch 22
+[2026-08-27 04:21:55,960] INFO Saved group_mlp_ember checkpoint to /kaggle/working/deepLearning/phase2/models/ember_mlp.pth
+[2026-08-27 04:21:55,960] INFO Group-MLP EMBER model saved to /kaggle/working/deepLearning/phase2/models/ember_mlp.pth
+[2026-08-27 04:21:55,961] INFO [3/4] Evaluating on EMBER 2018 Test Partition...
+[2026-08-27 04:22:00,232] INFO   EMBER 2018 Test Performance: acc=0.9371, f1=0.9358, auc=0.9753
+[2026-08-27 04:22:00,354] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_mlp_test_cm.png
+[2026-08-27 04:22:00,557] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_mlp_test_roc.png
+[2026-08-27 04:22:00,558] INFO [4/4] Evaluating Cross-Dataset Generalization on BODMAS...
+[2026-08-27 04:22:00,566] INFO Found BODMAS dataset at: /kaggle/input/datasets/h0neyp0t/bodmas
+[2026-08-27 04:22:00,566] INFO Loading BODMAS from npz: /kaggle/input/datasets/h0neyp0t/bodmas/bodmas.npz
+[2026-08-27 04:22:05,992] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-27 04:22:08,957] INFO   Cross-Dataset BODMAS Generalization: acc=0.9753, f1=0.9711, auc=0.9940
+[2026-08-27 04:22:09,063] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_mlp_cross_bodmas_cm.png
+[2026-08-27 04:22:09,251] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_mlp_cross_bodmas_roc.png
+[2026-08-27 04:22:09,251] INFO Generating Group-MLP Visualizations...
+[2026-08-27 04:22:09,335] INFO Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-08-27 04:22:09,351] INFO Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-08-27 04:22:09,738] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_mlp_gate_distribution.png
+[2026-08-27 04:22:10,170] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_mlp_attention_heatmap.png
+[2026-08-27 04:22:10,171] INFO Kaggle Group-MLP Phase 2 Training Finished Successfully! Artifacts saved to /kaggle/working/deepLearning/phase2
+
+

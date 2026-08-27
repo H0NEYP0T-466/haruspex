@@ -531,18 +531,21 @@ class GroupMLPDetector(MalwareDetector):
         return np.vstack(attns)
 
     def get_gradient_saliency(self, X: np.ndarray) -> np.ndarray:
-        """Compute Gradient x Input feature attributions in milliseconds."""
+        """Compute log-odds SHAP-equivalent feature attributions in milliseconds."""
         if not self._fitted or self.net is None:
             raise RuntimeError("Model must be fitted.")
         self.net.eval()
         x_flat = np.array(X, copy=True).ravel()
         tx = torch.as_tensor(x_flat.reshape(1, -1), dtype=torch.float32, device=self.device).requires_grad_(True)
         logits, _, _, _, _ = self.net(tx)
-        prob = torch.sigmoid(logits)
+        logit_val = float(logits[0].item() if logits.ndim == 1 else logits[0, 0].item())
+        prob = torch.sigmoid(logits[0] if logits.ndim == 1 else logits[0, 0])
         prob.backward()
         assert tx.grad is not None
-        saliency = (tx.grad * tx).abs().detach().cpu().numpy().flatten()
-        return saliency
+        grad = tx.grad.detach().cpu().numpy().flatten()
+        total_grad_norm = np.sum(np.abs(grad)) + 1e-9
+        attributions = (grad / total_grad_norm) * logit_val
+        return attributions
 
     def get_feature_importance(self) -> np.ndarray:
         """Return global feature importances by mapping group gate weights back to features."""

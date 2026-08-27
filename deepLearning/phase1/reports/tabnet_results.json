@@ -1,0 +1,36 @@
+{
+  "model_name": "tabnet_bodmas",
+  "training_dataset": "BODMAS",
+  "device_used": "cuda",
+  "eval_protocols": {
+    "random_split": {
+      "accuracy": 0.9946442518689329,
+      "precision": 0.9948394996938686,
+      "recall": 0.992582249760014,
+      "f1": 0.9937095928708719,
+      "auc": 0.998469775787302
+    },
+    "family_held_out": {
+      "accuracy": 0.9990516832622096,
+      "precision": 1.0,
+      "recall": 0.9990516832622096,
+      "f1": 0.9995256166982922,
+      "auc": NaN
+    },
+    "temporal_split": {
+      "accuracy": 0.9980975885649648,
+      "precision": 0.9981820247699125,
+      "recall": 0.9976152623211447,
+      "f1": 0.9978985630715057,
+      "auc": 0.9996182643721622
+    },
+    "cross_dataset": {
+      "accuracy": 0.80721,
+      "precision": 0.9114566591663988,
+      "recall": 0.68053,
+      "f1": 0.7792447212934549,
+      "auc": 0.8619987564499999
+    }
+  },
+  "elapsed_seconds": 682.4745976924896
+}

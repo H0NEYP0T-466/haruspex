@@ -1,0 +1,11 @@
+========================================================================
+  HARUSPEX Kaggle Phase 2 — Group-MLP (EMBER 2018 Primary)
+========================================================================
+
+EMBER 2018 Test Accuracy:  0.9371
+EMBER 2018 Test F1-Score:  0.9358
+EMBER 2018 Test AUC-ROC:   0.9753
+
+BODMAS Cross-Dataset Acc: 0.9753
+BODMAS Cross-Dataset F1:  0.9711
+BODMAS Cross-Dataset AUC: 0.9940

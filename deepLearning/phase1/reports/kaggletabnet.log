@@ -1,0 +1,36 @@
+[2026-08-27 03:52:29,668] INFO ========================================================================
+[2026-08-27 03:52:29,668] INFO   HARUSPEX Kaggle Pipeline — TabNet Training on GPU T4 (BODMAS)
+[2026-08-27 03:52:29,668] INFO ========================================================================
+[2026-08-27 03:52:29,668] INFO PyTorch Execution Device: cuda (CUDA Available: True)
+[2026-08-27 03:52:29,713] INFO GPU Model: Tesla T4
+[2026-08-27 03:52:29,713] INFO [1/5] Loading BODMAS dataset...
+[2026-08-27 03:52:29,738] INFO Found BODMAS dataset at: /kaggle/input/datasets/h0neyp0t/bodmas
+[2026-08-27 03:52:29,738] INFO Loading BODMAS from npz: /kaggle/input/datasets/h0neyp0t/bodmas/bodmas.npz
+[2026-08-27 03:52:38,162] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-27 03:52:38,163] INFO [2/5] Performing Random Split (80/20)...
+[2026-08-27 03:52:38,216] INFO Random Split (seed=42): 107548 train, 26887 test
+[2026-08-27 03:52:38,670] INFO [3/5] Fitting TabNet Model on GPU T4...
+[2026-08-27 03:52:38,674] INFO Training tabnet_bodmas on device: cuda (96794 samples)
+[2026-08-27 04:03:03,100] INFO Saved tabnet_bodmas model to /kaggle/working/deepLearning/phase1/models/tabnet
+[2026-08-27 04:03:03,100] INFO TabNet model saved to /kaggle/working/deepLearning/phase1/models/tabnet
+[2026-08-27 04:03:03,101] INFO [4/5] Running Evaluation Protocols...
+[2026-08-27 04:03:05,871] INFO   Protocol 1 (Random Split): acc=0.9946, f1=0.9937, auc=0.9985
+[2026-08-27 04:03:06,041] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_random_cm.png
+[2026-08-27 04:03:06,218] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_random_roc.png
+[2026-08-27 04:03:06,224] INFO Family-Held-Out Split (gepys, benjamin, musecador, autoit): 130217 train, 4218 test (all malware)
+[2026-08-27 04:03:07,100] INFO   Protocol 2 (Family-Held-Out): acc=0.9991, f1=0.9995, auc=nan
+[2026-08-27 04:03:07,206] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_family_cm.png
+[2026-08-27 04:03:07,303] INFO Temporal Split (cutoff=2020-06-01): 95537 train, 38898 test
+[2026-08-27 04:03:11,514] INFO   Protocol 3 (Temporal Split): acc=0.9981, f1=0.9979, auc=0.9996
+[2026-08-27 04:03:11,616] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_temporal_cm.png
+[2026-08-27 04:03:11,788] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_temporal_roc.png
+[2026-08-27 04:03:11,788] INFO   Protocol 4: Checking EMBER test partition for Cross-Dataset Generalization...
+[2026-08-27 04:03:11,802] INFO Found EMBER dataset at: /kaggle/input/datasets/h0neyp0t/ember-2018
+[2026-08-27 04:03:11,803] INFO Loading EMBER (test partition) from /kaggle/input/datasets/h0neyp0t/ember-2018/X_test.dat
+[2026-08-27 04:03:31,515] INFO EMBER (test) dataset loaded: 200000 labeled samples (100000 benign, 100000 malware)
+[2026-08-27 04:03:51,511] INFO   Protocol 4 (Cross-Dataset EMBER): acc=0.8072, f1=0.7792, auc=0.8620
+[2026-08-27 04:03:51,623] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_cross_cm.png
+[2026-08-27 04:03:51,846] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_cross_roc.png
+[2026-08-27 04:03:51,846] INFO [5/5] Generating TabNet Feature Importances & Reports...
+[2026-08-27 04:03:52,142] INFO Saved plot to /kaggle/working/deepLearning/phase1/plots/tabnet_feature_importance.png
+[2026-08-27 04:03:52,143] INFO Kaggle TabNet Training Finished Successfully! Artifacts saved to /kaggle/working/deepLearning/phase1

@@ -1,0 +1,32 @@
+========================================================================
+  HARUSPEX Kaggle Phase 1 — TabNet Results (GPU Accelerated)
+========================================================================
+
+Protocol: random_split
+  Accuracy:  0.9946
+  Precision: 0.9948
+  Recall:    0.9926
+  F1-Score:  0.9937
+  AUC-ROC:   0.9985
+
+Protocol: family_held_out
+  Accuracy:  0.9991
+  Precision: 1.0000
+  Recall:    0.9991
+  F1-Score:  0.9995
+  AUC-ROC:   nan
+
+Protocol: temporal_split
+  Accuracy:  0.9981
+  Precision: 0.9982
+  Recall:    0.9976
+  F1-Score:  0.9979
+  AUC-ROC:   0.9996
+
+Protocol: cross_dataset
+  Accuracy:  0.8072
+  Precision: 0.9115
+  Recall:    0.6805
+  F1-Score:  0.7792
+  AUC-ROC:   0.8620
+

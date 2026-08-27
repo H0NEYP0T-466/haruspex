@@ -54,59 +54,68 @@ FEATURE_GROUP_TO_FORENSIC_CATEGORY: dict[str, str] = {
 # Detailed feature-to-forensic indicator mapping for specific feature ranges
 # This provides more granular correlation within each feature group.
 FEATURE_INDEX_FORENSIC_MAP: dict[tuple[int, int], dict] = {
-    # Byte histogram: high values in certain byte ranges indicate packing
+    # Byte histogram
     (0, 256): {
         "category": "entropy",
         "forensic_pattern": "byte distribution anomaly",
-        "description": "Unusual byte distribution — may indicate packing or encryption",
+        "malware_description": "Anomalous byte distribution associated with obfuscation or packing",
+        "benign_description": "Standard byte frequency distribution matching regular uncompressed code",
     },
-    # Byte entropy histogram: high entropy bins → packed/encrypted content
+    # Byte entropy histogram
     (256, 512): {
         "category": "entropy",
         "forensic_pattern": "high entropy",
-        "description": "High entropy regions detected — possible packing or encryption",
+        "malware_description": "High entropy regions indicating packed or encrypted content",
+        "benign_description": "Uniform low-to-moderate entropy distribution characteristic of standard software",
     },
-    # String info: very few strings → packed; many suspicious strings → malicious
+    # String info
     (512, 616): {
         "category": "strings",
         "forensic_pattern": "string anomaly",
-        "description": "Anomalous string characteristics in binary",
+        "malware_description": "Anomalous string count or presence of obfuscated text strings",
+        "benign_description": "Rich, legible string distribution typical of legitimate compiled applications",
     },
-    # General info: file size, has_signature, etc.
+    # General info
     (616, 626): {
         "category": "pe_structure",
         "forensic_pattern": "PE structure anomaly",
-        "description": "Unusual PE general properties",
+        "malware_description": "Unusual PE general properties or unsigned executable status",
+        "benign_description": "Standard PE file metadata structure",
     },
-    # Header info: DOS/PE/Optional header fields
+    # Header info
     (626, 688): {
         "category": "header_anomaly",
         "forensic_pattern": "header anomaly",
-        "description": "PE header field anomaly — possible manipulation",
+        "malware_description": "Manipulated or non-standard PE header field values",
+        "benign_description": "Valid, standard PE header structure",
     },
-    # Section info: section count, sizes, entropy, characteristics
+    # Section info
     (688, 943): {
         "category": "sections",
         "forensic_pattern": "section anomaly",
-        "description": "Suspicious PE section properties",
+        "malware_description": "Suspicious PE section characteristics or anomalous section bounds",
+        "benign_description": "Standard PE section configuration (.text, .data, .rsrc)",
     },
-    # Import info: imported DLLs/functions (hashed features)
+    # Import info
     (943, 2223): {
         "category": "imports",
         "forensic_pattern": "suspicious import",
-        "description": "Import-related feature contributes to malware classification",
+        "malware_description": "Import feature pattern associated with malicious API usage",
+        "benign_description": "Standard Windows system DLL import pattern",
     },
     # Export info
     (2223, 2351): {
         "category": "pe_structure",
         "forensic_pattern": "export anomaly",
-        "description": "Unusual export characteristics",
+        "malware_description": "Anomalous export table configuration",
+        "benign_description": "Standard export table structure",
     },
     # Data directory info
     (2351, 2381): {
         "category": "pe_structure",
         "forensic_pattern": "data directory anomaly",
-        "description": "Unusual PE data directory configuration",
+        "malware_description": "Unusual PE data directory layout",
+        "benign_description": "Standard PE data directory layout",
     },
 }
 
@@ -168,7 +177,7 @@ class Correlator:
 
             # --- Step 2: Check for matching forensic findings ---
             matched_forensic = self._find_forensic_match(
-                forensic_category, forensic_report, iocs, matched_ioc_indices
+                forensic_category, forensic_report, iocs, matched_ioc_indices, matched_forensic_indicators
             )
 
             if matched_forensic:
@@ -193,13 +202,16 @@ class Correlator:
             else:
                 # AI-only evidence
                 severity = abs(shap_value) / (abs(shap_value) + 1.0)
-                direction = "malware" if shap_value > 0 else "benign"
+                is_malware = shap_value > 0
+                direction = "malware" if is_malware else "benign"
+                desc_key = "malware_description" if is_malware else "benign_description"
+                desc = detail.get(desc_key, detail.get("description", f"Feature contributes to {direction} classification"))
 
                 evidence.append(EvidenceItem(
                     category=forensic_category,
                     indicator=(
                         f"Feature '{feat_name}' pushes prediction toward {direction} "
-                        f"(SHAP={shap_value:+.4f}) — {detail.get('description', '')}"
+                        f"(SHAP={shap_value:+.4f}) — {desc}"
                     ),
                     severity=severity,
                     source="ai_explanation",
@@ -338,42 +350,51 @@ class Correlator:
         forensic_category: str,
         forensic_report: ForensicReport,
         iocs: list[IOC],
-        matched_indices: set[int],
+        matched_ioc_indices: set[int],
+        matched_forensic_indicators: set[int],
     ) -> Optional[str]:
-        """Try to find a matching forensic indicator for a given category.
+        """Try to find an unmatched forensic indicator for a given category.
 
         Returns a description of the matching forensic finding, or None.
         """
         # Check IOCs first (higher specificity)
         for i, ioc in enumerate(iocs):
-            if i in matched_indices:
+            if i in matched_ioc_indices:
                 continue
 
-            # Category matching (flexible)
             if self._categories_match(forensic_category, ioc.ioc_type):
-                matched_indices.add(i)
+                matched_ioc_indices.add(i)
                 return ioc.description
 
         # Check forensic report indicators
-        if forensic_category == "entropy" and forensic_report.is_likely_packed:
+        for i, indicator in enumerate(forensic_report.feature_indicators):
+            if i in matched_forensic_indicators:
+                continue
+
+            ind_cat = indicator.get("category", "")
+            if self._categories_match(forensic_category, ind_cat):
+                matched_forensic_indicators.add(i)
+                return indicator.get("indicator", f"{forensic_category.title()} anomaly detected")
+
+        # Specific forensic report flags if not yet matched
+        if forensic_category == "entropy" and forensic_report.is_likely_packed and 999991 not in matched_forensic_indicators:
+            matched_forensic_indicators.add(999991)
             return f"Binary likely packed (max entropy: {forensic_report.max_section_entropy:.2f})"
 
-        if forensic_category == "sections":
+        if forensic_category == "sections" and 999992 not in matched_forensic_indicators:
             for section in forensic_report.sections:
                 if section.is_suspicious:
+                    matched_forensic_indicators.add(999992)
                     return f"Suspicious section: {section.name} ({section.reason})"
 
-        if forensic_category == "imports" and forensic_report.suspicious_imports:
+        if forensic_category == "imports" and forensic_report.suspicious_imports and 999993 not in matched_forensic_indicators:
+            matched_forensic_indicators.add(999993)
             imp = forensic_report.suspicious_imports[0]
             return f"Suspicious API: {imp}"
 
-        if forensic_category == "header_anomaly" and forensic_report.anomalies:
+        if forensic_category == "header_anomaly" and forensic_report.anomalies and 999994 not in matched_forensic_indicators:
+            matched_forensic_indicators.add(999994)
             return forensic_report.anomalies[0]
-
-        if forensic_category == "strings":
-            for indicator in forensic_report.feature_indicators:
-                if indicator.get("category") == "strings":
-                    return indicator.get("indicator", "String anomaly detected")
 
         return None
 

@@ -109,15 +109,13 @@ class InvestigationReport:
 
     @property
     def risk_score(self) -> float:
-        """Compute an overall risk score from evidence severity.
+        """Compute overall malware risk score (0.0 = safe benign, 1.0 = critical malware risk)."""
+        # Convert prediction confidence to malware probability
+        malware_prob = self.confidence if self.prediction.lower() == "malware" else (1.0 - self.confidence)
 
-        Returns:
-            Float between 0.0 and 1.0 representing overall risk.
-        """
         if not self.evidence_items:
-            return self.confidence
+            return float(malware_prob)
 
-        # Weighted average: correlated evidence counts more
         weights = []
         values = []
         for e in self.evidence_items:
@@ -129,8 +127,9 @@ class InvestigationReport:
         total_weight = sum(weights)
 
         evidence_score = weighted_sum / total_weight if total_weight > 0 else 0.0
-        # Blend model confidence with evidence score
-        return 0.6 * self.confidence + 0.4 * evidence_score
+        # Risk score is anchored by malware probability
+        raw_risk = 0.7 * malware_prob + 0.3 * (evidence_score * malware_prob if self.prediction.lower() == "benign" else evidence_score)
+        return max(0.0, min(1.0, float(raw_risk)))
 
     def to_dict(self) -> dict:
         """Serialise to JSON-compatible dict."""

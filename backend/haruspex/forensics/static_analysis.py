@@ -290,16 +290,15 @@ class StaticAnalyzer:
         section_count = 255
         section_features = features[section_start:section_start + section_count]
 
-        # Section features encode: size, entropy, virtual_size, characteristics for up to N sections
-        # High values in entropy positions indicate packed sections
-        section_entropy_values = section_features[::5]  # Rough extraction
-        max_sec_entropy = float(np.max(section_entropy_values)) if len(section_entropy_values) > 0 else 0.0
+        # In EMBER schema: 5 properties per section [size, entropy, vsize, entry, char]
+        section_entropies = section_features[1:250:5]  # exact entropy field
+        max_sec_entropy = float(np.max(section_entropies)) if len(section_entropies) > 0 else 0.0
         report.max_section_entropy = max_sec_entropy
-        if max_sec_entropy > 0.9:
+        if max_sec_entropy > 7.0:
             indicators.append({
                 "category": "sections",
-                "indicator": f"Section with very high entropy feature value ({max_sec_entropy:.3f})",
-                "severity": min(max_sec_entropy, 1.0),
+                "indicator": f"Section with very high entropy ({max_sec_entropy:.2f}/8.00) — likely packed",
+                "severity": min(max_sec_entropy / 8.0, 1.0),
             })
 
         # --- Import features → suspicious API analysis ---
@@ -312,18 +311,16 @@ class StaticAnalyzer:
         indicators.append({
             "category": "imports",
             "indicator": f"{active_imports} active import features detected",
-            "severity": 0.3 if active_imports < 100 else 0.1,
+            "severity": 0.05,
         })
 
         # Check for patterns indicating suspicious imports
-        # Import features are hashed — high values in specific positions may indicate
-        # presence of suspicious DLLs/APIs
         import_nonzero = np.where(import_features > 0)[0]
-        if len(import_nonzero) > 500:
+        if len(import_nonzero) > 600:
             indicators.append({
                 "category": "imports",
                 "indicator": "Unusually large number of import features active",
-                "severity": 0.6,
+                "severity": 0.3,
             })
 
         # --- General info features ---
@@ -331,12 +328,11 @@ class StaticAnalyzer:
         general_count = 10
         general_features = features[general_start:general_start + general_count]
 
-        # Feature positions for general info include file size, has_signature, etc.
-        if general_features[0] > 10_000_000:  # Very large file size feature
+        if general_features[0] > 20_000_000:  # > 20MB file size indicator
             indicators.append({
                 "category": "general",
-                "indicator": f"Large file size indicator ({general_features[0]:.0f})",
-                "severity": 0.4,
+                "indicator": f"Large file size indicator ({general_features[0]:.0f} bytes)",
+                "severity": 0.1,
             })
 
         # --- Header features ---
@@ -344,15 +340,14 @@ class StaticAnalyzer:
         header_count = 62
         header_features = features[header_start:header_start + header_count]
 
-        # Check for anomalous header values
         header_zeros = int(np.sum(header_features == 0))
-        if header_zeros > 50:
+        if header_zeros > 58:
             indicators.append({
                 "category": "header_anomaly",
-                "indicator": f"Many zero-valued header features ({header_zeros}/62)",
-                "severity": 0.5,
+                "indicator": f"Highly stripped PE header features ({header_zeros}/62 zeros)",
+                "severity": 0.3,
             })
-            report.anomalies.append("Many zero-valued header features")
+            report.anomalies.append("Highly stripped PE header features")
 
         # --- String features ---
         string_start = 512
