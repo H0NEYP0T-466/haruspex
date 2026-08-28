@@ -69,6 +69,8 @@
   <img src="visuals/arc.jpeg" width="85%" alt="HARUSPEX Full System Architecture — Input → Vectorize → Models → XAI + Forensics → Correlator → Unified Investigation Report → Dashboard" />
 </p>
 
+<p align="center"><em>HARUSPEX System Architecture — Full Investigation Pipeline</em></p>
+
 ---
 
 ## Features
@@ -213,6 +215,8 @@ npm run build  # Production build
   <img src="visuals/web_ui.png" width="85%" alt="HARUSPEX React Dashboard — Upload PE file, select model, view malware probability, SHAP/LIME explanations, and unified investigation report" />
 </p>
 
+<p align="center"><em>HARUSPEX React Dashboard — Upload & Analysis Interface</em></p>
+
 ---
 
 ## Evaluation Protocols
@@ -269,6 +273,8 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
   <img src="visuals/allmodels.png" width="90%" alt="All 8 Models Performance Comparison — BODMAS and EMBER trained models across all evaluation protocols" />
 </p>
 
+<p align="center"><em>All 8 Models — Cross-Protocol Performance Comparison</em></p>
+
 ---
 
 ### BODMAS-Trained Models
@@ -297,6 +303,8 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
   <img src="visuals/mlp-arc.jpeg" width="85%" alt="Group-MLP Architecture — Group Projection → Group Attention → Group Gating → Residual MLP → Multi-task Heads (Binary + Family + Category)" />
 </p>
 
+<p align="center"><em>Group-MLP Architecture — Group-wise Residual Multi-Layer Perceptron</em></p>
+
 | Protocol | Accuracy | Precision | Recall | F1 | AUC |
 |----------|----------|-----------|--------|-----|-----|
 | Random | 99.55% | 99.51% | 99.43% | 99.47% | 99.93% |
@@ -309,6 +317,8 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
 <p align="center">
   <img src="visuals/tabnet-arc.jpeg" width="85%" alt="TabNet Architecture — Feature Transformer → Attentive Transformer × N_steps → Aggregated Output → Malware Probability (with built-in feature importance via sparse attention masks)" />
 </p>
+
+<p align="center"><em>TabNet Architecture — Attentive Interpretable Tabular Learning</em></p>
 
 | Protocol | Accuracy | Precision | Recall | F1 | AUC |
 |----------|----------|-----------|--------|-----|-----|
@@ -645,6 +655,8 @@ The most critical evaluation: models trained on known families and tested on **4
 <p align="center">
   <img src="visuals/shap+lime.png" width="85%" alt="Unified Investigation Report — Correlated AI+Forensic Evidence with SHAP/LIME feature attributions, malware score, and severity-scored evidence items" />
 </p>
+
+<p align="center"><em>Unified Investigation Report — Correlated AI + Forensic Evidence</em></p>
 
 ---
 
