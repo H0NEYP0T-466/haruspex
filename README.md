@@ -106,6 +106,7 @@ HARUSPEX/
 |--------|------|-------------|
 | `POST` | `/api/predict` | Full investigation pipeline (PE file or feature vector) |
 | `POST` | `/api/predict/vector` | Predict from JSON feature vector |
+| `POST` | `/api/predict/all` | Run all loaded models on the same uploaded PE/vector sample |
 | `POST` | `/api/explain` | Explain a BODMAS sample by index |
 | `GET` | `/api/models` | List available models |
 | `GET` | `/api/health` | API health check |

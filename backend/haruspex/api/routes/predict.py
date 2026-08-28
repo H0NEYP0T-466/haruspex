@@ -14,7 +14,7 @@ from __future__ import annotations
 import io
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
@@ -51,6 +51,22 @@ class PredictionResponse(BaseModel):
     top_shap_features: list[dict]
     forensic_summary: dict
     ioc_count: int
+
+
+def _get_loaded_models() -> list[tuple[str, str, Any]]:
+    """Return all loaded (group, model_name, model) tuples."""
+    from haruspex.api.main import get_model_store
+
+    store = get_model_store()
+    loaded: list[tuple[str, str, Any]] = []
+    for group_name, group_store in store.items():
+        if group_name.startswith("_") or not isinstance(group_store, dict):
+            continue
+        for model_name, model_obj in group_store.items():
+            if model_name.startswith("_"):
+                continue
+            loaded.append((group_name, model_name, model_obj))
+    return loaded
 
 
 @router.post("/predict")
@@ -178,6 +194,118 @@ async def predict(
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
     finally:
         # Cleanup temp PE file
+        if pe_path and pe_path.exists():
+            pe_path.unlink(missing_ok=True)
+
+
+@router.post("/predict/all")
+async def predict_all(
+    file: Optional[UploadFile] = File(None),
+    features_json: Optional[str] = Form(None),
+):
+    """Run all loaded models on the same uploaded PE file or feature vector."""
+    loaded_models = _get_loaded_models()
+    if not loaded_models:
+        raise HTTPException(status_code=503, detail="No models loaded.")
+
+    static_analyzer = StaticAnalyzer()
+    ioc_extractor = IOCExtractor()
+    feature_names = get_feature_names()
+
+    pe_path: Optional[Path] = None
+    features: Optional[np.ndarray] = None
+    forensic_report = None
+    iocs: Optional[list] = None
+    sample_id: str = "api_upload"
+
+    try:
+        if file and file.filename:
+            logger.info("Processing PE file upload for all-model testing: %s", file.filename)
+            content = await file.read()
+
+            with tempfile.NamedTemporaryFile(suffix=".exe", delete=False) as tmp:
+                tmp.write(content)
+                pe_path = Path(tmp.name)
+
+            forensic_report = static_analyzer.analyze_pe(pe_path)
+            iocs = ioc_extractor.extract_all(forensic_report, pe_path)
+
+            from haruspex.forensics.pe_feature_extractor import PEFeatureExtractor
+
+            extractor = PEFeatureExtractor()
+            features = extractor.extract(content)
+            sample_id = file.filename
+
+        elif features_json:
+            import json
+
+            try:
+                feat_list = json.loads(features_json)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="Invalid JSON in features_json")
+
+            if len(feat_list) != NUM_FEATURES:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Expected {NUM_FEATURES} features, got {len(feat_list)}",
+                )
+
+            features = np.array(feat_list, dtype=np.float32)
+            forensic_report = static_analyzer.analyze_feature_vector(features, feature_names)
+            iocs = ioc_extractor.extract_from_analysis(forensic_report)
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Provide either a PE file upload or a features_json form field.",
+            )
+
+        x = features.reshape(1, -1)
+        per_model_results = []
+        for group_name, model_name, model in loaded_models:
+            pred_label = int(model.predict(x)[0])
+            pred_proba = float(model.predict_proba(x)[0])
+            prediction = "malware" if pred_label == 1 else "benign"
+            confidence = pred_proba if pred_label == 1 else (1.0 - pred_proba)
+
+            per_model_results.append(
+                {
+                    "model_group": group_name,
+                    "model_name": model_name,
+                    "prediction": prediction,
+                    "confidence": confidence,
+                    "malware_probability": pred_proba,
+                }
+            )
+
+        per_model_results.sort(key=lambda r: (r["model_group"], r["model_name"]))
+        malware_votes = sum(1 for r in per_model_results if r["prediction"] == "malware")
+        benign_votes = len(per_model_results) - malware_votes
+        consensus = "tie"
+        if malware_votes > benign_votes:
+            consensus = "malware"
+        elif benign_votes > malware_votes:
+            consensus = "benign"
+
+        return {
+            "sample_id": sample_id,
+            "models_tested": len(per_model_results),
+            "summary": {
+                "consensus": consensus,
+                "malware_votes": malware_votes,
+                "benign_votes": benign_votes,
+            },
+            "results": per_model_results,
+            "forensic_summary": forensic_report.to_dict() if forensic_report else {},
+            "ioc_count": len(iocs) if iocs else 0,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("All-model prediction pipeline error")
+        raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
+    finally:
         if pe_path and pe_path.exists():
             pe_path.unlink(missing_ok=True)
 
