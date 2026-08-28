@@ -41,25 +41,25 @@
 
 - [Architecture](#architecture)
 - [Features](#features)
-- [Demo / Links](#-demo--links)
-- [Installation](#-installation)
-- [Usage](#-usage)
+- [Demo / Links](#demo--links)
+- [Installation](#installation)
+- [Usage](#usage)
 - [Evaluation Protocols](#evaluation-protocols)
 - [API Endpoints](#api-endpoints)
-- [Results - All 8 Models](#-results--all-8-models)
+- [Results - All 8 Models](#results---all-8-models)
   - [Summary Table](#summary-table)
   - [BODMAS-Trained Models](#bodmas-trained-models)
   - [EMBER 2018-Trained Models](#ember-2018-trained-models)
-  - [Zero-Day Family-Held-Out Results](#-zero-day-family-held-out-results)
-- [Plots & Visualizations](#-plots--visualizations)
-- [Folder Structure](#-folder-structure)
-- [Tech Stack](#-tech-stack)
-- [Dependencies & Packages](#-dependencies--packages)
+  - [Zero-Day Family-Held-Out Results](#zero-day-family-held-out-results)
+- [Plots & Visualizations](#plots--visualizations)
+- [Folder Structure](#folder-structure)
+- [Tech Stack](#tech-stack)
+- [Dependencies & Packages](#dependencies--packages)
 - [Testing](#testing)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Security](#-security)
-- [Code of Conduct](#-code-of-conduct)
+- [Contributing](#contributing)
+- [License](#license)
+- [Security](#security)
+- [Code of Conduct](#code-of-conduct)
 
 ---
 
@@ -381,19 +381,23 @@ The most critical evaluation: models trained on known families and tested on **4
 
 #### Confusion Matrices - Family-Held-Out
 
-**XGBoost Confusion Matrix:**
-![XGBoost Confusion Matrix - Family-Held-Out](backend/haruspex/zero_day/data/xgboost_confusion.png)
-
-**LightGBM Confusion Matrix:**
-![LightGBM Confusion Matrix - Family-Held-Out](backend/haruspex/zero_day/data/lightgbm_confusion.png)
+<p align="center">
+  <img src="backend/haruspex/zero_day/data/xgboost_confusion.png" width="32%" />
+  <img src="backend/haruspex/zero_day/data/lightgbm_confusion.png" width="32%" />
+</p>
+<p align="center">
+  <em>XGBoost</em> &nbsp;&nbsp;&nbsp; <em>LightGBM</em>
+</p>
 
 #### ROC Curves - Family-Held-Out
 
-**XGBoost ROC:**
-![XGBoost ROC - Family-Held-Out](backend/haruspex/zero_day/data/xgboost_roc.png)
-
-**LightGBM ROC:**
-![LightGBM ROC - Family-Held-Out](backend/haruspex/zero_day/data/lightgbm_roc.png)
+<p align="center">
+  <img src="backend/haruspex/zero_day/data/xgboost_roc.png" width="32%" />
+  <img src="backend/haruspex/zero_day/data/lightgbm_roc.png" width="32%" />
+</p>
+<p align="center">
+  <em>XGBoost</em> &nbsp;&nbsp;&nbsp; <em>LightGBM</em>
+</p>
 
 ---
 
@@ -424,7 +428,7 @@ The most critical evaluation: models trained on known families and tested on **4
 </p>
 
 <p align="center">
-  <img src="outputs/plots/xgboost_feature_importance.png" width="50%" />
+  <img src="outputs/plots/xgboost_feature_importance.png" width="32%" />
 </p>
 
 ---
@@ -454,7 +458,7 @@ The most critical evaluation: models trained on known families and tested on **4
 </p>
 
 <p align="center">
-  <img src="outputs/plots/lightgbm_feature_importance.png" width="50%" />
+  <img src="outputs/plots/lightgbm_feature_importance.png" width="32%" />
 </p>
 
 ---
@@ -534,7 +538,7 @@ The most critical evaluation: models trained on known families and tested on **4
 </p>
 
 <p align="center">
-  <img src="outputs/plots/ember_xgboost_feature_importance.png" width="50%" />
+  <img src="outputs/plots/ember_xgboost_feature_importance.png" width="32%" />
 </p>
 
 ---
@@ -552,7 +556,7 @@ The most critical evaluation: models trained on known families and tested on **4
 </p>
 
 <p align="center">
-  <img src="outputs/plots/ember_lightgbm_feature_importance.png" width="50%" />
+  <img src="outputs/plots/ember_lightgbm_feature_importance.png" width="32%" />
 </p>
 
 ---
@@ -572,8 +576,8 @@ The most critical evaluation: models trained on known families and tested on **4
 ### Group-MLP (EMBER 2018) - Attention & Gate Analysis
 
 <p align="center">
-  <img src="deepLearning/phase2/plots/ember_mlp_attention_heatmap.png" width="48%" />
-  <img src="deepLearning/phase2/plots/ember_mlp_gate_distribution.png" width="48%" />
+  <img src="deepLearning/phase2/plots/ember_mlp_attention_heatmap.png" width="32%" />
+  <img src="deepLearning/phase2/plots/ember_mlp_gate_distribution.png" width="32%" />
 </p>
 <p align="center">
   <em>Attention Heatmap</em> &nbsp;&nbsp;&nbsp; <em>Gate Distribution</em>
@@ -594,7 +598,7 @@ The most critical evaluation: models trained on known families and tested on **4
 </p>
 
 <p align="center">
-  <img src="deepLearning/phase2/plots/ember_tabnet_feature_importance.png" width="50%" />
+  <img src="deepLearning/phase2/plots/ember_tabnet_feature_importance.png" width="32%" />
 </p>
 
 ---
@@ -616,8 +620,8 @@ The most critical evaluation: models trained on known families and tested on **4
 ### XAI - SHAP & LIME Explanations
 
 <p align="center">
-  <img src="outputs/plots/shap_summary.png" width="48%" />
-  <img src="outputs/plots/phase2_shap_summary.png" width="48%" />
+  <img src="outputs/plots/shap_summary.png" width="32%" />
+  <img src="outputs/plots/phase2_shap_summary.png" width="32%" />
 </p>
 <p align="center">
   <em>Phase 1 SHAP Summary</em> &nbsp;&nbsp;&nbsp; <em>Phase 2 SHAP Summary</em>
