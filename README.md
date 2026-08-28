@@ -87,6 +87,10 @@ Input (PE file / Feature vector)
    └────────────┘
 ```
 
+<p align="center">
+  <img src="visuals/arc.jpeg" width="85%" alt="HARUSPEX Full System Architecture — Input → Vectorize → Models → XAI + Forensics → Correlator → Unified Investigation Report → Dashboard" />
+</p>
+
 ---
 
 ## Features
@@ -303,6 +307,10 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
 
 #### 3. Group-MLP (BODMAS)
 
+<p align="center">
+  <img src="visuals/mlp-arc.jpeg" width="85%" alt="Group-MLP Architecture — Group Projection → Group Attention → Group Gating → Residual MLP → Multi-task Heads (Binary + Family + Category)" />
+</p>
+
 | Protocol | Accuracy | Precision | Recall | F1 | AUC |
 |----------|----------|-----------|--------|-----|-----|
 | Random | 99.55% | 99.51% | 99.43% | 99.47% | 99.93% |
@@ -311,6 +319,10 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
 | Cross-Dataset (EMBER) | 81.35% | 94.58% | 66.52% | 78.11% | 87.15% |
 
 #### 4. TabNet (BODMAS)
+
+<p align="center">
+  <img src="visuals/tabnet-arc.jpeg" width="85%" alt="TabNet Architecture — Feature Transformer → Attentive Transformer × N_steps → Aggregated Output → Malware Probability (with built-in feature importance via sparse attention masks)" />
+</p>
 
 | Protocol | Accuracy | Precision | Recall | F1 | AUC |
 |----------|----------|-----------|--------|-----|-----|
