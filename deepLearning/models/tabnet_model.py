@@ -155,8 +155,16 @@ class TabNetDetector(MalwareDetector):
 
         best_cost = self.model.best_cost if hasattr(self.model, "best_cost") else self.max_epochs
         best_acc = 0.0
-        if hasattr(self.model, "history") and "val_accuracy" in self.model.history:
-            best_acc = float(self.model.history["val_accuracy"][-1])
+        # NOTE: pytorch-tabnet's `History` callback object only implements
+        # `__getitem__` (for direct key access), not `__contains__`. Using the
+        # `in` operator on it falls back to Python's legacy sequence protocol
+        # (probing history[0], history[1], ...), which raises an uncaught
+        # KeyError instead of the expected membership check. Check against the
+        # underlying `.history` dict instead, which behaves like a normal dict.
+        history_dict = getattr(self.model, "history", None)
+        history_data = getattr(history_dict, "history", None) if history_dict is not None else None
+        if isinstance(history_data, dict) and "val_accuracy" in history_data and history_data["val_accuracy"]:
+            best_acc = float(history_data["val_accuracy"][-1])
 
         return {
             "train_accuracy": best_acc,
