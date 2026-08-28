@@ -27,11 +27,20 @@ import numpy as np
 from haruspex.config import NUM_FEATURES
 from haruspex.utils.logging import get_logger
 
+from sklearn.feature_extraction import FeatureHasher
+
 logger = get_logger(__name__)
 
 
 class PEFeatureExtractor:
     """Extracts 2,381 EMBER-compatible numeric features from a raw PE file."""
+
+    def __init__(self) -> None:
+        self._lib_hasher = FeatureHasher(256, input_type="string")
+        self._imp_hasher = FeatureHasher(1024, input_type="string")
+        self._exp_hasher = FeatureHasher(128, input_type="string")
+        self._sec_pair_hasher = FeatureHasher(50, input_type="pair")
+        self._sec_str_hasher = FeatureHasher(50, input_type="string")
 
     def extract(self, pe_data_or_path: Union[bytes, str, Path]) -> np.ndarray:
         """Extract 2,381 feature vector from raw PE bytes or file path.
@@ -225,59 +234,62 @@ class PEFeatureExtractor:
 
         return feat
 
-    @staticmethod
-    def _extract_section_info(binary) -> np.ndarray:
-        """255 section properties features."""
-        feat = np.zeros(255, dtype=np.float32)
+    def _extract_section_info(self, binary) -> np.ndarray:
+        """255 deterministic section properties features matching EMBER layout."""
         sections = getattr(binary, "sections", [])
-        feat[0] = float(len(sections))
+        general = [
+            len(sections),
+            sum(1 for s in sections if s.size == 0),
+            sum(1 for s in sections if not s.name or s.name == ""),
+            sum(1 for s in sections if hasattr(s, "characteristics") and s.characteristics & 0x20000000 and s.characteristics & 0x40000000),
+            sum(1 for s in sections if hasattr(s, "characteristics") and s.characteristics & 0x80000000),
+        ]
 
-        for i, sec in enumerate(sections[:10]):  # Up to 10 sections
-            base = 1 + i * 25
-            if base + 25 > 255:
-                break
-            feat[base] = float(sec.size)
-            feat[base + 1] = float(sec.virtual_size)
-            feat[base + 2] = float(sec.virtual_address)
-            feat[base + 3] = float(sec.entropy)
-            feat[base + 4] = float(sec.characteristics)
+        section_sizes = [(s.name, s.size) for s in sections]
+        section_entropy = [(s.name, s.entropy) for s in sections]
+        section_vsize = [(s.name, s.virtual_size) for s in sections]
 
-        return feat
+        entry_section = ""
+        if hasattr(binary, "entrypoint"):
+            try:
+                sec = binary.section_from_rva(binary.entrypoint - getattr(binary.optional_header, "imagebase", 0))
+                if sec:
+                    entry_section = sec.name
+            except Exception:
+                pass
 
-    @staticmethod
-    def _extract_import_info(binary) -> np.ndarray:
-        """1280 hashed import features (DLLs and function names)."""
-        feat = np.zeros(1280, dtype=np.float32)
+        chars = [str(sec.characteristics) for sec in sections]
+
+        sizes_h = self._sec_pair_hasher.transform([section_sizes]).toarray()[0]
+        entropy_h = self._sec_pair_hasher.transform([section_entropy]).toarray()[0]
+        vsize_h = self._sec_pair_hasher.transform([section_vsize]).toarray()[0]
+        entry_h = self._sec_str_hasher.transform([[entry_section]]).toarray()[0]
+        chars_h = self._sec_str_hasher.transform([chars]).toarray()[0]
+
+        return np.hstack([general, sizes_h, entropy_h, vsize_h, entry_h, chars_h]).astype(np.float32)
+
+    def _extract_import_info(self, binary) -> np.ndarray:
+        """1280 deterministic hashed import features (DLLs and function names)."""
         imports = getattr(binary, "imports", [])
+        libraries = list(set([imp.name.lower() for imp in imports if imp.name]))
+        lib_hashed = self._lib_hasher.transform([libraries]).toarray()[0]
 
+        import_list = []
         for imp in imports:
             dll_name = imp.name.lower() if imp.name else ""
-            # Hash DLL name into range [0..255]
-            dll_hash = hash(dll_name) % 256
-            feat[dll_hash] += 1.0
-
             for entry in getattr(imp, "entries", []):
-                func_name = entry.name.lower() if entry.name else str(entry.data)
-                # Hash full "dll:func" into range [256..1279]
-                full_import = f"{dll_name}:{func_name}"
-                func_hash = 256 + (hash(full_import) % 1024)
-                feat[func_hash] += 1.0
+                func_name = entry.name.lower() if entry.name else f"ordinal_{entry.data}"
+                import_list.append(f"{dll_name}:{func_name}")
 
-        return feat
+        imp_hashed = self._imp_hasher.transform([import_list]).toarray()[0]
+        return np.hstack([lib_hashed, imp_hashed]).astype(np.float32)
 
-    @staticmethod
-    def _extract_export_info(binary) -> np.ndarray:
-        """128 hashed export features."""
-        feat = np.zeros(128, dtype=np.float32)
+    def _extract_export_info(self, binary) -> np.ndarray:
+        """128 deterministic hashed export features."""
         exports = getattr(binary, "exported_functions", [])
-        feat[0] = float(len(exports))
-
-        for exp in exports:
-            name = exp.name.lower() if exp.name else str(exp.ordinal)
-            idx = 1 + (hash(name) % 127)
-            feat[idx] += 1.0
-
-        return feat
+        export_list = [exp.name.lower() if exp.name else str(exp.ordinal) for exp in exports]
+        exp_hashed = self._exp_hasher.transform([export_list]).toarray()[0]
+        return exp_hashed.astype(np.float32)
 
     @staticmethod
     def _extract_data_directories(binary) -> np.ndarray:

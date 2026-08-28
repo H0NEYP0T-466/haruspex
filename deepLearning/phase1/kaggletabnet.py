@@ -200,20 +200,28 @@ def main():
     plot_confusion_matrix(r_split.y_test, preds, title="TabNet — Random Split Confusion Matrix", save_path=plots_dir / "tabnet_random_cm.png")
     plot_roc_curve(r_split.y_test, proba, title="TabNet — Random Split ROC Curve", save_path=plots_dir / "tabnet_random_roc.png")
 
-    # Protocol 2: Family-Held-Out Split
+    # Protocol 2: Family-Held-Out Split (trained on fh_split.X_train to avoid data leakage)
+    logger.info("  Protocol 2: Fitting dedicated Family-Held-Out model on train split...")
     fh_split = family_held_out_split(X, y, meta, family_ids, cat_ids, HELD_OUT_FAMILIES)
-    fh_preds = tabnet.predict(fh_split.X_test)
-    fh_proba = tabnet.predict_proba(fh_split.X_test)
+    n_val_fh = int(len(fh_split.X_train) * 0.1)
+    tabnet_fh = TabNetDetector(model_name_suffix="bodmas_fh", max_epochs=50, patience=10, batch_size=batch_size)
+    tabnet_fh.fit(fh_split.X_train[:-n_val_fh], fh_split.y_train[:-n_val_fh], fh_split.X_train[-n_val_fh:], fh_split.y_train[-n_val_fh:])
+    fh_preds = tabnet_fh.predict(fh_split.X_test)
+    fh_proba = tabnet_fh.predict_proba(fh_split.X_test)
     results["family_held_out"] = evaluate_metrics(fh_split.y_test, fh_preds, fh_proba)
     logger.info("  Protocol 2 (Family-Held-Out): acc=%.4f, f1=%.4f, auc=%.4f",
                 results["family_held_out"]["accuracy"], results["family_held_out"]["f1"], results["family_held_out"]["auc"])
 
     plot_confusion_matrix(fh_split.y_test, fh_preds, title="TabNet — Family-Held-Out Confusion Matrix", save_path=plots_dir / "tabnet_family_cm.png")
 
-    # Protocol 3: Temporal Split
+    # Protocol 3: Temporal Split (trained on t_split.X_train to avoid data leakage)
+    logger.info("  Protocol 3: Fitting dedicated Temporal model on train split...")
     t_split = temporal_split(X, y, meta, family_ids, cat_ids, TEMPORAL_CUTOFF)
-    t_preds = tabnet.predict(t_split.X_test)
-    t_proba = tabnet.predict_proba(t_split.X_test)
+    n_val_t = int(len(t_split.X_train) * 0.1)
+    tabnet_t = TabNetDetector(model_name_suffix="bodmas_t", max_epochs=50, patience=10, batch_size=batch_size)
+    tabnet_t.fit(t_split.X_train[:-n_val_t], t_split.y_train[:-n_val_t], t_split.X_train[-n_val_t:], t_split.y_train[-n_val_t:])
+    t_preds = tabnet_t.predict(t_split.X_test)
+    t_proba = tabnet_t.predict_proba(t_split.X_test)
     results["temporal_split"] = evaluate_metrics(t_split.y_test, t_preds, t_proba)
     logger.info("  Protocol 3 (Temporal Split): acc=%.4f, f1=%.4f, auc=%.4f",
                 results["temporal_split"]["accuracy"], results["temporal_split"]["f1"], results["temporal_split"]["auc"])

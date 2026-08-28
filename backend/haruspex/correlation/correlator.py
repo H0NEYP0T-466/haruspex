@@ -372,6 +372,13 @@ class Correlator:
                 continue
 
             ind_cat = indicator.get("category", "")
+            ind_text = indicator.get("indicator", "").lower()
+            ind_sev = indicator.get("severity", 0.0)
+
+            # Skip non-suspicious / zero-count indicators
+            if "0 active" in ind_text or "standard" in ind_text or ind_sev < 0.1:
+                continue
+
             if self._categories_match(forensic_category, ind_cat):
                 matched_forensic_indicators.add(i)
                 return indicator.get("indicator", f"{forensic_category.title()} anomaly detected")

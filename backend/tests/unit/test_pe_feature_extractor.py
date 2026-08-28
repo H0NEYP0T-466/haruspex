@@ -35,3 +35,7 @@ def test_pe_feature_extractor_synthetic_bytes():
     # Byte histogram sum should be close to 1.0
     byte_hist = features[0:256]
     assert abs(byte_hist.sum() - 1.0) < 1e-4
+
+    # Test process-stable extraction determinism
+    features2 = extractor.extract(data)
+    assert np.array_equal(features, features2)

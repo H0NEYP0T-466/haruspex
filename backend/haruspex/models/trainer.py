@@ -55,25 +55,29 @@ def train_model(
     test_proba = model.predict_proba(split.X_test)
     test_acc = float(np.mean(test_pred == split.y_test))
 
-    from sklearn.metrics import f1_score, roc_auc_score
-
-    test_f1 = float(f1_score(split.y_test, test_pred))
+    # Evaluate on validation set
+    val_pred = model.predict(X_val)
+    val_proba = model.predict_proba(X_val)
+    val_acc = float(np.mean(val_pred == y_val))
     try:
-        test_auc = float(roc_auc_score(split.y_test, test_proba))
-    except ValueError:
-        test_auc = 0.0  # Single class in test set
+        val_auc = float(roc_auc_score(y_val, val_proba))
+    except Exception:
+        val_auc = 0.0
 
     metrics = {
         **train_metrics,
+        "val_accuracy": val_acc,
+        "val_auc": val_auc,
         "test_accuracy": test_acc,
         "test_f1": test_f1,
         "test_auc": test_auc,
     }
 
     logger.info(
-        "%s on %s split: test_acc=%.4f, test_f1=%.4f, test_auc=%.4f",
+        "%s on %s split: val_auc=%.4f, test_acc=%.4f, test_f1=%.4f, test_auc=%.4f",
         model.model_name,
         split.split_name,
+        val_auc,
         test_acc,
         test_f1,
         test_auc,

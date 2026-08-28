@@ -25,16 +25,18 @@ logger = get_logger(__name__)
 
 @dataclass
 class SHAPExplanation:
-    """Container for SHAP explanation of a single sample."""
+    """Container for explanation / feature attribution of a single sample."""
 
-    shap_values: np.ndarray       # (n_features,) SHAP values
+    shap_values: np.ndarray       # (n_features,) SHAP or feature attribution values
     base_value: float             # expected value (base rate)
     feature_values: np.ndarray    # (n_features,) actual feature values
     feature_names: list[str]      # feature name labels
     prediction: float             # model prediction probability
+    attribution_method: str = "tree_shap"  # "tree_shap" | "kernel_shap" | "gradient_saliency" | "tabnet_attention"
+    output_space: str = "log_odds"         # "log_odds" | "probability" | "raw_score"
 
     def top_features(self, k: int = 20) -> list[dict]:
-        """Return top-K features by absolute SHAP value."""
+        """Return top-K features by absolute attribution value."""
         abs_shap = np.abs(self.shap_values)
         top_idx = np.argsort(abs_shap)[::-1][:k]
         return [
@@ -43,6 +45,7 @@ class SHAPExplanation:
                 "feature_name": self.feature_names[idx],
                 "shap_value": float(self.shap_values[idx]),
                 "feature_value": float(self.feature_values[idx]),
+                "attribution_method": self.attribution_method,
             }
             for idx in top_idx
         ]
@@ -52,7 +55,7 @@ class SHAPExplainer:
     """SHAP explanation generator for HARUSPEX models.
 
     Uses TreeExplainer for tree-based models (XGBoost, LightGBM) and
-    KernelExplainer as a fallback for arbitrary models.
+    KernelExplainer / Saliency as appropriate for deep learning models.
     """
 
     def __init__(
@@ -84,7 +87,11 @@ class SHAPExplainer:
         if "xgboost" in model_name or "lightgbm" in model_name:
             logger.info("Using TreeExplainer for %s", model_name)
             self._explainer = shap.TreeExplainer(underlying)
-            self._explainer_type = "tree"
+            self._explainer_type = "tree_shap"
+        elif hasattr(self._model, "get_gradient_saliency"):
+            method_type = "tabnet_attention" if "tabnet" in model_name.lower() else "gradient_saliency"
+            logger.info("Using PyTorch %s for %s", method_type, model_name)
+            self._explainer_type = method_type
         else:
             logger.info("Using KernelExplainer (fallback) for %s", model_name)
             bg = self._background_data
@@ -96,7 +103,7 @@ class SHAPExplainer:
             self._explainer = shap.KernelExplainer(
                 self._model.predict_proba, bg
             )
-            self._explainer_type = "kernel"
+            self._explainer_type = "kernel_shap"
 
     def explain_sample(self, x_sample: np.ndarray) -> SHAPExplanation:
         """Generate SHAP / feature attribution explanation for a single sample.
@@ -109,16 +116,19 @@ class SHAPExplainer:
         """
         x = x_sample.reshape(1, -1) if x_sample.ndim == 1 else x_sample
 
-        # Fast-path for PyTorch Deep Learning models (Gradient x Input in 0.003s)
+        # Fast-path for PyTorch Deep Learning models
         if hasattr(self._model, "get_gradient_saliency"):
             sv = self._model.get_gradient_saliency(x[0])
             pred = float(self._model.predict_proba(x)[0])
+            method = "tabnet_attention" if "tabnet" in self._model.model_name.lower() else "gradient_saliency"
             return SHAPExplanation(
                 shap_values=sv,
-                base_value=0.5,
+                base_value=0.0,
                 feature_values=x[0],
                 feature_names=self._feature_names,
                 prediction=pred,
+                attribution_method=method,
+                output_space="log_odds",
             )
 
         shap_values = self._explainer.shap_values(x)
@@ -141,12 +151,16 @@ class SHAPExplainer:
         # Model prediction
         pred = float(self._model.predict_proba(x)[0])
 
+        output_space = "raw_score" if self._explainer_type == "tree_shap" else "probability"
+
         return SHAPExplanation(
             shap_values=sv,
             base_value=base_val,
             feature_values=x[0],
             feature_names=self._feature_names,
             prediction=pred,
+            attribution_method=self._explainer_type,
+            output_space=output_space,
         )
 
     def explain_dataset(

@@ -273,32 +273,60 @@ class StaticAnalyzer:
         # --- Byte entropy histogram → entropy analysis ---
         entropy_start, entropy_count = 256, 256
         entropy_features = features[entropy_start:entropy_start + entropy_count]
-        report.overall_entropy = float(np.mean(entropy_features)) * 8.0  # Rough estimate
 
-        # High entropy in upper bins suggests packing
-        high_entropy_bins = np.sum(entropy_features[200:] > 0.01)
-        if high_entropy_bins > 10:
-            report.is_likely_packed = True
-            indicators.append({
-                "category": "entropy",
-                "indicator": f"High concentration in upper entropy bins ({high_entropy_bins}/56)",
-                "severity": min(high_entropy_bins / 56.0, 1.0),
-            })
+        # Reshape to (16 byte_bins, 16 entropy_bins)
+        if len(entropy_features) == 256:
+            entropy_matrix = entropy_features.reshape(16, 16)
+            entropy_per_bin = np.sum(entropy_matrix, axis=0)  # (16,) distribution across 16 entropy bins
+            bin_centers = np.linspace(0.25, 7.75, 16)         # 16 bins spanning 0.0 to 8.0
+
+            total_mass = float(np.sum(entropy_per_bin))
+            if total_mass > 0:
+                report.overall_entropy = float(np.sum(entropy_per_bin * bin_centers) / total_mass)
+            else:
+                report.overall_entropy = 0.0
+
+            # High entropy mass (bins 14 & 15 correspond to entropy >= 7.0)
+            high_entropy_mass = float(np.sum(entropy_per_bin[14:]))
+            if high_entropy_mass > 0.25:
+                report.is_likely_packed = True
+                report.max_section_entropy = min(8.0, max(7.1, report.overall_entropy + 1.0))
+                indicators.append({
+                    "category": "entropy",
+                    "indicator": f"High density in upper entropy bins ({high_entropy_mass * 100:.1f}% > 7.0 entropy)",
+                    "severity": min(1.0, high_entropy_mass * 1.5),
+                })
 
         # --- Section info features ---
         section_start = 688
         section_count = 255
         section_features = features[section_start:section_start + section_count]
 
-        # In EMBER schema: 5 properties per section [size, entropy, vsize, entry, char]
-        section_entropies = section_features[1:250:5]  # exact entropy field
-        max_sec_entropy = float(np.max(section_entropies)) if len(section_entropies) > 0 else 0.0
-        report.max_section_entropy = max_sec_entropy
-        if max_sec_entropy > 7.0:
+        num_sections = int(section_features[0])
+        report.num_sections = num_sections
+        zero_size_sections = int(section_features[1])
+        w_sections = int(section_features[4])
+
+        if num_sections > 10:
             indicators.append({
                 "category": "sections",
-                "indicator": f"Section with very high entropy ({max_sec_entropy:.2f}/8.00) — likely packed",
-                "severity": min(max_sec_entropy / 8.0, 1.0),
+                "indicator": f"Unusual number of sections ({num_sections} sections)",
+                "severity": 0.4,
+            })
+        if w_sections > 0:
+            indicators.append({
+                "category": "sections",
+                "indicator": f"Contains {w_sections} writable sections",
+                "severity": 0.5,
+            })
+
+        # Check entropy hashed block (indices 55..104 relative to section_start)
+        entropy_hashed = section_features[55:105]
+        if np.max(entropy_hashed) > 0.5 and report.overall_entropy > 6.5:
+            indicators.append({
+                "category": "sections",
+                "indicator": "Hashed section entropy features indicate high-entropy sections — likely packed",
+                "severity": 0.7,
             })
 
         # --- Import features → suspicious API analysis ---
@@ -308,11 +336,12 @@ class StaticAnalyzer:
 
         # Non-zero import features indicate imported libraries/functions
         active_imports = int(np.sum(import_features > 0))
-        indicators.append({
-            "category": "imports",
-            "indicator": f"{active_imports} active import features detected",
-            "severity": 0.05,
-        })
+        if active_imports > 0:
+            indicators.append({
+                "category": "imports",
+                "indicator": f"{active_imports} active import features detected",
+                "severity": 0.05,
+            })
 
         # Check for patterns indicating suspicious imports
         import_nonzero = np.where(import_features > 0)[0]

@@ -199,10 +199,7 @@ class IOCExtractor:
                             "rule": match.rule,
                             "tags": list(match.tags) if match.tags else [],
                             "namespace": match.namespace,
-                            "strings": [
-                                {"offset": s[0], "identifier": s[1], "data": s[2].hex()[:64]}
-                                for s in match.strings[:5]  # Limit to first 5 matches
-                            ] if hasattr(match, "strings") else [],
+                            "strings": self._format_yara_strings(match),
                         },
                     ))
                 logger.info("YARA: %d rule matches on %s", len(matches), pe_path.name)
@@ -210,6 +207,37 @@ class IOCExtractor:
                 logger.warning("YARA matching failed: %s", e)
 
         return iocs
+
+    @staticmethod
+    def _format_yara_strings(match) -> list[dict]:
+        """Extract YARA match string instances safely across yara-python versions."""
+        if not hasattr(match, "strings") or not match.strings:
+            return []
+
+        string_details = []
+        for s in match.strings[:5]:
+            if isinstance(s, (tuple, list)):
+                offset = s[0]
+                identifier = str(s[1])
+                raw_data = s[2] if isinstance(s[2], bytes) else str(s[2]).encode()
+                string_details.append({
+                    "offset": offset,
+                    "identifier": identifier,
+                    "data": raw_data.hex()[:64],
+                })
+            elif hasattr(s, "identifier") and hasattr(s, "instances"):
+                identifier = str(s.identifier)
+                for inst in getattr(s, "instances", []):
+                    offset = getattr(inst, "offset", 0)
+                    matched_data = getattr(inst, "matched_data", b"")
+                    if isinstance(matched_data, str):
+                        matched_data = matched_data.encode()
+                    string_details.append({
+                        "offset": offset,
+                        "identifier": identifier,
+                        "data": matched_data.hex()[:64],
+                    })
+        return string_details[:5]
 
     def extract_all(
         self, report: ForensicReport, pe_path: Optional[str | Path] = None

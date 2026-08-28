@@ -12,6 +12,7 @@ Features:
 from __future__ import annotations
 
 import os
+import copy
 import logging
 from typing import Dict, Any, Optional, Tuple, List
 
@@ -453,6 +454,7 @@ class GroupMLPDetector(MalwareDetector):
 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
+                    best_net_state = copy.deepcopy(self.net.state_dict())
                     patience_counter = 0
                 else:
                     patience_counter += 1
@@ -464,6 +466,10 @@ class GroupMLPDetector(MalwareDetector):
                 "Epoch %3d/%3d: train_loss=%.4f, train_acc=%.4f, val_loss=%.4f, val_acc=%.4f",
                 epoch, self.max_epochs, train_loss, train_acc, val_loss, val_acc
             )
+
+        if best_net_state is not None:
+            self.net.load_state_dict(best_net_state)
+            logger.info("Restored best validation epoch weights (val_loss=%.4f)", best_val_loss)
 
         self._fitted = True
         return {

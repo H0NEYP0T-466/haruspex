@@ -125,3 +125,14 @@ class TestIOCExtractor:
         d = ioc.to_dict()
         assert d["ioc_type"] == "suspicious_api"
         assert d["severity"] == 0.8
+
+    def test_extract_from_pe_with_yara_match(self, tmp_path):
+        """extract_from_pe processes YARA matches without raising TypeError."""
+        pe_file = tmp_path / "test.exe"
+        pe_file.write_bytes(b"MZ" + b"\x00" * 50 + b"IsDebuggerPresent\x00CheckRemoteDebuggerPresent\x00")
+        extractor = IOCExtractor()
+        iocs = extractor.extract_from_pe(pe_file)
+        yara_iocs = [ioc for ioc in iocs if ioc.ioc_type == "yara_match"]
+        assert len(yara_iocs) > 0
+        assert yara_iocs[0].details["rule"] == "anti_debug_api"
+        assert len(yara_iocs[0].details["strings"]) > 0

@@ -97,8 +97,8 @@ def main() -> None:
           f"test_f1={lgb_metrics['test_f1']:.4f}, "
           f"test_auc={lgb_metrics['test_auc']:.4f}")
 
-    # Select best model by test AUC
-    if xgb_metrics["test_auc"] >= lgb_metrics["test_auc"]:
+    # Select best model by validation AUC (preventing test set selection bias)
+    if xgb_metrics.get("val_auc", 0.0) >= lgb_metrics.get("val_auc", 0.0):
         best_model = xgb_model
         best_name = "xgboost"
         best_metrics = xgb_metrics
@@ -107,7 +107,7 @@ def main() -> None:
         best_name = "lightgbm"
         best_metrics = lgb_metrics
 
-    print(f"\n  Best model: {best_name} (AUC={best_metrics['test_auc']:.4f})")
+    print(f"\n  Best model (selected by val_auc={best_metrics.get('val_auc', 0.0):.4f}): {best_name} (test_auc={best_metrics['test_auc']:.4f})")
 
     # ------------------------------------------------------------------
     # Step 3: Evaluate on all splits
