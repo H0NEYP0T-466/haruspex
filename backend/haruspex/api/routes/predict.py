@@ -11,7 +11,6 @@ POST /api/predict
 
 from __future__ import annotations
 
-import io
 import tempfile
 from pathlib import Path
 from typing import Any, Optional
@@ -20,7 +19,7 @@ import numpy as np
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from haruspex.config import get_feature_names, NUM_FEATURES
+from haruspex.config import NUM_FEATURES, get_feature_names
 from haruspex.correlation.correlator import Correlator
 from haruspex.forensics.ioc_extractor import IOCExtractor
 from haruspex.forensics.static_analysis import StaticAnalyzer

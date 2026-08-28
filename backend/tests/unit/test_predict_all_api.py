@@ -21,10 +21,10 @@ class _DummyModel:
         self._pred = pred
         self._proba = proba
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
+    def predict(self, x: np.ndarray) -> np.ndarray:
         return np.array([self._pred], dtype=np.int32)
 
-    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+    def predict_proba(self, x: np.ndarray) -> np.ndarray:
         return np.array([self._proba], dtype=np.float32)
 
 
