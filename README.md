@@ -51,6 +51,7 @@
   - [BODMAS-Trained Models](#bodmas-trained-models)
   - [EMBER 2018-Trained Models](#ember-2018-trained-models)
   - [Zero-Day Family-Held-Out Results](#zero-day-family-held-out-results)
+- [Visual Gallery](#visual-gallery)
 - [Plots & Visualizations](#plots--visualizations)
 - [Folder Structure](#folder-structure)
 - [Tech Stack](#tech-stack)
@@ -231,6 +232,10 @@ npm run dev    # Development server at http://localhost:5173
 npm run build  # Production build
 ```
 
+<p align="center">
+  <img src="visuals/web_ui.png" width="85%" alt="HARUSPEX React Dashboard — Upload PE file, select model, view malware probability, SHAP/LIME explanations, and unified investigation report" />
+</p>
+
 ---
 
 ## Evaluation Protocols
@@ -282,6 +287,10 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
 | **LightGBM** | 95.95% | 96.17% | 99.19% | 99.62% |
 | **Group-MLP** | 93.71% | 97.53% | 97.53% | 99.40% |
 | **TabNet** | 94.84% | 66.08% | 98.49% | 81.60% |
+
+<p align="center">
+  <img src="visuals/allmodels.png" width="90%" alt="All 8 Models Performance Comparison — BODMAS and EMBER trained models across all evaluation protocols" />
+</p>
 
 ---
 
@@ -410,6 +419,60 @@ The most critical evaluation: models trained on known families and tested on **4
 <p align="center">
   <em>XGBoost</em> &nbsp;&nbsp;&nbsp; <em>LightGBM</em>
 </p>
+
+---
+
+## Visual Gallery
+
+A curated collection of HARUSPEX architecture diagrams, model internals, and the unified investigation report.
+
+### System Architecture
+
+<p align="center">
+  <img src="visuals/arc.jpeg" width="80%" alt="HARUSPEX Full System Architecture" />
+</p>
+
+*The complete HARUSPEX pipeline: PE file → EMBER v2 vectorization → ML models (XGBoost/LightGBM/Group-MLP/TabNet) → XAI (SHAP/LIME) + Forensics (LIEF/YARA/IOC) → Correlation Engine → Unified Investigation Report → Dashboard.*
+
+### Group-MLP Architecture
+
+<p align="center">
+  <img src="visuals/mlp-arc.jpeg" width="80%" alt="Group-MLP Architecture" />
+</p>
+
+*Custom Group-wise Residual MLP: 9 feature groups → Group Projection → Group Attention → Dynamic Gating Network → Residual MLP Backbone → Multi-task heads (Binary + Family 582-way + Category 14-way).*
+
+### TabNet Architecture
+
+<p align="center">
+  <img src="visuals/tabnet-arc.jpeg" width="80%" alt="TabNet Architecture" />
+</p>
+
+*TabNet attentive architecture: Feature Transformer → Attentive Transformer × N_steps with sparse attention masks → Aggregated output → Malware probability. Built-in feature importance via attention masks.*
+
+### All Models Comparison
+
+<p align="center">
+  <img src="visuals/allmodels.png" width="85%" alt="All Models Performance Comparison" />
+</p>
+
+*Side-by-side comparison of all 8 models (4 BODMAS + 4 EMBER) across all evaluation protocols. LightGBM leads zero-day detection; Group-MLP leads cross-dataset generalization.*
+
+### Unified Investigation Report (SHAP + LIME + Forensics)
+
+<p align="center">
+  <img src="visuals/shap+lime.png" width="80%" alt="Unified Investigation Report" />
+</p>
+
+*Core contribution in action: Correlated evidence (AI + Forensic agree) elevated to high severity. SHAP and LIME feature attributions mapped to forensic indicators. Sample shown classified as benign with 99.7% confidence.*
+
+### React Dashboard
+
+<p align="center">
+  <img src="visuals/web_ui.png" width="80%" alt="HARUSPEX Dashboard UI" />
+</p>
+
+*TypeScript React frontend: Upload PE files, select models, view malware probability, SHAP/LIME explanations, and unified investigation reports. Dataset selection between BODMAS and EMBER for cross-dataset comparison.*
 
 ---
 
@@ -654,6 +717,10 @@ The most critical evaluation: models trained on known families and tested on **4
 </p>
 <p align="center">
   <em>LIME Sample 3</em> &nbsp;&nbsp;&nbsp; <em>LIME Sample 4</em>
+</p>
+
+<p align="center">
+  <img src="visuals/shap+lime.png" width="85%" alt="Unified Investigation Report — Correlated AI+Forensic Evidence with SHAP/LIME feature attributions, malware score, and severity-scored evidence items" />
 </p>
 
 ---
