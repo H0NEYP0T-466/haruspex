@@ -46,7 +46,7 @@
 - [Usage](#-usage)
 - [Evaluation Protocols](#evaluation-protocols)
 - [API Endpoints](#api-endpoints)
-- [Results — All 8 Models](#-results--all-8-models)
+- [Results - All 8 Models](#-results--all-8-models)
   - [Summary Table](#summary-table)
   - [BODMAS-Trained Models](#bodmas-trained-models)
   - [EMBER 2018-Trained Models](#ember-2018-trained-models)
@@ -91,16 +91,16 @@ Input (PE file / Feature vector)
 
 ## Features
 
-- **Multi-Model Ensemble** — XGBoost, LightGBM, Group-MLP, and TabNet classifiers
-- **Explainable AI** — TreeSHAP global/local explanations + LIME local interpretable explanations
-- **Forensic Correlation** — Core innovation: correlates AI feature attributions with PE static analysis (LIEF), YARA rules, and IOC extraction into unified severity-scored reports
-- **4 Evaluation Protocols** — Random, Family-Held-Out (zero-day), Temporal, and Cross-Dataset generalization
-- **Zero-Day Detection** — Holds out entire malware families to simulate truly unseen threats
-- **REST API** — FastAPI backend with prediction, explanation, and dataset browsing endpoints
-- **React Dashboard** — Modern TypeScript frontend with interactive visualizations
-- **PE File Upload** — Accepts raw PE binaries for on-demand analysis
-- **YARA Rule Engine** — 5 rule categories: anti-debug, crypto indicators, dropper indicators, packed binary, suspicious imports
-- **EMBER-Compatible** — Uses 2381 EMBER feature vectors for standard PE representation
+- **Multi-Model Ensemble**: XGBoost, LightGBM, Group-MLP, and TabNet classifiers
+- **Explainable AI**: TreeSHAP global/local explanations + LIME local interpretable explanations
+- **Forensic Correlation**: Core innovation - correlates AI feature attributions with PE static analysis (LIEF), YARA rules, and IOC extraction into unified severity-scored reports
+- **4 Evaluation Protocols**: Random, Family-Held-Out (zero-day), Temporal, and Cross-Dataset generalization
+- **Zero-Day Detection**: Holds out entire malware families to simulate truly unseen threats
+- **REST API**: FastAPI backend with prediction, explanation, and dataset browsing endpoints
+- **React Dashboard**: Modern TypeScript frontend with interactive visualizations
+- **PE File Upload**: Accepts raw PE binaries for on-demand analysis
+- **YARA Rule Engine**: 5 rule categories - anti-debug, crypto indicators, dropper indicators, packed binary, suspicious imports
+- **EMBER-Compatible**: Uses 2381 EMBER feature vectors for standard PE representation
 
 ---
 
@@ -179,7 +179,7 @@ The frontend runs on `http://localhost:5173` and proxies API requests to `http:/
 
 ## Usage
 
-### CLI — Training
+### CLI - Training
 
 ```bash
 cd backend
@@ -188,14 +188,14 @@ python scripts/train.py          # Train XGBoost + LightGBM on BODMAS
 python scripts/evaluate.py       # Evaluate on all 4 protocols
 ```
 
-### CLI — Zero-Day Evaluation
+### CLI - Zero-Day Evaluation
 
 ```bash
 cd backend/haruspex/zero_day
 python familyout.py              # Family-held-out zero-day evaluation
 ```
 
-### API — Prediction
+### API - Prediction
 
 ```bash
 # Upload PE file for full investigation pipeline
@@ -255,7 +255,7 @@ npm run build  # Production build
 
 ---
 
-## Results — All 8 Models
+## Results - All 8 Models
 
 HARUSPEX trains and evaluates **8 models** across **two training datasets** and **four evaluation protocols**.
 
@@ -357,7 +357,7 @@ HARUSPEX trains and evaluates **8 models** across **two training datasets** and 
 
 ### Zero-Day Family-Held-Out Results
 
-The most critical evaluation: models trained on known families and tested on **4 held-out families** never seen during training — simulating true zero-day malware detection.
+The most critical evaluation: models trained on known families and tested on **4 held-out families** never seen during training - simulating true zero-day malware detection.
 
 #### Dataset Details
 
@@ -372,141 +372,273 @@ The most critical evaluation: models trained on known families and tested on **4
 | Train set | 130,217 (53,075 malware + 77,142 benign) |
 | Test set | 81,360 (77,142 benign + 4,218 malware) |
 
-#### XGBoost vs LightGBM — Family-Held-Out
+#### XGBoost vs LightGBM - Family-Held-Out
 
 | Model | Accuracy | Precision | Recall | F1 Score | AUC-ROC | Malware Missed |
 |-------|----------|-----------|--------|----------|---------|----------------|
 | XGBoost | 99.87% | 100.00% | 97.51% | 98.74% | 100.00% | 106 / 4,218 |
 | **LightGBM** | **100.00%** | **100.00%** | **99.91%** | **99.95%** | **100.00%** | **4 / 4,218** |
 
-#### Confusion Matrices — Family-Held-Out
+#### Confusion Matrices - Family-Held-Out
 
 **XGBoost Confusion Matrix:**
-![XGBoost Confusion Matrix — Family-Held-Out](backend/haruspex/zero_day/data/xgboost_confusion.png)
+![XGBoost Confusion Matrix - Family-Held-Out](backend/haruspex/zero_day/data/xgboost_confusion.png)
 
 **LightGBM Confusion Matrix:**
-![LightGBM Confusion Matrix — Family-Held-Out](backend/haruspex/zero_day/data/lightgbm_confusion.png)
+![LightGBM Confusion Matrix - Family-Held-Out](backend/haruspex/zero_day/data/lightgbm_confusion.png)
 
-#### ROC Curves — Family-Held-Out
+#### ROC Curves - Family-Held-Out
 
 **XGBoost ROC:**
-![XGBoost ROC — Family-Held-Out](backend/haruspex/zero_day/data/xgboost_roc.png)
+![XGBoost ROC - Family-Held-Out](backend/haruspex/zero_day/data/xgboost_roc.png)
 
 **LightGBM ROC:**
-![LightGBM ROC — Family-Held-Out](backend/haruspex/zero_day/data/lightgbm_roc.png)
+![LightGBM ROC - Family-Held-Out](backend/haruspex/zero_day/data/lightgbm_roc.png)
 
 ---
 
 ## Plots & Visualizations
 
-### BODMAS-Trained XGBoost Plots
+### XGBoost (BODMAS) - Confusion Matrices
 
-| Plot | Link |
-|------|------|
-| Random Confusion Matrix | ![](outputs/plots/xgboost_random_confusion_matrix.png) |
-| Random ROC | ![](outputs/plots/xgboost_random_roc_curve.png) |
-| Family-Held-Out Confusion Matrix | ![](outputs/plots/xgboost_family_held_out_confusion_matrix.png) |
-| Family-Held-Out ROC | ![](outputs/plots/xgboost_family_held_out_roc_curve.png) |
-| Temporal Confusion Matrix | ![](outputs/plots/xgboost_temporal_confusion_matrix.png) |
-| Temporal ROC | ![](outputs/plots/xgboost_temporal_roc_curve.png) |
-| Cross-Dataset Confusion Matrix | ![](outputs/plots/xgboost_cross_dataset_confusion_matrix.png) |
-| Cross-Dataset ROC | ![](outputs/plots/xgboost_cross_dataset_roc_curve.png) |
-| Feature Importance | ![](outputs/plots/xgboost_feature_importance.png) |
+<p align="center">
+  <img src="outputs/plots/xgboost_random_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/xgboost_family_held_out_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/xgboost_temporal_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/xgboost_cross_dataset_confusion_matrix.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Family-Held-Out</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
 
-### BODMAS-Trained LightGBM Plots
+### XGBoost (BODMAS) - ROC Curves & Feature Importance
 
-| Plot | Link |
-|------|------|
-| Random Confusion Matrix | ![](outputs/plots/lightgbm_random_confusion_matrix.png) |
-| Random ROC | ![](outputs/plots/lightgbm_random_roc_curve.png) |
-| Family-Held-Out Confusion Matrix | ![](outputs/plots/lightgbm_family_held_out_confusion_matrix.png) |
-| Family-Held-Out ROC | ![](outputs/plots/lightgbm_family_held_out_roc_curve.png) |
-| Temporal Confusion Matrix | ![](outputs/plots/lightgbm_temporal_confusion_matrix.png) |
-| Temporal ROC | ![](outputs/plots/lightgbm_temporal_roc_curve.png) |
-| Cross-Dataset Confusion Matrix | ![](outputs/plots/lightgbm_cross_dataset_confusion_matrix.png) |
-| Cross-Dataset ROC | ![](outputs/plots/lightgbm_cross_dataset_roc_curve.png) |
-| Feature Importance | ![](outputs/plots/lightgbm_feature_importance.png) |
+<p align="center">
+  <img src="outputs/plots/xgboost_random_roc_curve.png" width="24%" />
+  <img src="outputs/plots/xgboost_family_held_out_roc_curve.png" width="24%" />
+  <img src="outputs/plots/xgboost_temporal_roc_curve.png" width="24%" />
+  <img src="outputs/plots/xgboost_cross_dataset_roc_curve.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Family-Held-Out</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
 
-### BODMAS-Trained Group-MLP Plots
+<p align="center">
+  <img src="outputs/plots/xgboost_feature_importance.png" width="50%" />
+</p>
 
-| Plot | Link |
-|------|------|
-| Random Confusion Matrix | ![](deepLearning/phase1/plots/mlp_random_cm.png) |
-| Random ROC | ![](deepLearning/phase1/plots/mlp_random_roc.png) |
-| Temporal Confusion Matrix | ![](deepLearning/phase1/plots/mlp_temporal_cm.png) |
-| Temporal ROC | ![](deepLearning/phase1/plots/mlp_temporal_roc.png) |
-| Family-Held-Out Confusion Matrix | ![](deepLearning/phase1/plots/mlp_family_cm.png) |
-| Cross-Dataset Confusion Matrix | ![](deepLearning/phase1/plots/mlp_cross_cm.png) |
-| Cross-Dataset ROC | ![](deepLearning/phase1/plots/mlp_cross_roc.png) |
-| Attention Heatmap | ![](deepLearning/phase1/plots/mlp_attention_heatmap.png) |
-| Gate Distribution | ![](deepLearning/phase1/plots/mlp_gate_distribution.png) |
-| Gate Profiles (Family) | ![](deepLearning/phase1/plots/mlp_family_gate_profiles.png) |
+---
 
-### BODMAS-Trained TabNet Plots
+### LightGBM (BODMAS) - Confusion Matrices
 
-| Plot | Link |
-|------|------|
-| Random Confusion Matrix | ![](deepLearning/phase1/plots/tabnet_random_cm.png) |
-| Random ROC | ![](deepLearning/phase1/plots/tabnet_random_roc.png) |
-| Temporal Confusion Matrix | ![](deepLearning/phase1/plots/tabnet_temporal_cm.png) |
-| Temporal ROC | ![](deepLearning/phase1/plots/tabnet_temporal_roc.png) |
-| Family-Held-Out Confusion Matrix | ![](deepLearning/phase1/plots/tabnet_family_cm.png) |
-| Cross-Dataset Confusion Matrix | ![](deepLearning/phase1/plots/tabnet_cross_cm.png) |
-| Cross-Dataset ROC | ![](deepLearning/phase1/plots/tabnet_cross_roc.png) |
-| Feature Importance | ![](deepLearning/phase1/plots/tabnet_feature_importance.png) |
+<p align="center">
+  <img src="outputs/plots/lightgbm_random_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/lightgbm_family_held_out_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/lightgbm_temporal_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/lightgbm_cross_dataset_confusion_matrix.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Family-Held-Out</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
 
-### EMBER 2018-Trained XGBoost Plots
+### LightGBM (BODMAS) - ROC Curves & Feature Importance
 
-| Plot | Link |
-|------|------|
-| EMBER Test Confusion Matrix | ![](outputs/plots/ember_xgboost_ember_test_confusion_matrix.png) |
-| EMBER Test ROC | ![](outputs/plots/ember_xgboost_ember_test_roc_curve.png) |
-| BODMAS Generalization Confusion Matrix | ![](outputs/plots/ember_xgboost_bodmas_generalization_confusion_matrix.png) |
-| BODMAS Generalization ROC | ![](outputs/plots/ember_xgboost_bodmas_generalization_roc_curve.png) |
-| Feature Importance | ![](outputs/plots/ember_xgboost_feature_importance.png) |
+<p align="center">
+  <img src="outputs/plots/lightgbm_random_roc_curve.png" width="24%" />
+  <img src="outputs/plots/lightgbm_family_held_out_roc_curve.png" width="24%" />
+  <img src="outputs/plots/lightgbm_temporal_roc_curve.png" width="24%" />
+  <img src="outputs/plots/lightgbm_cross_dataset_roc_curve.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Family-Held-Out</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
 
-### EMBER 2018-Trained LightGBM Plots
+<p align="center">
+  <img src="outputs/plots/lightgbm_feature_importance.png" width="50%" />
+</p>
 
-| Plot | Link |
-|------|------|
-| EMBER Test Confusion Matrix | ![](outputs/plots/ember_lightgbm_ember_test_confusion_matrix.png) |
-| EMBER Test ROC | ![](outputs/plots/ember_lightgbm_ember_test_roc_curve.png) |
-| BODMAS Generalization Confusion Matrix | ![](outputs/plots/ember_lightgbm_bodmas_generalization_confusion_matrix.png) |
-| BODMAS Generalization ROC | ![](outputs/plots/ember_lightgbm_bodmas_generalization_roc_curve.png) |
-| Feature Importance | ![](outputs/plots/ember_lightgbm_feature_importance.png) |
+---
 
-### EMBER 2018-Trained Group-MLP Plots
+### Group-MLP (BODMAS) - Confusion Matrices
 
-| Plot | Link |
-|------|------|
-| EMBER Test Confusion Matrix | ![](deepLearning/phase2/plots/ember_mlp_test_cm.png) |
-| EMBER Test ROC | ![](deepLearning/phase2/plots/ember_mlp_test_roc.png) |
-| Cross-BODMAS Confusion Matrix | ![](deepLearning/phase2/plots/ember_mlp_cross_bodmas_cm.png) |
-| Cross-BODMAS ROC | ![](deepLearning/phase2/plots/ember_mlp_cross_bodmas_roc.png) |
-| Attention Heatmap | ![](deepLearning/phase2/plots/ember_mlp_attention_heatmap.png) |
-| Gate Distribution | ![](deepLearning/phase2/plots/ember_mlp_gate_distribution.png) |
+<p align="center">
+  <img src="deepLearning/phase1/plots/mlp_random_cm.png" width="24%" />
+  <img src="deepLearning/phase1/plots/mlp_family_cm.png" width="24%" />
+  <img src="deepLearning/phase1/plots/mlp_temporal_cm.png" width="24%" />
+  <img src="deepLearning/phase1/plots/mlp_cross_cm.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Family-Held-Out</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
 
-### EMBER 2018-Trained TabNet Plots
+### Group-MLP (BODMAS) - ROC Curves
 
-| Plot | Link |
-|------|------|
-| EMBER Test Confusion Matrix | ![](deepLearning/phase2/plots/ember_tabnet_test_cm.png) |
-| EMBER Test ROC | ![](deepLearning/phase2/plots/ember_tabnet_test_roc.png) |
-| Cross-BODMAS Confusion Matrix | ![](deepLearning/phase2/plots/ember_tabnet_cross_bodmas_cm.png) |
-| Cross-BODMAS ROC | ![](deepLearning/phase2/plots/ember_tabnet_cross_bodmas_roc.png) |
-| Feature Importance | ![](deepLearning/phase2/plots/ember_tabnet_feature_importance.png) |
+<p align="center">
+  <img src="deepLearning/phase1/plots/mlp_random_roc.png" width="24%" />
+  <img src="deepLearning/phase1/plots/mlp_temporal_roc.png" width="24%" />
+  <img src="deepLearning/phase1/plots/mlp_cross_roc.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
 
-### XAI Plots
+### Group-MLP (BODMAS) - Attention & Gate Analysis
 
-| Plot | Link |
-|------|------|
-| SHAP Summary | ![](outputs/plots/shap_summary.png) |
-| Phase 2 SHAP Summary | ![](outputs/plots/phase2_shap_summary.png) |
-| LIME Sample 0 | ![](outputs/plots/lime_sample_0.png) |
-| LIME Sample 1 | ![](outputs/plots/lime_sample_1.png) |
-| LIME Sample 2 | ![](outputs/plots/lime_sample_2.png) |
-| LIME Sample 3 | ![](outputs/plots/lime_sample_3.png) |
-| LIME Sample 4 | ![](outputs/plots/lime_sample_4.png) |
+<p align="center">
+  <img src="deepLearning/phase1/plots/mlp_attention_heatmap.png" width="32%" />
+  <img src="deepLearning/phase1/plots/mlp_gate_distribution.png" width="32%" />
+  <img src="deepLearning/phase1/plots/mlp_family_gate_profiles.png" width="32%" />
+</p>
+<p align="center">
+  <em>Attention Heatmap</em> &nbsp;&nbsp;&nbsp; <em>Gate Distribution</em> &nbsp;&nbsp;&nbsp; <em>Gate Profiles (Family)</em>
+</p>
+
+---
+
+### TabNet (BODMAS) - Confusion Matrices
+
+<p align="center">
+  <img src="deepLearning/phase1/plots/tabnet_random_cm.png" width="24%" />
+  <img src="deepLearning/phase1/plots/tabnet_family_cm.png" width="24%" />
+  <img src="deepLearning/phase1/plots/tabnet_temporal_cm.png" width="24%" />
+  <img src="deepLearning/phase1/plots/tabnet_cross_cm.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random</em> &nbsp;&nbsp;&nbsp; <em>Family-Held-Out</em> &nbsp;&nbsp;&nbsp; <em>Temporal</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset</em>
+</p>
+
+### TabNet (BODMAS) - ROC Curves & Feature Importance
+
+<p align="center">
+  <img src="deepLearning/phase1/plots/tabnet_random_roc.png" width="24%" />
+  <img src="deepLearning/phase1/plots/tabnet_temporal_roc.png" width="24%" />
+  <img src="deepLearning/phase1/plots/tabnet_cross_roc.png" width="24%" />
+  <img src="deepLearning/phase1/plots/tabnet_feature_importance.png" width="24%" />
+</p>
+<p align="center">
+  <em>Random ROC</em> &nbsp;&nbsp;&nbsp; <em>Temporal ROC</em> &nbsp;&nbsp;&nbsp; <em>Cross-Dataset ROC</em> &nbsp;&nbsp;&nbsp; <em>Feature Importance</em>
+</p>
+
+---
+
+### XGBoost (EMBER 2018) - Confusion Matrices & ROC
+
+<p align="center">
+  <img src="outputs/plots/ember_xgboost_ember_test_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/ember_xgboost_ember_test_roc_curve.png" width="24%" />
+  <img src="outputs/plots/ember_xgboost_bodmas_generalization_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/ember_xgboost_bodmas_generalization_roc_curve.png" width="24%" />
+</p>
+<p align="center">
+  <em>EMBER Test CM</em> &nbsp;&nbsp;&nbsp; <em>EMBER Test ROC</em> &nbsp;&nbsp;&nbsp; <em>BODMAS Gen. CM</em> &nbsp;&nbsp;&nbsp; <em>BODMAS Gen. ROC</em>
+</p>
+
+<p align="center">
+  <img src="outputs/plots/ember_xgboost_feature_importance.png" width="50%" />
+</p>
+
+---
+
+### LightGBM (EMBER 2018) - Confusion Matrices & ROC
+
+<p align="center">
+  <img src="outputs/plots/ember_lightgbm_ember_test_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/ember_lightgbm_ember_test_roc_curve.png" width="24%" />
+  <img src="outputs/plots/ember_lightgbm_bodmas_generalization_confusion_matrix.png" width="24%" />
+  <img src="outputs/plots/ember_lightgbm_bodmas_generalization_roc_curve.png" width="24%" />
+</p>
+<p align="center">
+  <em>EMBER Test CM</em> &nbsp;&nbsp;&nbsp; <em>EMBER Test ROC</em> &nbsp;&nbsp;&nbsp; <em>BODMAS Gen. CM</em> &nbsp;&nbsp;&nbsp; <em>BODMAS Gen. ROC</em>
+</p>
+
+<p align="center">
+  <img src="outputs/plots/ember_lightgbm_feature_importance.png" width="50%" />
+</p>
+
+---
+
+### Group-MLP (EMBER 2018) - Confusion Matrices & ROC
+
+<p align="center">
+  <img src="deepLearning/phase2/plots/ember_mlp_test_cm.png" width="24%" />
+  <img src="deepLearning/phase2/plots/ember_mlp_test_roc.png" width="24%" />
+  <img src="deepLearning/phase2/plots/ember_mlp_cross_bodmas_cm.png" width="24%" />
+  <img src="deepLearning/phase2/plots/ember_mlp_cross_bodmas_roc.png" width="24%" />
+</p>
+<p align="center">
+  <em>EMBER Test CM</em> &nbsp;&nbsp;&nbsp; <em>EMBER Test ROC</em> &nbsp;&nbsp;&nbsp; <em>Cross-BODMAS CM</em> &nbsp;&nbsp;&nbsp; <em>Cross-BODMAS ROC</em>
+</p>
+
+### Group-MLP (EMBER 2018) - Attention & Gate Analysis
+
+<p align="center">
+  <img src="deepLearning/phase2/plots/ember_mlp_attention_heatmap.png" width="48%" />
+  <img src="deepLearning/phase2/plots/ember_mlp_gate_distribution.png" width="48%" />
+</p>
+<p align="center">
+  <em>Attention Heatmap</em> &nbsp;&nbsp;&nbsp; <em>Gate Distribution</em>
+</p>
+
+---
+
+### TabNet (EMBER 2018) - Confusion Matrices & ROC
+
+<p align="center">
+  <img src="deepLearning/phase2/plots/ember_tabnet_test_cm.png" width="24%" />
+  <img src="deepLearning/phase2/plots/ember_tabnet_test_roc.png" width="24%" />
+  <img src="deepLearning/phase2/plots/ember_tabnet_cross_bodmas_cm.png" width="24%" />
+  <img src="deepLearning/phase2/plots/ember_tabnet_cross_bodmas_roc.png" width="24%" />
+</p>
+<p align="center">
+  <em>EMBER Test CM</em> &nbsp;&nbsp;&nbsp; <em>EMBER Test ROC</em> &nbsp;&nbsp;&nbsp; <em>Cross-BODMAS CM</em> &nbsp;&nbsp;&nbsp; <em>Cross-BODMAS ROC</em>
+</p>
+
+<p align="center">
+  <img src="deepLearning/phase2/plots/ember_tabnet_feature_importance.png" width="50%" />
+</p>
+
+---
+
+### Zero-Day Family-Held-Out - Confusion Matrices & ROC
+
+<p align="center">
+  <img src="backend/haruspex/zero_day/data/xgboost_confusion.png" width="24%" />
+  <img src="backend/haruspex/zero_day/data/xgboost_roc.png" width="24%" />
+  <img src="backend/haruspex/zero_day/data/lightgbm_confusion.png" width="24%" />
+  <img src="backend/haruspex/zero_day/data/lightgbm_roc.png" width="24%" />
+</p>
+<p align="center">
+  <em>XGBoost CM</em> &nbsp;&nbsp;&nbsp; <em>XGBoost ROC</em> &nbsp;&nbsp;&nbsp; <em>LightGBM CM</em> &nbsp;&nbsp;&nbsp; <em>LightGBM ROC</em>
+</p>
+
+---
+
+### XAI - SHAP & LIME Explanations
+
+<p align="center">
+  <img src="outputs/plots/shap_summary.png" width="48%" />
+  <img src="outputs/plots/phase2_shap_summary.png" width="48%" />
+</p>
+<p align="center">
+  <em>Phase 1 SHAP Summary</em> &nbsp;&nbsp;&nbsp; <em>Phase 2 SHAP Summary</em>
+</p>
+
+<p align="center">
+  <img src="outputs/plots/lime_sample_0.png" width="32%" />
+  <img src="outputs/plots/lime_sample_1.png" width="32%" />
+  <img src="outputs/plots/lime_sample_2.png" width="32%" />
+</p>
+<p align="center">
+  <em>LIME Sample 0</em> &nbsp;&nbsp;&nbsp; <em>LIME Sample 1</em> &nbsp;&nbsp;&nbsp; <em>LIME Sample 2</em>
+</p>
+
+<p align="center">
+  <img src="outputs/plots/lime_sample_3.png" width="32%" />
+  <img src="outputs/plots/lime_sample_4.png" width="32%" />
+</p>
+<p align="center">
+  <em>LIME Sample 3</em> &nbsp;&nbsp;&nbsp; <em>LIME Sample 4</em>
+</p>
 
 ---
 
@@ -605,116 +737,116 @@ HARUSPEX/
 
 ## Dependencies & Packages
 
-### Backend — Runtime Dependencies
+### Backend - Runtime Dependencies
 
 <details>
 <summary><strong>Web API</strong></summary>
 
-[![fastapi](https://img.shields.io/pypi/v/fastapi?style=for-the-badge&label=fastapi)](https://pypi.org/project/fastapi/) — High-performance async web framework
+[![fastapi](https://img.shields.io/pypi/v/fastapi?style=for-the-badge&label=fastapi)](https://pypi.org/project/fastapi/) - High-performance async web framework
 
-[![uvicorn](https://img.shields.io/pypi/v/uvicorn?style=for-the-badge&label=uvicorn)](https://pypi.org/project/uvicorn/) — ASGI server
+[![uvicorn](https://img.shields.io/pypi/v/uvicorn?style=for-the-badge&label=uvicorn)](https://pypi.org/project/uvicorn/) - ASGI server
 
-[![pydantic](https://img.shields.io/pypi/v/pydantic?style=for-the-badge&label=pydantic)](https://pypi.org/project/pydantic/) — Data validation
+[![pydantic](https://img.shields.io/pypi/v/pydantic?style=for-the-badge&label=pydantic)](https://pypi.org/project/pydantic/) - Data validation
 
-[![python-multipart](https://img.shields.io/pypi/v/python-multipart?style=for-the-badge&label=python-multipart)](https://pypi.org/project/python-multipart/) — File upload support
+[![python-multipart](https://img.shields.io/pypi/v/python-multipart?style=for-the-badge&label=python-multipart)](https://pypi.org/project/python-multipart/) - File upload support
 
-[![python-dotenv](https://img.shields.io/pypi/v/python-dotenv?style=for-the-badge&label=python-dotenv)](https://pypi.org/project/python-dotenv/) — Environment variable management
+[![python-dotenv](https://img.shields.io/pypi/v/python-dotenv?style=for-the-badge&label=python-dotenv)](https://pypi.org/project/python-dotenv/) - Environment variable management
 
 </details>
 
 <details>
 <summary><strong>Machine Learning</strong></summary>
 
-[![xgboost](https://img.shields.io/pypi/v/xgboost?style=for-the-badge&label=xgboost)](https://pypi.org/project/xgboost/) — Gradient boosting framework
+[![xgboost](https://img.shields.io/pypi/v/xgboost?style=for-the-badge&label=xgboost)](https://pypi.org/project/xgboost/) - Gradient boosting framework
 
-[![lightgbm](https://img.shields.io/pypi/v/lightgbm?style=for-the-badge&label=lightgbm)](https://pypi.org/project/lightgbm/) — Gradient boosting framework
+[![lightgbm](https://img.shields.io/pypi/v/lightgbm?style=for-the-badge&label=lightgbm)](https://pypi.org/project/lightgbm/) - Gradient boosting framework
 
-[![scikit-learn](https://img.shields.io/pypi/v/scikit-learn?style=for-the-badge&label=scikit-learn)](https://pypi.org/project/scikit-learn/) — ML utilities
+[![scikit-learn](https://img.shields.io/pypi/v/scikit-learn?style=for-the-badge&label=scikit-learn)](https://pypi.org/project/scikit-learn/) - ML utilities
 
 </details>
 
 <details>
 <summary><strong>Explainable AI (XAI)</strong></summary>
 
-[![shap](https://img.shields.io/pypi/v/shap?style=for-the-badge&label=shap)](https://pypi.org/project/shap/) — SHAP (SHapley Additive exPlanations)
+[![shap](https://img.shields.io/pypi/v/shap?style=for-the-badge&label=shap)](https://pypi.org/project/shap/) - SHAP (SHapley Additive exPlanations)
 
-[![lime](https://img.shields.io/pypi/v/lime?style=for-the-badge&label=lime)](https://pypi.org/project/lime/) — Local Interpretable Model-agnostic Explanations
+[![lime](https://img.shields.io/pypi/v/lime?style=for-the-badge&label=lime)](https://pypi.org/project/lime/) - Local Interpretable Model-agnostic Explanations
 
 </details>
 
 <details>
 <summary><strong>Data & Visualization</strong></summary>
 
-[![pandas](https://img.shields.io/pypi/v/pandas?style=for-the-badge&label=pandas)](https://pypi.org/project/pandas/) — Data manipulation
+[![pandas](https://img.shields.io/pypi/v/pandas?style=for-the-badge&label=pandas)](https://pypi.org/project/pandas/) - Data manipulation
 
-[![numpy](https://img.shields.io/pypi/v/numpy?style=for-the-badge&label=numpy)](https://pypi.org/project/numpy/) — Numerical computing
+[![numpy](https://img.shields.io/pypi/v/numpy?style=for-the-badge&label=numpy)](https://pypi.org/project/numpy/) - Numerical computing
 
-[![matplotlib](https://img.shields.io/pypi/v/matplotlib?style=for-the-badge&label=matplotlib)](https://pypi.org/project/matplotlib/) — Plotting
+[![matplotlib](https://img.shields.io/pypi/v/matplotlib?style=for-the-badge&label=matplotlib)](https://pypi.org/project/matplotlib/) - Plotting
 
 </details>
 
 <details>
 <summary><strong>Forensics</strong></summary>
 
-[![lief](https://img.shields.io/pypi/v/lief?style=for-the-badge&label=lief)](https://pypi.org/project/lief/) — PE/ELF/MachO parser
+[![lief](https://img.shields.io/pypi/v/lief?style=for-the-badge&label=lief)](https://pypi.org/project/lief/) - PE/ELF/MachO parser
 
-[![yara-python](https://img.shields.io/pypi/v/yara-python?style=for-the-badge&label=yara-python)](https://pypi.org/project/yara-python/) — YARA rule engine
+[![yara-python](https://img.shields.io/pypi/v/yara-python?style=for-the-badge&label=yara-python)](https://pypi.org/project/yara-python/) - YARA rule engine
 
-[![ember](https://img.shields.io/pypi/v/ember?style=for-the-badge&label=ember)](https://pypi.org/project/ember/) — EMBER v2 feature vectorizer
+[![ember](https://img.shields.io/pypi/v/ember?style=for-the-badge&label=ember)](https://pypi.org/project/ember/) - EMBER v2 feature vectorizer
 
 </details>
 
-### Backend — Dev Dependencies
+### Backend - Dev Dependencies
 
 <details>
 <summary><strong>Testing & Tooling</strong></summary>
 
-[![pytest](https://img.shields.io/pypi/v/pytest?style=for-the-badge&label=pytest)](https://pypi.org/project/pytest/) — Test framework
+[![pytest](https://img.shields.io/pypi/v/pytest?style=for-the-badge&label=pytest)](https://pypi.org/project/pytest/) - Test framework
 
-[![httpx](https://img.shields.io/pypi/v/httpx?style=for-the-badge&label=httpx)](https://pypi.org/project/httpx/) — HTTP client (FastAPI TestClient)
+[![httpx](https://img.shields.io/pypi/v/httpx?style=for-the-badge&label=httpx)](https://pypi.org/project/httpx/) - HTTP client (FastAPI TestClient)
 
-[![ruff](https://img.shields.io/pypi/v/ruff?style=for-the-badge&label=ruff)](https://pypi.org/project/ruff/) — Python linter + formatter
+[![ruff](https://img.shields.io/pypi/v/ruff?style=for-the-badge&label=ruff)](https://pypi.org/project/ruff/) - Python linter + formatter
 
 </details>
 
-### Deep Learning — Runtime Dependencies
+### Deep Learning - Runtime Dependencies
 
 <details>
 <summary><strong>Deep Learning</strong></summary>
 
-[![torch](https://img.shields.io/pypi/v/torch?style=for-the-badge&label=torch)](https://pypi.org/project/torch/) — PyTorch deep learning framework
+[![torch](https://img.shields.io/pypi/v/torch?style=for-the-badge&label=torch)](https://pypi.org/project/torch/) - PyTorch deep learning framework
 
-[![pytorch-tabnet](https://img.shields.io/pypi/v/pytorch-tabnet?style=for-the-badge&label=pytorch-tabnet)](https://pypi.org/project/pytorch-tabnet/) — TabNet implementation for PyTorch
+[![pytorch-tabnet](https://img.shields.io/pypi/v/pytorch-tabnet?style=for-the-badge&label=pytorch-tabnet)](https://pypi.org/project/pytorch-tabnet/) - TabNet implementation for PyTorch
 
 </details>
 
-### Frontend — Runtime Dependencies
+### Frontend - Runtime Dependencies
 
 <details>
 <summary><strong>Frontend Packages</strong></summary>
 
-[![react](https://img.shields.io/npm/v/react?style=for-the-badge&label=react)](https://www.npmjs.com/package/react) — UI library
+[![react](https://img.shields.io/npm/v/react?style=for-the-badge&label=react)](https://www.npmjs.com/package/react) - UI library
 
-[![react-dom](https://img.shields.io/npm/v/react-dom?style=for-the-badge&label=react-dom)](https://www.npmjs.com/package/react-dom) — React DOM renderer
+[![react-dom](https://img.shields.io/npm/v/react-dom?style=for-the-badge&label=react-dom)](https://www.npmjs.com/package/react-dom) - React DOM renderer
 
-[![react-router-dom](https://img.shields.io/npm/v/react-router-dom?style=for-the-badge&label=react-router-dom)](https://www.npmjs.com/package/react-router-dom) — Client-side routing
+[![react-router-dom](https://img.shields.io/npm/v/react-router-dom?style=for-the-badge&label=react-router-dom)](https://www.npmjs.com/package/react-router-dom) - Client-side routing
 
-[![recharts](https://img.shields.io/npm/v/recharts?style=for-the-badge&label=recharts)](https://www.npmjs.com/package/recharts) — Charting library
+[![recharts](https://img.shields.io/npm/v/recharts?style=for-the-badge&label=recharts)](https://www.npmjs.com/package/recharts) - Charting library
 
 </details>
 
-### Frontend — Dev Dependencies
+### Frontend - Dev Dependencies
 
 <details>
 <summary><strong>Build & Dev Tools</strong></summary>
 
-[![vite](https://img.shields.io/npm/v/vite?style=for-the-badge&label=vite)](https://www.npmjs.com/package/vite) — Build tool & dev server
+[![vite](https://img.shields.io/npm/v/vite?style=for-the-badge&label=vite)](https://www.npmjs.com/package/vite) - Build tool & dev server
 
-[![typescript](https://img.shields.io/npm/v/typescript?style=for-the-badge&label=typescript)](https://www.npmjs.com/package/typescript) — TypeScript compiler
+[![typescript](https://img.shields.io/npm/v/typescript?style=for-the-badge&label=typescript)](https://www.npmjs.com/package/typescript) - TypeScript compiler
 
-[![oxlint](https://img.shields.io/npm/v/oxlint?style=for-the-badge&label=oxlint)](https://www.npmjs.com/package/oxlint) — Fast linter
+[![oxlint](https://img.shields.io/npm/v/oxlint?style=for-the-badge&label=oxlint)](https://www.npmjs.com/package/oxlint) - Fast linter
 
-[![@vitejs/plugin-react](https://img.shields.io/npm/v/@vitejs/plugin-react?style=for-the-badge&label=@vitejs/plugin-react)](https://www.npmjs.com/package/@vitejs/plugin-react) — Vite React plugin
+[![@vitejs/plugin-react](https://img.shields.io/npm/v/@vitejs/plugin-react?style=for-the-badge&label=@vitejs/plugin-react)](https://www.npmjs.com/package/@vitejs/plugin-react) - Vite React plugin
 
 </details>
 
@@ -764,7 +896,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
@@ -776,7 +908,7 @@ To report security vulnerabilities, please see [SECURITY.md](SECURITY.md).
 
 ## Code of Conduct
 
-This project follows the Contributor Covenant Code of Conduct — see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+This project follows the Contributor Covenant Code of Conduct - see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 
