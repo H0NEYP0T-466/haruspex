@@ -108,6 +108,25 @@ export interface HealthResponse {
   version: string;
 }
 
+export interface MultiModelPredictionResponse {
+  sample_id: string;
+  models_tested: number;
+  summary: {
+    consensus: 'malware' | 'benign' | 'tie';
+    malware_votes: number;
+    benign_votes: number;
+  };
+  results: {
+    model_group: string;
+    model_name: string;
+    prediction: string;
+    confidence: number;
+    malware_probability: number;
+  }[];
+  forensic_summary: Record<string, unknown>;
+  ioc_count: number;
+}
+
 class HaruspexAPI {
   private baseUrl: string;
 
@@ -171,6 +190,24 @@ class HaruspexAPI {
     return this.request<PredictionReport>('/predict', {
       method: 'POST',
       body: formData,
+    });
+  }
+
+  async predictAllFromFile(file: File): Promise<MultiModelPredictionResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.request<MultiModelPredictionResponse>('/predict/all', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async predictAllFromVector(features: number[]): Promise<MultiModelPredictionResponse> {
+    return this.request<MultiModelPredictionResponse>('/predict/all', {
+      method: 'POST',
+      body: new URLSearchParams({
+        features_json: JSON.stringify(features),
+      }),
     });
   }
 
