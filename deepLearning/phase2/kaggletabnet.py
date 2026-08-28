@@ -41,6 +41,7 @@ for p in [_PROJECT_ROOT, _BACKEND_DIR, _DL_DIR]:
 
 from deepLearning.utils.config import get_device
 from deepLearning.utils.data import load_ember_data, load_bodmas_data
+from deepLearning.utils.splits import random_split
 from deepLearning.utils.plots import plot_confusion_matrix, plot_roc_curve, plot_feature_importance
 from deepLearning.models.tabnet_model import TabNetDetector
 
@@ -159,12 +160,25 @@ def main():
     ember_train = load_ember_data(ember_dir=ember_path, partition="train")
     ember_test = load_ember_data(ember_dir=ember_path, partition="test")
 
-    # Internal Validation split (10% of train)
-    n_val = int(len(ember_train.X) * 0.1)
-    X_tr, y_tr = ember_train.X[:-n_val], ember_train.y[:-n_val]
-    X_val, y_val = ember_train.X[-n_val:], ember_train.y[-n_val:]
+    # Match the Phase 1 TabNet protocol: first make a deterministic,
+    # stratified 80/20 split, then carve the final 10% of its shuffled
+    # training pool into validation. The official EMBER test partition remains
+    # the same independent same-dataset evaluation set below.
+    r_split = random_split(
+        ember_train.X,
+        ember_train.y,
+        ember_train.metadata,
+        ember_train.family_ids,
+        ember_train.category_ids,
+    )
+    n_val = int(len(r_split.X_train) * 0.1)
+    X_tr, y_tr = r_split.X_train[:-n_val], r_split.y_train[:-n_val]
+    X_val, y_val = r_split.X_train[-n_val:], r_split.y_train[-n_val:]
 
-    batch_size = 8192 if torch.cuda.is_available() else 1024
+    # Match Phase 1's physical batch size exactly. The TabNet architecture,
+    # learning rate, virtual batch size, maximum epochs, and patience are
+    # already shared through TabNetDetector/TABNET_PARAMS.
+    batch_size = 1024 if torch.cuda.is_available() else 2048
 
     # 2. Fit TabNet Classifier
     logger.info("[2/4] Fitting TabNet Model on EMBER (batch_size=%d)...", batch_size)
@@ -181,12 +195,10 @@ def main():
     tabnet.save(str(model_path))
     logger.info("Saved %s model to %s", tabnet.model_name, model_path)
 
-    # Free training split memory before test evaluation. Note X_tr/X_val are numpy
-    # *views* into ember_train.X, so the full ~5.7GB train buffer is only actually
-    # released once ember_train itself is also dropped (done below, after we've
-    # captured the only field we still need from it: feature_names).
+    # Free the original EMBER matrix and the unused 20% internal-test split.
+    # X_tr/X_val remain valid views into r_split.X_train until they are deleted.
     ember_feature_names = ember_train.feature_names
-    del X_tr, y_tr, X_val, y_val, ember_train
+    del ember_train, r_split, X_tr, y_tr, X_val, y_val
     gc.collect()
 
     # 3. Evaluate EMBER Test Partition
