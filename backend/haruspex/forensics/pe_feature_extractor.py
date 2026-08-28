@@ -1,7 +1,9 @@
-"""PE Feature Extractor — Extracts 2,381 EMBER-compatible features from raw PE bytes.
+"""Legacy PE feature extractor.
 
-Enables end-to-end ML prediction and SHAP explainability for real Windows .exe/.dll files
-(e.g., 7zip.exe, calc.exe, custom malware samples).
+This module is retained for experiments only.  Its output has the same *shape* as
+EMBER, but it has not been proven byte-for-byte/schema-for-schema identical to the
+vectorizer used to create this project's BODMAS/EMBER matrices.  It MUST NOT be
+used to obtain a production ML verdict for an uploaded binary.
 
 Feature groups (total = 2,381):
   1. Byte histogram (256)
@@ -33,7 +35,14 @@ logger = get_logger(__name__)
 
 
 class PEFeatureExtractor:
-    """Extracts 2,381 EMBER-compatible numeric features from a raw PE file."""
+    """Experimental, deterministic 2,381-column PE feature extractor.
+
+    ``training_compatible`` deliberately remains false until a regression suite
+    compares this extractor with the exact dataset-generation vectorizer on a
+    corpus of raw files.  API code uses this flag as a safety gate.
+    """
+
+    training_compatible = False
 
     def __init__(self) -> None:
         self._lib_hasher = FeatureHasher(256, input_type="string")

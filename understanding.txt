@@ -1,37 +1,66 @@
-HARUSPEX INVESTIGATION SUMMARY (2026-08-28)
+HARUSPEX — CURRENT CAPABILITY AND TRUST BOUNDARY (2026-08-28)
 
-What was checked
-- Reviewed the code paths mentioned in your problem statement and compared them with current behavior/logs.
-- Added a new API endpoint to run the same sample through all loaded models in one call.
+What is safe to use now
+- Stored BODMAS/EMBER 2,381-feature vectors can be predicted by their loaded
+  models. These vectors have the same representation used during training.
+- The web UI can analyse one model or compare every loaded model on the exact
+  same randomly selected stored vector. Results from a different dataset group
+  are labelled comparison-only, not in-distribution validation.
+- Uploaded PE files receive direct LIEF static analysis and YARA scanning.
+  Reported byte and section entropy values in this mode are calculated from the
+  real file, not inferred from a feature vector.
+- Tree-model attributions (XGBoost/LightGBM) are TreeSHAP values. Their output
+  space is raw score/log-odds and must not be read as probability points.
 
-Status of the reported issues
-1) Raw PE feature extraction equivalence to training extractor
-   - Partially improved, not fully solved.
-   - Python built-in hash() instability is no longer used in import/export hashing.
-   - However, uploaded PE extraction still uses a custom extractor path, so strict one-to-one equivalence with the original EMBER training extractor is still not guaranteed.
+Raw-upload ML verdicts are intentionally disabled
+- The project models were trained on EMBER-compatible vectors. The old custom
+  uploader created a 2,381-column vector but had not been verified against the
+  exact vectorizer used to create the BODMAS/EMBER matrices.
+- Equal column count is not evidence of equal feature semantics. A model verdict
+  from that path would be misleading, so /api/predict and /api/predict/all
+  reject raw files with a clear 422 response. Use /api/predict/upload-forensics
+  for uploaded files until the training-time vectorizer is installed and tested.
+- The legacy extractor uses scikit-learn FeatureHasher, which is deterministic;
+  however determinism alone does not establish schema equivalence.
 
-2) YARA StringMatch API mismatch
-   - Fixed.
-   - Current code handles both tuple-style and object-style match strings and includes a unit test for this path.
+Explanation and evidence language
+- MLP uses Gradient × Input saliency and TabNet uses unsigned attention/selection
+  weights. They are useful diagnostic heuristics, not SHAP values. The API marks
+  their output as heuristic_importance; signs must not be presented as evidence
+  for malware versus benign.
+- “Independently supported” evidence is reserved for a concrete raw-PE finding
+  or IOC. Feature-vector derived indicators are not treated as independent
+  corroboration of a feature attribution.
+- Packing/encryption conclusions are never inferred from an EMBER feature-vector
+  entropy histogram. They are only made from direct PE byte/section analysis.
 
-3) Entropy/packing conclusions from feature vectors
-   - The old mean(hist)*8 bug is no longer present.
-   - But feature-vector entropy and packing interpretations are still heuristic and should be treated as approximate, not ground-truth PE entropy.
+Known evaluation limitations
+- Previous Phase 1 family-held-out and temporal figures are invalid as unseen
+  family/zero-day results because the model was first trained on a random split.
+  Do not quote those metrics as generalisation performance.
+- Model selection must use validation data only; a final untouched test partition
+  is for a single final report.
 
-4) MLP/TabNet "SHAP" labeling
-   - Not fully fixed.
-   - Tree models use TreeExplainer, but MLP/TabNet still use gradient/attention-style attributions (not true SHAP values), even though they are surfaced in SHAP-shaped output fields.
+Do models need retraining?
+- No retraining is required solely for the API/frontend safety fixes, YARA
+  serialization fix, entropy correction, wording changes, or MLP best-weight
+  restoration (the current GroupMLP code already restores the best validation
+  state).
+- Retrain ALL models only if you choose a different raw-PE feature extractor or
+  discover that the dataset vectors were produced with a different schema. The
+  extractor, training data, and inference path must then be versioned together.
+- To publish valid family-held-out or temporal claims, retrain and evaluate each
+  model (XGBoost, LightGBM, Group-MLP, TabNet) separately for each protocol:
+  split first, train only on that protocol's training partition, tune on its
+  validation partition, then evaluate once on its untouched test partition.
+- The existing models remain usable for in-distribution stored-vector inference;
+  Phase 2 EMBER official-test/cross-dataset results should be described exactly
+  as those experiments, not as a guarantee for arbitrary uploads.
 
-5) Correlated evidence overstatement
-   - Partially improved.
-   - Correlator now skips weak/zero indicators in some cases, but category-level matching can still overstate independence/corroboration in edge cases.
-
-Why 7zip showed mostly benign but ember/tabnet showed malware
-- This can happen from model-family differences and calibration differences across dataset groups (BODMAS-trained vs EMBER-trained variants).
-- The Ember TabNet model can be more sensitive to feature regions that 7zip activates, while other models still stay on the benign side.
-- Because raw uploaded PE vectorization is still not guaranteed to be identical to training-time extraction, cross-model disagreement on raw files is expected and should be interpreted cautiously.
-
-New API added
-- POST /api/predict/all
-- Purpose: run one uploaded file or one feature vector across every loaded model and return per-model verdicts/confidence plus consensus vote.
-- Useful for exactly the comparison workflow you described (same sample, all models).
+Before re-enabling upload verdicts
+1. Recover/install the exact EMBER/BODMAS vectorizer and its version.
+2. Keep raw source files plus their known generated vectors as fixtures.
+3. Add a regression test that compares every feature (with documented numeric
+   tolerance) and a process-restart determinism test.
+4. Version the vectorizer with every model artifact and reject mismatches.
+5. Re-enable the upload ML endpoints only after those tests pass.

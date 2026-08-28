@@ -181,7 +181,8 @@ class Correlator:
             )
 
             if matched_forensic:
-                # CORRELATED: Both AI and forensic analysis agree
+                # A correlated item requires a specific forensic finding, not
+                # merely another heuristic in the same broad feature group.
                 base_severity = abs(shap_value) / (abs(shap_value) + 1.0)  # Normalise
                 # Elevate severity for correlated evidence
                 severity = min(base_severity * 1.3 + 0.2, 1.0)
@@ -190,14 +191,14 @@ class Correlator:
                     category=forensic_category,
                     indicator=(
                         f"AI feature '{feat_name}' (SHAP={shap_value:+.4f}) "
-                        f"correlates with forensic finding: {matched_forensic}"
+                        f"is independently supported by forensic finding: {matched_forensic}"
                     ),
                     severity=severity,
                     source="correlated",
                     feature_name=feat_name,
                     shap_value=shap_value,
                     matched_forensic=matched_forensic,
-                    confidence=0.9,
+                confidence=0.85,
                 ))
             else:
                 # AI-only evidence
@@ -311,6 +312,8 @@ class Correlator:
         # Add SHAP details
         if shap_explanation:
             report.top_shap_features = shap_explanation.top_features(k=10)
+            report.attribution_method = shap_explanation.attribution_method
+            report.attribution_output_space = shap_explanation.output_space
 
         # Add LIME details
         if lime_features:
@@ -366,7 +369,13 @@ class Correlator:
                 matched_ioc_indices.add(i)
                 return ioc.description
 
-        # Check forensic report indicators
+        # Feature-vector indicators are derived from the same input features as
+        # the model.  They are useful context but are not independent evidence.
+        # Only raw-PE facts/IOCs (handled above and below) may corroborate ML.
+        if forensic_report.feature_indicators:
+            return None
+
+        # Check forensic report indicators for raw-PE reports only.
         for i, indicator in enumerate(forensic_report.feature_indicators):
             if i in matched_forensic_indicators:
                 continue

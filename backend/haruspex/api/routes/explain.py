@@ -277,6 +277,12 @@ class ExplainRequest(BaseModel):
     num_features: int = 20
 
 
+class RandomAllRequest(BaseModel):
+    """Pick one stored-dataset vector and test every loaded model on it."""
+
+    model_group: Optional[str] = None
+
+
 @router.post("/explain")
 async def explain_sample(request: ExplainRequest):
     """Explain a specific dataset sample by index."""
@@ -319,6 +325,59 @@ async def explain_sample(request: ExplainRequest):
         **report_dict,
         "true_label": "malware" if true_label == 1 else "benign",
         "sample_index": idx,
+    }
+
+
+@router.post("/explain/random/all")
+async def explain_random_sample_all(request: RandomAllRequest):
+    """Run every loaded model on one random, training-style dataset vector."""
+    from haruspex.api.routes.predict import _get_loaded_models
+
+    dataset_group = request.model_group or "bodmas"
+    if dataset_group not in {"bodmas", "ember"}:
+        raise HTTPException(status_code=400, detail="model_group must be 'bodmas' or 'ember'.")
+    models = _get_loaded_models()
+    if not models:
+        raise HTTPException(status_code=503, detail="No models loaded.")
+
+    if dataset_group == "ember":
+        idx = stdlib_random.randrange(_ember_lazy.n_samples)
+        x_sample, y = _ember_lazy.get_sample(idx), int(_ember_lazy.y[idx])
+        meta = _ember_lazy.get_meta(idx)
+    else:
+        idx = stdlib_random.randrange(_bodmas_lazy.n_samples)
+        x_sample, y = _bodmas_lazy.get_sample(idx), int(_bodmas_lazy.y[idx])
+        meta = _bodmas_lazy.get_meta(idx)
+
+    x = x_sample.reshape(1, -1)
+    results = []
+    for group, name, model in models:
+        probability = float(model.predict_proba(x)[0])
+        label = int(model.predict(x)[0])
+        results.append({
+            "model_group": group,
+            "model_name": name,
+            "prediction": "malware" if label else "benign",
+            "confidence": probability if label else 1.0 - probability,
+            "malware_probability": probability,
+            "in_distribution": group == dataset_group,
+        })
+    results.sort(key=lambda item: (item["model_group"], item["model_name"]))
+    malware_votes = sum(item["prediction"] == "malware" for item in results)
+    benign_votes = len(results) - malware_votes
+    return {
+        "sample_id": str(meta.get("sha", f"{dataset_group}_{idx}")),
+        "sample_index": idx,
+        "dataset_group": dataset_group,
+        "true_label": "malware" if y else "benign",
+        "models_tested": len(results),
+        "summary": {
+            "consensus": "malware" if malware_votes > benign_votes else "benign" if benign_votes > malware_votes else "tie",
+            "malware_votes": malware_votes,
+            "benign_votes": benign_votes,
+        },
+        "results": results,
+        "notice": "Only rows marked in_distribution are evaluated on their training dataset; cross-dataset rows are comparison-only.",
     }
 
 

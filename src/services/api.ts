@@ -28,6 +28,8 @@ export interface PredictionReport {
   xai: {
     top_shap_features: ShapFeature[];
     lime_features: LimeFeature[];
+    attribution_method?: string;
+    output_space?: string;
   };
   forensics: Record<string, unknown>;
   ioc_count: number;
@@ -122,7 +124,19 @@ export interface MultiModelPredictionResponse {
     prediction: string;
     confidence: number;
     malware_probability: number;
+    in_distribution?: boolean;
   }[];
+  forensic_summary: Record<string, unknown>;
+  ioc_count: number;
+  true_label?: string;
+  dataset_group?: string;
+  notice?: string;
+}
+
+export interface UploadedForensicsResponse {
+  sample_id: string;
+  ml_verdict_available: false;
+  notice: string;
   forensic_summary: Record<string, unknown>;
   ioc_count: number;
 }
@@ -208,6 +222,23 @@ class HaruspexAPI {
       body: new URLSearchParams({
         features_json: JSON.stringify(features),
       }),
+    });
+  }
+
+  async analyzeUploadedFileForensics(file: File): Promise<UploadedForensicsResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.request<UploadedForensicsResponse>('/predict/upload-forensics', {
+      method: 'POST', body: formData,
+    });
+  }
+
+  async explainRandomAll(modelGroup?: string): Promise<MultiModelPredictionResponse & {
+    sample_index: number; dataset_group: string; true_label: string; notice: string;
+  }> {
+    return this.request('/explain/random/all', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model_group: modelGroup }),
     });
   }
 

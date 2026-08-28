@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import api, { type PredictionReport, type EvidenceItem, type ShapFeature } from '../services/api';
+import api, { type PredictionReport, type EvidenceItem, type ShapFeature, type MultiModelPredictionResponse, type UploadedForensicsResponse } from '../services/api';
 
 function getSeverityClass(severity: number): string {
   if (severity >= 0.8) return 'severity-critical';
@@ -40,10 +40,13 @@ const MODEL_ALGORITHMS = [
 
 export default function UploadPage({ modelGroup }: UploadPageProps) {
   const [report, setReport] = useState<PredictionReport | null>(null);
+  const [multiReport, setMultiReport] = useState<MultiModelPredictionResponse | null>(null);
+  const [forensics, setForensics] = useState<UploadedForensicsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedModel, setSelectedModel] = useState<string>('xgboost');
+  const [comparisonDataset, setComparisonDataset] = useState<'bodmas' | 'ember'>(modelGroup === 'ember' ? 'ember' : 'bodmas');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const groupLabel = modelGroup === 'ember' ? 'EMBER' : 'BODMAS';
@@ -52,10 +55,14 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
     setLoading(true);
     setError(null);
     setReport(null);
+    setMultiReport(null);
+    setForensics(null);
 
     try {
-      const result = await api.predictFromFile(file, selectedModel, modelGroup);
-      setReport(result);
+      // Raw PE vectors are intentionally not sent to ML models until their
+      // training-time vectorizer is verified. This endpoint still performs
+      // LIEF/YARA analysis for the uploaded file.
+      setForensics(await api.analyzeUploadedFileForensics(file));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
@@ -80,6 +87,8 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
     setLoading(true);
     setError(null);
     setReport(null);
+    setMultiReport(null);
+    setForensics(null);
     try {
       const result = await api.explainRandom(selectedModel, modelGroup);
       setReport(result);
@@ -89,6 +98,13 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
       setLoading(false);
     }
   }, [modelGroup, selectedModel]);
+
+  const handleRandomAllAnalysis = useCallback(async () => {
+    setLoading(true); setError(null); setReport(null); setForensics(null); setMultiReport(null);
+    try { setMultiReport(await api.explainRandomAll(comparisonDataset)); }
+    catch (err) { setError(err instanceof Error ? err.message : 'All-model analysis failed.'); }
+    finally { setLoading(false); }
+  }, [comparisonDataset]);
 
   return (
     <div>
@@ -101,7 +117,7 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
       </div>
 
       {/* Model Selector Bar */}
-      {!report && !loading && (
+      {!report && !multiReport && !forensics && !loading && (
         <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="card-header" style={{ marginBottom: 'var(--space-sm)' }}>
             <div className="card-title">Select Model Architecture</div>
@@ -158,10 +174,21 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
 
           <div style={{ textAlign: 'center' }}>
             <button className="btn btn-primary" onClick={handleRandomAnalysis} id="demo-analyze-btn">
-              Analyze Random Sample
+              Analyze One Model
             </button>
+            <button className="btn btn-secondary" onClick={handleRandomAllAnalysis} style={{ marginLeft: 'var(--space-sm)' }}>
+              Compare All Models on One Random Sample
+            </button>
+            <div style={{ marginTop: 'var(--space-md)', display: 'flex', justifyContent: 'center', gap: 'var(--space-sm)', alignItems: 'center' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Comparison sample dataset:</span>
+              {(['bodmas', 'ember'] as const).map((dataset) => (
+                <button key={dataset} type="button" className={`btn ${comparisonDataset === dataset ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setComparisonDataset(dataset)} style={{ padding: '6px 10px' }}>
+                  {dataset.toUpperCase()}
+                </button>
+              ))}
+            </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '8px' }}>
-              Picks a random sample from the {groupLabel} dataset and runs the full pipeline
+              One-model analysis uses {groupLabel}; all-model comparison uses the selected sample dataset.
             </p>
           </div>
         </>
@@ -187,13 +214,40 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
 
       {/* Results */}
       {report && <ReportView report={report} onReset={() => setReport(null)} />}
+      {multiReport && <MultiModelView report={multiReport} onReset={() => setMultiReport(null)} />}
+      {forensics && <ForensicsView result={forensics} onReset={() => setForensics(null)} />}
     </div>
   );
+}
+
+function MultiModelView({ report, onReset }: { report: MultiModelPredictionResponse; onReset: () => void }) {
+  return <div className="card">
+    <div className="card-header"><div className="card-title">All-model comparison</div><button className="btn btn-secondary" onClick={onReset}>New Analysis</button></div>
+    {report.true_label && <p>Stored dataset label: <strong>{report.true_label}</strong> · Sample dataset: <strong>{report.dataset_group?.toUpperCase()}</strong></p>}
+    <p>Consensus: <strong>{report.summary.consensus}</strong> ({report.summary.malware_votes} malware / {report.summary.benign_votes} benign votes)</p>
+    <table className="data-table"><thead><tr><th>Dataset / model</th><th>Evaluation scope</th><th>Verdict</th><th>Confidence</th><th>Malware probability</th></tr></thead><tbody>
+      {report.results.map((row) => <tr key={`${row.model_group}-${row.model_name}`}><td>{row.model_group} / {row.model_name}</td><td>{row.in_distribution === false ? 'Cross-dataset only' : 'In-distribution'}</td><td>{row.prediction}</td><td>{(row.confidence * 100).toFixed(1)}%</td><td>{(row.malware_probability * 100).toFixed(1)}%</td></tr>)}
+    </tbody></table>
+    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 'var(--space-md)' }}>{report.notice || 'Cross-dataset results are comparison-only; trust the model trained on the selected sample dataset.'} Values displayed as 100.0% are rounded and are not proof the prediction is correct.</p>
+  </div>;
+}
+
+function ForensicsView({ result, onReset }: { result: UploadedForensicsResponse; onReset: () => void }) {
+  const report = result.forensic_summary;
+  return <div className="card">
+    <div className="card-header"><div className="card-title">Uploaded-file static analysis</div><button className="btn btn-secondary" onClick={onReset}>New Analysis</button></div>
+    <div className="error-message" style={{ marginBottom: 'var(--space-md)' }}>{result.notice}</div>
+    <p>YARA / forensic IOC count: <strong>{result.ioc_count}</strong></p>
+    <table className="data-table"><tbody>
+      <tr><td>PE file</td><td>{String(report.is_pe ?? false)}</td></tr><tr><td>Sections</td><td>{String(report.num_sections ?? 0)}</td></tr><tr><td>Imports</td><td>{String(report.num_imports ?? 0)}</td></tr><tr><td>Entropy (direct bytes)</td><td>{Number(report.overall_entropy ?? 0).toFixed(2)}</td></tr><tr><td>Likely packed</td><td>{String(report.is_likely_packed ?? false)}</td></tr>
+    </tbody></table>
+  </div>;
 }
 
 function ReportView({ report, onReset }: { report: PredictionReport; onReset: () => void }) {
   const isMALWARE = report.prediction.verdict === 'malware';
   const shapFeatures = report.xai.top_shap_features || [];
+  const isShap = ['tree_shap', 'kernel_shap'].includes(report.xai.attribution_method || 'tree_shap');
   const maxShap = Math.max(...shapFeatures.map(f => Math.abs(f.shap_value)), 0.01);
 
   return (
@@ -241,8 +295,9 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
       {shapFeatures.length > 0 && (
         <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="card-header">
-            <div className="card-title">Top SHAP Feature Attributions</div>
+            <div className="card-title">Top {isShap ? 'SHAP' : 'Heuristic'} Feature Attributions</div>
           </div>
+          {!isShap && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>This model exposes {report.xai.attribution_method}; it is not SHAP and its signs are not verdict evidence.</p>}
           <div className="shap-bar-container">
             {shapFeatures.slice(0, 15).map((feat: ShapFeature, i: number) => (
               <div className="shap-bar-row" key={i}>

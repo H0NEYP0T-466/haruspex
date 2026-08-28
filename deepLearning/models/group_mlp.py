@@ -537,7 +537,7 @@ class GroupMLPDetector(MalwareDetector):
         return np.vstack(attns)
 
     def get_gradient_saliency(self, X: np.ndarray) -> np.ndarray:
-        """Compute log-odds SHAP-equivalent feature attributions in milliseconds."""
+        """Return Gradient × Input saliency (heuristic, not SHAP)."""
         if not self._fitted or self.net is None:
             raise RuntimeError("Model must be fitted.")
         self.net.eval()
@@ -549,9 +549,7 @@ class GroupMLPDetector(MalwareDetector):
         prob.backward()
         assert tx.grad is not None
         grad = tx.grad.detach().cpu().numpy().flatten()
-        total_grad_norm = np.sum(np.abs(grad)) + 1e-9
-        attributions = (grad / total_grad_norm) * logit_val
-        return attributions
+        return grad * x_flat
 
     def get_feature_importance(self) -> np.ndarray:
         """Return global feature importances by mapping group gate weights back to features."""

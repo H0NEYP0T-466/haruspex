@@ -221,20 +221,18 @@ class TabNetDetector(MalwareDetector):
         return np.ones(NUM_FEATURES) / NUM_FEATURES
 
     def get_gradient_saliency(self, X: np.ndarray) -> np.ndarray:
-        """Compute TabNet per-sample feature attributions matching log-odds scale."""
+        """Return unsigned TabNet selection weights (heuristic, not SHAP)."""
         if not self._fitted or self.model is None:
             return np.ones(NUM_FEATURES) / NUM_FEATURES
         x_flat = np.array(X, copy=True).reshape(1, -1)
-        prob = float(self.predict_proba(x_flat)[0])
         try:
             masks, _ = self.model.explain(x_flat)
             mask_weight = masks[0].flatten()
             total_mask = np.sum(np.abs(mask_weight)) + 1e-9
-            logit_shift = float(np.log(max(prob, 1e-5) / max(1.0 - prob, 1e-5)))
-            return (mask_weight / total_mask) * logit_shift
+            return mask_weight / total_mask
         except Exception:
             global_imp = self.get_feature_importance()
-            return global_imp * (prob - 0.5)
+            return global_imp
 
     def explain_masks(self, X: np.ndarray) -> Tuple[np.ndarray, Dict[int, np.ndarray]]:
         """Return TabNet masks and aggregate feature attributions."""

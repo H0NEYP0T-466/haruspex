@@ -50,8 +50,8 @@ class TestStaticAnalyzer:
         assert "sections" in d
         assert "feature_indicators" in d
 
-    def test_high_entropy_detection(self):
-        """High entropy features should trigger packing indicator."""
+    def test_feature_entropy_never_claims_packing(self):
+        """A joint EMBER histogram is not direct PE entropy evidence."""
         analyzer = StaticAnalyzer()
         features = np.zeros(2381, dtype=np.float32)
         # Set high values in byte entropy histogram (indices 256-511)
@@ -59,12 +59,13 @@ class TestStaticAnalyzer:
         feature_names = get_feature_names()
 
         report = analyzer.analyze_feature_vector(features, feature_names)
-        # Should detect high entropy
+        # No packed/encrypted conclusion may be inferred from a feature vector.
         entropy_indicators = [
             ind for ind in report.feature_indicators
             if ind.get("category") == "entropy"
         ]
-        assert len(entropy_indicators) > 0
+        assert len(entropy_indicators) == 0
+        assert report.is_likely_packed is False
 
 
 class TestIOCExtractor:

@@ -270,32 +270,9 @@ class StaticAnalyzer:
         report = ForensicReport(is_pe=True)
         indicators: list[dict] = []
 
-        # --- Byte entropy histogram → entropy analysis ---
-        entropy_start, entropy_count = 256, 256
-        entropy_features = features[entropy_start:entropy_start + entropy_count]
-
-        # Reshape to (16 byte_bins, 16 entropy_bins)
-        if len(entropy_features) == 256:
-            entropy_matrix = entropy_features.reshape(16, 16)
-            entropy_per_bin = np.sum(entropy_matrix, axis=0)  # (16,) distribution across 16 entropy bins
-            bin_centers = np.linspace(0.25, 7.75, 16)         # 16 bins spanning 0.0 to 8.0
-
-            total_mass = float(np.sum(entropy_per_bin))
-            if total_mass > 0:
-                report.overall_entropy = float(np.sum(entropy_per_bin * bin_centers) / total_mass)
-            else:
-                report.overall_entropy = 0.0
-
-            # High entropy mass (bins 14 & 15 correspond to entropy >= 7.0)
-            high_entropy_mass = float(np.sum(entropy_per_bin[14:]))
-            if high_entropy_mass > 0.25:
-                report.is_likely_packed = True
-                report.max_section_entropy = min(8.0, max(7.1, report.overall_entropy + 1.0))
-                indicators.append({
-                    "category": "entropy",
-                    "indicator": f"High density in upper entropy bins ({high_entropy_mass * 100:.1f}% > 7.0 entropy)",
-                    "severity": min(1.0, high_entropy_mass * 1.5),
-                })
+        # EMBER's byte-entropy block is a joint histogram, not a direct section
+        # entropy measurement.  A feature vector cannot support a reliable
+        # packed/encrypted conclusion, so leave entropy and packing unset here.
 
         # --- Section info features ---
         section_start = 688
@@ -320,21 +297,13 @@ class StaticAnalyzer:
                 "severity": 0.5,
             })
 
-        # Check entropy hashed block (indices 55..104 relative to section_start)
-        entropy_hashed = section_features[55:105]
-        if np.max(entropy_hashed) > 0.5 and report.overall_entropy > 6.5:
-            indicators.append({
-                "category": "sections",
-                "indicator": "Hashed section entropy features indicate high-entropy sections — likely packed",
-                "severity": 0.7,
-            })
-
         # --- Import features → suspicious API analysis ---
         import_start = 943
         import_count = 1280
         import_features = features[import_start:import_start + import_count]
 
-        # Non-zero import features indicate imported libraries/functions
+        # Hashed import features establish only that import features are present;
+        # they cannot identify an API or independently corroborate an ML feature.
         active_imports = int(np.sum(import_features > 0))
         if active_imports > 0:
             indicators.append({

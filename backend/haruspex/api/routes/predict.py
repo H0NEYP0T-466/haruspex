@@ -30,6 +30,37 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
+def _uploaded_file_forensics(content: bytes, filename: str) -> tuple[dict, int]:
+    """Analyze a raw PE without turning an unvalidated vector into an ML verdict."""
+    pe_path: Optional[Path] = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=Path(filename).suffix or ".bin", delete=False) as tmp:
+            tmp.write(content)
+            pe_path = Path(tmp.name)
+        report = StaticAnalyzer().analyze_pe(pe_path)
+        iocs = IOCExtractor().extract_all(report, pe_path)
+        return report.to_dict(), len(iocs)
+    finally:
+        if pe_path and pe_path.exists():
+            pe_path.unlink(missing_ok=True)
+
+
+def _require_training_compatible_upload_vectorizer() -> None:
+    """Prevent scientifically invalid raw-upload model predictions."""
+    from haruspex.forensics.pe_feature_extractor import PEFeatureExtractor
+    if not PEFeatureExtractor.training_compatible:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "ML verdicts for uploaded PE files are disabled: the installed raw-PE "
+                "extractor has not been validated as the exact vectorizer used to train "
+                "these 2,381-feature models. Use a stored dataset vector/sample for ML "
+                "comparison; uploaded files still support forensic/YARA analysis via "
+                "/api/predict/upload-forensics."
+            ),
+        )
+
+
 class FeatureVectorRequest(BaseModel):
     """Request body for feature vector prediction."""
 
@@ -108,6 +139,7 @@ async def predict(
     try:
         # --- Mode 1: PE file upload ---
         if file and file.filename:
+            _require_training_compatible_upload_vectorizer()
             logger.info("Processing PE file upload: %s (group=%s, model=%s)",
                         file.filename, used_group, used_model)
             content = await file.read()
@@ -219,6 +251,7 @@ async def predict_all(
 
     try:
         if file and file.filename:
+            _require_training_compatible_upload_vectorizer()
             logger.info("Processing PE file upload for all-model testing: %s", file.filename)
             content = await file.read()
 
@@ -307,6 +340,31 @@ async def predict_all(
     finally:
         if pe_path and pe_path.exists():
             pe_path.unlink(missing_ok=True)
+
+
+@router.post("/predict/upload-forensics")
+async def analyze_uploaded_file_forensics(file: UploadFile = File(...)):
+    """Run safe static/YARA analysis for an uploaded PE; no ML verdict is claimed."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Provide a PE file.")
+    try:
+        content = await file.read()
+        forensic_summary, ioc_count = _uploaded_file_forensics(content, file.filename)
+        return {
+            "sample_id": file.filename,
+            "ml_verdict_available": False,
+            "notice": (
+                "Static and YARA analysis completed. ML verdicts are intentionally disabled "
+                "until the exact training-time PE vectorizer is installed and verified."
+            ),
+            "forensic_summary": forensic_summary,
+            "ioc_count": ioc_count,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Uploaded-file forensic analysis error")
+        raise HTTPException(status_code=400, detail=f"Forensic analysis failed: {str(e)}")
 
 
 @router.post("/predict/vector")

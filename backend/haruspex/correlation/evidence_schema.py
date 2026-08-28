@@ -83,6 +83,8 @@ class InvestigationReport:
     # XAI details
     top_shap_features: list[dict] = field(default_factory=list)
     lime_features: list[dict] = field(default_factory=list)
+    attribution_method: str = ""
+    attribution_output_space: str = ""
 
     # Forensic details
     forensic_summary: dict = field(default_factory=dict)
@@ -157,6 +159,8 @@ class InvestigationReport:
             "xai": {
                 "top_shap_features": self.top_shap_features,
                 "lime_features": self.lime_features,
+                "attribution_method": self.attribution_method,
+                "output_space": self.attribution_output_space,
             },
             "forensics": self.forensic_summary,
             "ioc_count": self.ioc_count,

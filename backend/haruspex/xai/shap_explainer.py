@@ -27,12 +27,12 @@ logger = get_logger(__name__)
 class SHAPExplanation:
     """Container for explanation / feature attribution of a single sample."""
 
-    shap_values: np.ndarray       # (n_features,) SHAP or feature attribution values
+    shap_values: np.ndarray       # (n_features,) SHAP values or heuristic attributions
     base_value: float             # expected value (base rate)
     feature_values: np.ndarray    # (n_features,) actual feature values
     feature_names: list[str]      # feature name labels
     prediction: float             # model prediction probability
-    attribution_method: str = "tree_shap"  # "tree_shap" | "kernel_shap" | "gradient_saliency" | "tabnet_attention"
+    attribution_method: str = "tree_shap"
     output_space: str = "log_odds"         # "log_odds" | "probability" | "raw_score"
 
     def top_features(self, k: int = 20) -> list[dict]:
@@ -106,7 +106,7 @@ class SHAPExplainer:
             self._explainer_type = "kernel_shap"
 
     def explain_sample(self, x_sample: np.ndarray) -> SHAPExplanation:
-        """Generate SHAP / feature attribution explanation for a single sample.
+        """Generate SHAP or explicitly-labelled heuristic feature attribution.
 
         Args:
             x_sample: Feature vector (n_features,) or (1, n_features).
@@ -128,7 +128,7 @@ class SHAPExplainer:
                 feature_names=self._feature_names,
                 prediction=pred,
                 attribution_method=method,
-                output_space="log_odds",
+                output_space="heuristic_importance",
             )
 
         shap_values = self._explainer.shap_values(x)
