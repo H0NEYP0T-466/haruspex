@@ -1,0 +1,85 @@
+󰣇 backend/haruspex/zero_day   master  ? ❯ python familyout.py                                                                           venv 3.14.6  15:03 
+Loading BODMAS dataset...
+[HARUSPEX] 2026-08-28 15:03:42 INFO haruspex.data.bodmas: Loading BODMAS dataset from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas.npz
+[HARUSPEX] 2026-08-28 15:03:49 INFO haruspex.data.bodmas: Features X: shape=(134435, 2381), dtype=float32
+[HARUSPEX] 2026-08-28 15:03:49 INFO haruspex.data.bodmas: Labels  y: shape=(134435,), dtype=int32 | benign=77142, malware=57293
+[HARUSPEX] 2026-08-28 15:03:49 INFO haruspex.data.bodmas: Loading metadata from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_metadata.csv
+[HARUSPEX] 2026-08-28 15:03:49 INFO haruspex.data.bodmas: Loading malware categories from /home/honeypot/Projects/FAST_API/HARUSPEX/backend/dataset/BODMAS/bodmas_malware_category.csv
+[HARUSPEX] 2026-08-28 15:03:49 INFO haruspex.data.bodmas: BODMAS loaded: 134435 samples (77142 benign, 57293 malware), 2381 features, 582 families
+
+Dataset: 134435 samples, 2381 features
+  Benign: 77142
+  Malware: 57293
+  Families: 583
+  Held-out families: ['gepys', 'benjamin', 'musecador', 'autoit']
+  Saving to: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data
+
+[HARUSPEX] 2026-08-28 15:03:55 INFO __main__: Split: train=130217 (mal=53075, ben=77142) | test=81360 (mal=4218, ben=77142)
+[HARUSPEX] 2026-08-28 15:03:55 INFO haruspex.models.xgboost_model: Training XGBoost: 130217 samples, 2381 features
+[HARUSPEX] 2026-08-28 15:10:31 INFO haruspex.models.xgboost_model: XGBoost trained: train_acc=0.9999
+[HARUSPEX] 2026-08-28 15:10:31 INFO haruspex.models.xgboost_model: XGBoost model saved to /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/xgboost_family_held_out.json
+  Saved model: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/xgboost_family_held_out.json
+
+==================================================
+  XGBoost - Family-Held-Out Results
+==================================================
+  Accuracy:  0.9987
+  Precision: 1.0000
+  Recall:    0.9751
+  F1 Score:  0.9874
+  AUC-ROC:   1.0000
+
+              precision    recall  f1-score   support
+
+      benign       1.00      1.00      1.00     77142
+     malware       1.00      0.98      0.99      4218
+
+    accuracy                           1.00     81360
+   macro avg       1.00      0.99      0.99     81360
+weighted avg       1.00      1.00      1.00     81360
+
+  Saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/xgboost_roc.png
+  Saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/xgboost_confusion.png
+[HARUSPEX] 2026-08-28 15:10:37 INFO haruspex.models.lightgbm_model: Training LightGBM: 130217 samples, 2381 features
+[HARUSPEX] 2026-08-28 15:13:06 INFO haruspex.models.lightgbm_model: LightGBM trained: train_acc=1.0000
+[HARUSPEX] 2026-08-28 15:13:06 INFO haruspex.models.lightgbm_model: LightGBM model saved to /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/lightgbm_family_held_out.json
+  Saved model: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/lightgbm_family_held_out.json
+
+==================================================
+  LightGBM - Family-Held-Out Results
+==================================================
+  Accuracy:  1.0000
+  Precision: 1.0000
+  Recall:    0.9991
+  F1 Score:  0.9995
+  AUC-ROC:   1.0000
+
+              precision    recall  f1-score   support
+
+      benign       1.00      1.00      1.00     77142
+     malware       1.00      1.00      1.00      4218
+
+    accuracy                           1.00     81360
+   macro avg       1.00      1.00      1.00     81360
+weighted avg       1.00      1.00      1.00     81360
+
+  Saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/lightgbm_roc.png
+  Saved: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/lightgbm_confusion.png
+
+  Saved metrics: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/metrics.csv
+
+==================================================
+  Summary
+==================================================
+  Model        Accuracy       F1  AUC-ROC
+  ----------------------------------------
+  XGBoost        0.9987   0.9874   1.0000
+  LightGBM       1.0000   0.9995   1.0000
+
+  All outputs saved to: /home/honeypot/Projects/FAST_API/HARUSPEX/backend/haruspex/zero_day/data/
+󰣇 backend/haruspex/zero_day   master  ? ❯   
+
+Here's the comparison:
+Model	Accuracy	F1	AUC-ROC	Malware Recall
+XGBoost	99.87%	98.74%	100%	97.51% (106 missed)
+LightGBM	100%	99.95%	100%	99.91% (4 missed)
