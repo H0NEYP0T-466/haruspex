@@ -1,0 +1,89 @@
+name: "Feature request"
+description: "Propose an enhancement"
+labels: ["enhancement"]
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please fill out the sections below.
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: "Problem Statement"
+      description: "What problem does this feature solve? Is it related to a frustration?"
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: "Proposed Solution"
+      description: "Describe the solution you'd like."
+      placeholder: "I would like HARUSPEX to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "What other solutions or workarounds have you considered?"
+      placeholder: "I also considered..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: "Scope & Boundaries"
+      description: |
+        What's in scope and out of scope for this feature?
+        Example:
+        - In scope: Adding new YARA rule categories
+        - Out of scope: Modifying the core correlation algorithm
+      placeholder: |
+        In scope: ...
+        Out of scope: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: "Risks & Trade-offs"
+      description: "What are the potential downsides or trade-offs of this feature?"
+      placeholder: "Possible risks include..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component"
+      description: "Which part of HARUSPEX would this affect?"
+      options:
+        - Backend API
+        - Model Training
+        - Model Prediction
+        - XAI (SHAP/LIME)
+        - Forensics (LIEF/YARA)
+        - Correlation Engine
+        - Frontend UI
+        - Deep Learning (MLP/TabNet)
+        - Evaluation Protocols
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional Context"
+      description: "Any other context, screenshots, mockups, or references."
+      placeholder: "Add any other context..."
+    validations:
+      required: false
