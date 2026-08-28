@@ -1,0 +1,277 @@
+sample:
+  id: ember_test_sample_0
+  sha256: 
+  family: 
+  category: 
+prediction:
+  verdict: benign
+  confidence: 0.0019
+  risk_score: 0.1032
+  model: ember_xgboost
+evidence_summary:
+  total: 22
+  correlated: 2
+  ai_only: 18
+  forensic_only: 2
+evidence_items:
+  [0]:
+    category: sections
+    indicator: Section with very high entropy feature value (3.000)
+    severity: 1.0
+    source: forensic_analysis
+    confidence: 0.6
+  [1]:
+    category: header_anomaly
+    indicator: Feature 'header_info_11' pushes prediction toward benign (SHAP=-1.2542) — PE header field anomaly — possible manipulation
+    severity: 0.5564
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: header_info_11
+    shap_value: -1.254224
+  [2]:
+    category: header_anomaly
+    indicator: Feature 'header_info_29' pushes prediction toward benign (SHAP=-0.7770) — PE header field anomaly — possible manipulation
+    severity: 0.4373
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: header_info_29
+    shap_value: -0.777007
+  [3]:
+    category: pe_structure
+    indicator: Feature 'data_dir_info_8' pushes prediction toward benign (SHAP=-0.7435) — Unusual PE data directory configuration
+    severity: 0.4264
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: data_dir_info_8
+    shap_value: -0.743519
+  [4]:
+    category: imports
+    indicator: AI feature 'import_info_1267' (SHAP=-0.1780) correlates with forensic finding: 1 active import features detected
+    severity: 0.3965
+    source: correlated
+    confidence: 0.9
+    feature_name: import_info_1267
+    shap_value: -0.178047
+    matched_forensic: 1 active import features detected
+  [5]:
+    category: sections
+    indicator: AI feature 'section_info_4' (SHAP=-0.1278) correlates with forensic finding: Section with very high entropy feature value (3.000)
+    severity: 0.3473
+    source: correlated
+    confidence: 0.9
+    feature_name: section_info_4
+    shap_value: -0.127836
+    matched_forensic: Section with very high entropy feature value (3.000)
+  [6]:
+    category: entropy
+    indicator: Feature 'byte_hist_123' pushes prediction toward benign (SHAP=-0.4497) — Unusual byte distribution — may indicate packing or encryption
+    severity: 0.3102
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: byte_hist_123
+    shap_value: -0.449747
+  [7]:
+    category: imports
+    indicator: 1 active import features detected
+    severity: 0.3
+    source: forensic_analysis
+    confidence: 0.6
+  [8]:
+    category: strings
+    indicator: Feature 'string_info_103' pushes prediction toward benign (SHAP=-0.2689) — Anomalous string characteristics in binary
+    severity: 0.2119
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: string_info_103
+    shap_value: -0.268939
+  [9]:
+    category: header_anomaly
+    indicator: Feature 'header_info_0' pushes prediction toward malware (SHAP=+0.1596) — PE header field anomaly — possible manipulation
+    severity: 0.1376
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: header_info_0
+    shap_value: 0.159568
+  [10]:
+    category: pe_structure
+    indicator: Feature 'data_dir_info_13' pushes prediction toward benign (SHAP=-0.1486) — Unusual PE data directory configuration
+    severity: 0.1294
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: data_dir_info_13
+    shap_value: -0.148627
+  [11]:
+    category: imports
+    indicator: Feature 'import_info_117' pushes prediction toward benign (SHAP=-0.1459) — Import-related feature contributes to malware classification
+    severity: 0.1273
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: import_info_117
+    shap_value: -0.145857
+  [12]:
+    category: header_anomaly
+    indicator: Feature 'header_info_13' pushes prediction toward benign (SHAP=-0.1452) — PE header field anomaly — possible manipulation
+    severity: 0.1268
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: header_info_13
+    shap_value: -0.145195
+  [13]:
+    category: strings
+    indicator: Feature 'string_info_58' pushes prediction toward benign (SHAP=-0.1180) — Anomalous string characteristics in binary
+    severity: 0.1055
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: string_info_58
+    shap_value: -0.118003
+  [14]:
+    category: sections
+    indicator: Feature 'section_info_3' pushes prediction toward benign (SHAP=-0.1166) — Suspicious PE section properties
+    severity: 0.1045
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: section_info_3
+    shap_value: -0.116635
+  [15]:
+    category: entropy
+    indicator: Feature 'byte_hist_95' pushes prediction toward benign (SHAP=-0.1158) — Unusual byte distribution — may indicate packing or encryption
+    severity: 0.1038
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: byte_hist_95
+    shap_value: -0.115814
+  [16]:
+    category: strings
+    indicator: Feature 'string_info_15' pushes prediction toward malware (SHAP=+0.1070) — Anomalous string characteristics in binary
+    severity: 0.0967
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: string_info_15
+    shap_value: 0.107011
+  [17]:
+    category: entropy
+    indicator: Feature 'byte_hist_128' pushes prediction toward benign (SHAP=-0.1067) — Unusual byte distribution — may indicate packing or encryption
+    severity: 0.0964
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: byte_hist_128
+    shap_value: -0.10668
+  [18]:
+    category: strings
+    indicator: Feature 'string_info_101' pushes prediction toward benign (SHAP=-0.1064) — Anomalous string characteristics in binary
+    severity: 0.0962
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: string_info_101
+    shap_value: -0.1064
+  [19]:
+    category: entropy
+    indicator: Feature 'byte_entropy_hist_117' pushes prediction toward benign (SHAP=-0.1039) — High entropy regions detected — possible packing or encryption
+    severity: 0.0941
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: byte_entropy_hist_117
+    shap_value: -0.103851
+  [20]:
+    category: header_anomaly
+    indicator: Feature 'header_info_14' pushes prediction toward benign (SHAP=-0.0947) — PE header field anomaly — possible manipulation
+    severity: 0.0865
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: header_info_14
+    shap_value: -0.09469
+  [21]:
+    category: strings
+    indicator: Feature 'string_info_66' pushes prediction toward benign (SHAP=-0.0934) — Anomalous string characteristics in binary
+    severity: 0.0855
+    source: ai_explanation
+    confidence: 0.7
+    feature_name: string_info_66
+    shap_value: -0.093437
+xai:
+  top_shap_features:
+    [0]:
+      index: 637
+      feature_name: header_info_11
+      shap_value: -1.254224181175232
+      feature_value: -1.0
+    [1]:
+      index: 655
+      feature_name: header_info_29
+      shap_value: -0.7770066857337952
+      feature_value: 0.0
+    [2]:
+      index: 2359
+      feature_name: data_dir_info_8
+      shap_value: -0.7435188889503479
+      feature_value: 6896.0
+    [3]:
+      index: 123
+      feature_name: byte_hist_123
+      shap_value: -0.4497471749782562
+      feature_value: 0.009434455074369907
+    [4]:
+      index: 615
+      feature_name: string_info_103
+      shap_value: -0.2689385712146759
+      feature_value: 1.0
+    [5]:
+      index: 2210
+      feature_name: import_info_1267
+      shap_value: -0.17804710566997528
+      feature_value: -1.0
+    [6]:
+      index: 626
+      feature_name: header_info_0
+      shap_value: 0.159568190574646
+      feature_value: 1518814976.0
+    [7]:
+      index: 2364
+      feature_name: data_dir_info_13
+      shap_value: -0.14862698316574097
+      feature_value: 74996.0
+    [8]:
+      index: 1060
+      feature_name: import_info_117
+      shap_value: -0.14585697650909424
+      feature_value: 0.0
+    [9]:
+      index: 639
+      feature_name: header_info_13
+      shap_value: -0.14519494771957397
+      feature_value: 0.0
+  lime_features:
+
+forensics:
+  is_pe: True
+  machine_type: 
+  compilation_timestamp: 
+  entry_point: 0
+  has_digital_signature: False
+  sections:
+
+  num_sections: 0
+  imported_dlls:
+
+  suspicious_imports:
+
+  num_imports: 0
+  num_exports: 0
+  overall_entropy: 0.03125
+  max_section_entropy: 3.0
+  is_likely_packed: False
+  anomalies:
+
+  feature_indicators:
+    [0]:
+      category: sections
+      indicator: Section with very high entropy feature value (3.000)
+      severity: 1.0
+    [1]:
+      category: imports
+      indicator: 1 active import features detected
+      severity: 0.3
+ioc_count: 2
+metadata:
+  timestamp: 2026-08-24T07:39:15.484742+00:00
+  haruspex_version: 0.1.0

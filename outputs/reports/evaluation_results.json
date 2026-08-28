@@ -1,0 +1,40 @@
+{
+  "xgboost": {
+    "model": "xgboost",
+    "evaluations": [
+      {
+        "split": "cross_dataset",
+        "model": "xgboost",
+        "metrics": {
+          "accuracy": 0.841675,
+          "precision": 0.9412866312784945,
+          "recall": 0.72881,
+          "f1": 0.8215322357927486,
+          "auc_roc": 0.9256214050499998
+        },
+        "train_size": 0,
+        "test_size": 200000,
+        "status": "success"
+      }
+    ]
+  },
+  "lightgbm": {
+    "model": "lightgbm",
+    "evaluations": [
+      {
+        "split": "cross_dataset",
+        "model": "lightgbm",
+        "metrics": {
+          "accuracy": 0.83999,
+          "precision": 0.9464154411764706,
+          "recall": 0.72079,
+          "f1": 0.818335603996367,
+          "auc_roc": 0.9257033849
+        },
+        "train_size": 0,
+        "test_size": 200000,
+        "status": "success"
+      }
+    ]
+  }
+}

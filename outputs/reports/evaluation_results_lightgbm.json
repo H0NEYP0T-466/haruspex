@@ -1,0 +1,58 @@
+{
+  "model": "lightgbm",
+  "evaluations": [
+    {
+      "split": "random",
+      "model": "lightgbm",
+      "metrics": {
+        "accuracy": 0.997173355153048,
+        "precision": 0.9983363978635846,
+        "recall": 0.9950257439567153,
+        "f1": 0.9966783216783217,
+        "auc_roc": 0.999853498046931
+      },
+      "train_size": 107548,
+      "test_size": 26887
+    },
+    {
+      "split": "family_held_out",
+      "model": "lightgbm",
+      "metrics": {
+        "accuracy": 0.9997629208155524,
+        "precision": 1.0,
+        "recall": 0.9997629208155524,
+        "f1": 0.9998814463544754,
+        "auc_roc": NaN
+      },
+      "train_size": 130217,
+      "test_size": 4218,
+      "held_out_families": [
+        "gepys",
+        "benjamin",
+        "musecador",
+        "autoit"
+      ]
+    },
+    {
+      "split": "temporal",
+      "model": "lightgbm",
+      "metrics": {
+        "accuracy": 0.9996400843231015,
+        "precision": 0.9998295841854125,
+        "recall": 0.9993754258460141,
+        "f1": 0.999602453430259,
+        "auc_roc": 0.9999971965037376
+      },
+      "train_size": 95537,
+      "test_size": 38898,
+      "cutoff_date": "2020-06-01"
+    },
+    {
+      "split": "cross_dataset",
+      "model": "lightgbm",
+      "metrics": {},
+      "status": "failed",
+      "error": "Samples can not be a single string. The input must be an iterable over iterables of strings."
+    }
+  ]
+}

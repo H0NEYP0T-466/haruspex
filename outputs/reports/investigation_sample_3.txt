@@ -1,0 +1,99 @@
+========================================================================
+  HARUSPEX INVESTIGATION REPORT
+========================================================================
+
+  Sample:     3115588dedd40367ffe23e22effcee0f562c0944aa0ac998fa0c1e384a9ee8d9
+  Family:     ganelp
+  Category:   worm
+  Timestamp:  2026-08-22T07:49:20.438147+00:00
+
+------------------------------------------------------------------------
+  VERDICT
+------------------------------------------------------------------------
+  Prediction: MALWARE
+  Confidence: 100.0%
+  Risk Score: 74.1%
+  Model:      lightgbm
+
+------------------------------------------------------------------------
+  EVIDENCE SUMMARY
+------------------------------------------------------------------------
+  Total evidence items:    22
+  Correlated (AI+Forensic): 2
+  AI-only:                 18
+  Forensic-only:           2
+
+------------------------------------------------------------------------
+  EVIDENCE DETAILS
+------------------------------------------------------------------------
+  [ 1] [🔍 FORENSIC] [sections] (severity: 1.00)
+       Section with very high entropy feature value (6.000)
+
+  [ 2] [★ CORRELATED] [sections] (severity: 0.61)
+       AI feature 'section_info_3' (SHAP=+0.4613) correlates with forensic finding: Section with very high entropy feature value (6.000)
+       ↔ Forensic match: Section with very high entropy feature value (6.000)
+
+  [ 3] [🤖 AI] [header_anomaly] (severity: 0.55)
+       Feature 'header_info_11' pushes prediction toward malware (SHAP=+1.2155) — PE header field anomaly — possible manipulation
+
+  [ 4] [🤖 AI] [pe_structure] (severity: 0.52)
+       Feature 'data_dir_info_8' pushes prediction toward malware (SHAP=+1.0857) — Unusual PE data directory configuration
+
+  [ 5] [🤖 AI] [header_anomaly] (severity: 0.48)
+       Feature 'header_info_32' pushes prediction toward malware (SHAP=+0.9247) — PE header field anomaly — possible manipulation
+
+  [ 6] [🤖 AI] [entropy] (severity: 0.41)
+       Feature 'byte_hist_32' pushes prediction toward malware (SHAP=+0.7051) — Unusual byte distribution — may indicate packing or encryption
+
+  [ 7] [🤖 AI] [pe_structure] (severity: 0.40)
+       Feature 'data_dir_info_9' pushes prediction toward malware (SHAP=+0.6660) — Unusual PE data directory configuration
+
+  [ 8] [★ CORRELATED] [imports] (severity: 0.37)
+       AI feature 'import_info_618' (SHAP=+0.1473) correlates with forensic finding: 27 active import features detected
+       ↔ Forensic match: 27 active import features detected
+
+  [ 9] [🤖 AI] [header_anomaly] (severity: 0.36)
+       Feature 'header_info_29' pushes prediction toward malware (SHAP=+0.5702) — PE header field anomaly — possible manipulation
+
+  [10] [🔍 FORENSIC] [imports] (severity: 0.30)
+       27 active import features detected
+
+  [11] [🤖 AI] [header_anomaly] (severity: 0.30)
+       Feature 'header_info_57' pushes prediction toward malware (SHAP=+0.4243) — PE header field anomaly — possible manipulation
+
+  [12] [🤖 AI] [pe_structure] (severity: 0.28)
+       Feature 'data_dir_info_13' pushes prediction toward benign (SHAP=-0.3927) — Unusual PE data directory configuration
+
+  [13] [🤖 AI] [strings] (severity: 0.28)
+       Feature 'string_info_101' pushes prediction toward malware (SHAP=+0.3827) — Anomalous string characteristics in binary
+
+  [14] [🤖 AI] [entropy] (severity: 0.24)
+       Feature 'byte_hist_95' pushes prediction toward malware (SHAP=+0.3093) — Unusual byte distribution — may indicate packing or encryption
+
+  [15] [🤖 AI] [strings] (severity: 0.21)
+       Feature 'string_info_42' pushes prediction toward malware (SHAP=+0.2640) — Anomalous string characteristics in binary
+
+  [16] [🤖 AI] [pe_structure] (severity: 0.21)
+       Feature 'data_dir_info_3' pushes prediction toward malware (SHAP=+0.2580) — Unusual PE data directory configuration
+
+  [17] [🤖 AI] [entropy] (severity: 0.20)
+       Feature 'byte_entropy_hist_76' pushes prediction toward benign (SHAP=-0.2518) — High entropy regions detected — possible packing or encryption
+
+  [18] [🤖 AI] [entropy] (severity: 0.18)
+       Feature 'byte_hist_7' pushes prediction toward malware (SHAP=+0.2166) — Unusual byte distribution — may indicate packing or encryption
+
+  [19] [🤖 AI] [entropy] (severity: 0.17)
+       Feature 'byte_hist_67' pushes prediction toward malware (SHAP=+0.2118) — Unusual byte distribution — may indicate packing or encryption
+
+  [20] [🤖 AI] [sections] (severity: 0.15)
+       Feature 'section_info_137' pushes prediction toward malware (SHAP=+0.1768) — Suspicious PE section properties
+
+  [21] [🤖 AI] [strings] (severity: 0.15)
+       Feature 'string_info_66' pushes prediction toward malware (SHAP=+0.1714) — Anomalous string characteristics in binary
+
+  [22] [🤖 AI] [strings] (severity: 0.13)
+       Feature 'string_info_5' pushes prediction toward malware (SHAP=+0.1451) — Anomalous string characteristics in binary
+
+========================================================================
+  Generated by HARUSPEX v0.1.0
+========================================================================

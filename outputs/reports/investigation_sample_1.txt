@@ -1,0 +1,103 @@
+========================================================================
+  HARUSPEX INVESTIGATION REPORT
+========================================================================
+
+  Sample:     25682d8b9acbf622eb712f296bfc10dda5d7e0e842388261d865d26fbc968709
+  Family:     Unknown
+  Category:   benign
+  Timestamp:  2026-08-22T07:49:20.426533+00:00
+
+------------------------------------------------------------------------
+  VERDICT
+------------------------------------------------------------------------
+  Prediction: BENIGN
+  Confidence: 0.0%
+  Risk Score: 14.1%
+  Model:      lightgbm
+
+------------------------------------------------------------------------
+  EVIDENCE SUMMARY
+------------------------------------------------------------------------
+  Total evidence items:    23
+  Correlated (AI+Forensic): 3
+  AI-only:                 17
+  Forensic-only:           3
+
+------------------------------------------------------------------------
+  EVIDENCE DETAILS
+------------------------------------------------------------------------
+  [ 1] [🔍 FORENSIC] [sections] (severity: 1.00)
+       Section with very high entropy feature value (6.000)
+
+  [ 2] [🤖 AI] [header_anomaly] (severity: 0.65)
+       Feature 'header_info_11' pushes prediction toward benign (SHAP=-1.8789) — PE header field anomaly — possible manipulation
+
+  [ 3] [🤖 AI] [header_anomaly] (severity: 0.61)
+       Feature 'header_info_57' pushes prediction toward benign (SHAP=-1.5320) — PE header field anomaly — possible manipulation
+
+  [ 4] [🤖 AI] [pe_structure] (severity: 0.51)
+       Feature 'data_dir_info_13' pushes prediction toward benign (SHAP=-1.0432) — Unusual PE data directory configuration
+
+  [ 5] [🤖 AI] [pe_structure] (severity: 0.48)
+       Feature 'data_dir_info_8' pushes prediction toward benign (SHAP=-0.9084) — Unusual PE data directory configuration
+
+  [ 6] [🤖 AI] [pe_structure] (severity: 0.46)
+       Feature 'data_dir_info_9' pushes prediction toward benign (SHAP=-0.8681) — Unusual PE data directory configuration
+
+  [ 7] [🤖 AI] [pe_structure] (severity: 0.44)
+       Feature 'general_info_3' pushes prediction toward benign (SHAP=-0.7707) — Unusual PE general properties
+
+  [ 8] [★ CORRELATED] [imports] (severity: 0.43)
+       AI feature 'import_info_1077' (SHAP=-0.2194) correlates with forensic finding: 97 active import features detected
+       ↔ Forensic match: 97 active import features detected
+
+  [ 9] [★ CORRELATED] [entropy] (severity: 0.39)
+       AI feature 'byte_hist_32' (SHAP=-0.1699) correlates with forensic finding: Binary is likely packed (max section entropy: 6.00)
+       ↔ Forensic match: Binary is likely packed (max section entropy: 6.00)
+
+  [10] [★ CORRELATED] [sections] (severity: 0.38)
+       AI feature 'section_info_3' (SHAP=-0.1598) correlates with forensic finding: Section with very high entropy feature value (6.000)
+       ↔ Forensic match: Section with very high entropy feature value (6.000)
+
+  [11] [🔍 FORENSIC] [imports] (severity: 0.30)
+       97 active import features detected
+
+  [12] [🤖 AI] [pe_structure] (severity: 0.30)
+       Feature 'data_dir_info_4' pushes prediction toward benign (SHAP=-0.4225) — Unusual PE data directory configuration
+
+  [13] [🤖 AI] [header_anomaly] (severity: 0.26)
+       Feature 'header_info_29' pushes prediction toward malware (SHAP=+0.3449) — PE header field anomaly — possible manipulation
+
+  [14] [🤖 AI] [header_anomaly] (severity: 0.23)
+       Feature 'header_info_32' pushes prediction toward benign (SHAP=-0.3056) — PE header field anomaly — possible manipulation
+
+  [15] [🔍 FORENSIC] [entropy] (severity: 0.23)
+       High concentration in upper entropy bins (13/56)
+
+  [16] [🤖 AI] [header_anomaly] (severity: 0.21)
+       Feature 'header_info_6' pushes prediction toward benign (SHAP=-0.2640) — PE header field anomaly — possible manipulation
+
+  [17] [🤖 AI] [pe_structure] (severity: 0.20)
+       Feature 'data_dir_info_24' pushes prediction toward benign (SHAP=-0.2506) — Unusual PE data directory configuration
+
+  [18] [🤖 AI] [strings] (severity: 0.18)
+       Feature 'string_info_101' pushes prediction toward benign (SHAP=-0.2122) — Anomalous string characteristics in binary
+
+  [19] [🤖 AI] [pe_structure] (severity: 0.16)
+       Feature 'data_dir_info_0' pushes prediction toward benign (SHAP=-0.1958) — Unusual PE data directory configuration
+
+  [20] [🤖 AI] [imports] (severity: 0.16)
+       Feature 'import_info_113' pushes prediction toward malware (SHAP=+0.1946) — Import-related feature contributes to malware classification
+
+  [21] [🤖 AI] [strings] (severity: 0.15)
+       Feature 'string_info_77' pushes prediction toward benign (SHAP=-0.1700) — Anomalous string characteristics in binary
+
+  [22] [🤖 AI] [pe_structure] (severity: 0.12)
+       Feature 'data_dir_info_1' pushes prediction toward benign (SHAP=-0.1411) — Unusual PE data directory configuration
+
+  [23] [🤖 AI] [imports] (severity: 0.12)
+       Feature 'import_info_247' pushes prediction toward benign (SHAP=-0.1401) — Import-related feature contributes to malware classification
+
+========================================================================
+  Generated by HARUSPEX v0.1.0
+========================================================================

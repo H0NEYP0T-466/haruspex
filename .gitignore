@@ -16,7 +16,9 @@ deepLearning/*/models/
 *.pt
 
 # --- Model & Output Artifacts ---
-outputs/
+outputs/models/
+outputs/*.json
+outputs/*.txt
 *.pkl
 *.joblib
 *.ubj

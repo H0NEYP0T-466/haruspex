@@ -1,0 +1,62 @@
+models:
+  xgboost:
+    train_accuracy: 0.9999276814678596
+    val_accuracy: 0.9963734424400223
+    test_accuracy: 0.9970245843716294
+    test_f1: 0.9965044131783624
+    test_auc: 0.9998279309107196
+  lightgbm:
+    train_accuracy: 1.0
+    val_accuracy: 0.9967453970615585
+    test_accuracy: 0.997173355153048
+    test_f1: 0.9966783216783217
+    test_auc: 0.999853498046931
+  best_model: lightgbm
+dataset:
+  total_samples: 134435
+  n_features: 2381
+  n_benign: 77142
+  n_malware: 57293
+shap_global_importance:
+  [0]:
+    index: 637
+    feature_name: header_info_11
+    mean_abs_shap: 1.406227503666323
+  [1]:
+    index: 2359
+    feature_name: data_dir_info_8
+    mean_abs_shap: 1.1803404933163022
+  [2]:
+    index: 2355
+    feature_name: data_dir_info_4
+    mean_abs_shap: 0.7694128287888256
+  [3]:
+    index: 655
+    feature_name: header_info_29
+    mean_abs_shap: 0.7541631461003344
+  [4]:
+    index: 2360
+    feature_name: data_dir_info_9
+    mean_abs_shap: 0.7043607809971978
+  [5]:
+    index: 658
+    feature_name: header_info_32
+    mean_abs_shap: 0.5300435381153119
+  [6]:
+    index: 683
+    feature_name: header_info_57
+    mean_abs_shap: 0.4747837280843349
+  [7]:
+    index: 613
+    feature_name: string_info_101
+    mean_abs_shap: 0.4485049411024659
+  [8]:
+    index: 2364
+    feature_name: data_dir_info_13
+    mean_abs_shap: 0.43572000967320046
+  [9]:
+    index: 32
+    feature_name: byte_hist_32
+    mean_abs_shap: 0.2673518341933613
+investigation_reports: 5
+total_correlated_evidence: 14

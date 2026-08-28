@@ -1,0 +1,105 @@
+========================================================================
+  HARUSPEX INVESTIGATION REPORT
+========================================================================
+
+  Sample:     123a95c1c818022c5bc794c2f983ee37a2892f2d3b2794dbdfa2144592fd5e5e
+  Family:     gepys
+  Category:   trojan
+  Timestamp:  2026-08-22T07:49:20.431908+00:00
+
+------------------------------------------------------------------------
+  VERDICT
+------------------------------------------------------------------------
+  Prediction: MALWARE
+  Confidence: 99.9%
+  Risk Score: 76.0%
+  Model:      lightgbm
+
+------------------------------------------------------------------------
+  EVIDENCE SUMMARY
+------------------------------------------------------------------------
+  Total evidence items:    23
+  Correlated (AI+Forensic): 5
+  AI-only:                 15
+  Forensic-only:           3
+
+------------------------------------------------------------------------
+  EVIDENCE DETAILS
+------------------------------------------------------------------------
+  [ 1] [🔍 FORENSIC] [sections] (severity: 1.00)
+       Section with very high entropy feature value (200704.000)
+
+  [ 2] [★ CORRELATED] [entropy] (severity: 0.70)
+       AI feature 'byte_hist_255' (SHAP=+0.6222) correlates with forensic finding: Binary is likely packed (max section entropy: 200704.00)
+       ↔ Forensic match: Binary is likely packed (max section entropy: 200704.00)
+
+  [ 3] [★ CORRELATED] [sections] (severity: 0.62)
+       AI feature 'section_info_194' (SHAP=+0.4740) correlates with forensic finding: Section with very high entropy feature value (200704.000)
+       ↔ Forensic match: Section with very high entropy feature value (200704.000)
+
+  [ 4] [🤖 AI] [header_anomaly] (severity: 0.56)
+       Feature 'header_info_11' pushes prediction toward malware (SHAP=+1.2975) — PE header field anomaly — possible manipulation
+
+  [ 5] [🤖 AI] [pe_structure] (severity: 0.49)
+       Feature 'data_dir_info_8' pushes prediction toward malware (SHAP=+0.9737) — Unusual PE data directory configuration
+
+  [ 6] [🤖 AI] [header_anomaly] (severity: 0.46)
+       Feature 'header_info_32' pushes prediction toward malware (SHAP=+0.8625) — PE header field anomaly — possible manipulation
+
+  [ 7] [★ CORRELATED] [entropy] (severity: 0.43)
+       AI feature 'byte_hist_32' (SHAP=-0.2149) correlates with forensic finding: High concentration in upper entropy bins (16/56)
+       ↔ Forensic match: High concentration in upper entropy bins (16/56)
+
+  [ 8] [🤖 AI] [header_anomaly] (severity: 0.41)
+       Feature 'header_info_0' pushes prediction toward malware (SHAP=+0.6915) — PE header field anomaly — possible manipulation
+
+  [ 9] [★ CORRELATED] [imports] (severity: 0.41)
+       AI feature 'import_info_25' (SHAP=-0.1891) correlates with forensic finding: 3 active import features detected
+       ↔ Forensic match: 3 active import features detected
+
+  [10] [🤖 AI] [pe_structure] (severity: 0.40)
+       Feature 'data_dir_info_9' pushes prediction toward malware (SHAP=+0.6694) — Unusual PE data directory configuration
+
+  [11] [🤖 AI] [strings] (severity: 0.38)
+       Feature 'string_info_101' pushes prediction toward malware (SHAP=+0.6002) — Anomalous string characteristics in binary
+
+  [12] [★ CORRELATED] [entropy] (severity: 0.37)
+       AI feature 'byte_hist_7' (SHAP=-0.1517) correlates with forensic finding: Binary likely packed (max entropy: 200704.00)
+       ↔ Forensic match: Binary likely packed (max entropy: 200704.00)
+
+  [13] [🤖 AI] [header_anomaly] (severity: 0.37)
+       Feature 'header_info_29' pushes prediction toward malware (SHAP=+0.5785) — PE header field anomaly — possible manipulation
+
+  [14] [🤖 AI] [pe_structure] (severity: 0.33)
+       Feature 'data_dir_info_4' pushes prediction toward benign (SHAP=-0.4972) — Unusual PE data directory configuration
+
+  [15] [🔍 FORENSIC] [imports] (severity: 0.30)
+       3 active import features detected
+
+  [16] [🔍 FORENSIC] [entropy] (severity: 0.29)
+       High concentration in upper entropy bins (16/56)
+
+  [17] [🤖 AI] [header_anomaly] (severity: 0.24)
+       Feature 'header_info_57' pushes prediction toward malware (SHAP=+0.3214) — PE header field anomaly — possible manipulation
+
+  [18] [🤖 AI] [pe_structure] (severity: 0.19)
+       Feature 'data_dir_info_13' pushes prediction toward malware (SHAP=+0.2408) — Unusual PE data directory configuration
+
+  [19] [🤖 AI] [sections] (severity: 0.16)
+       Feature 'section_info_55' pushes prediction toward malware (SHAP=+0.1899) — Suspicious PE section properties
+
+  [20] [🤖 AI] [imports] (severity: 0.15)
+       Feature 'import_info_603' pushes prediction toward malware (SHAP=+0.1786) — Import-related feature contributes to malware classification
+
+  [21] [🤖 AI] [pe_structure] (severity: 0.15)
+       Feature 'data_dir_info_2' pushes prediction toward malware (SHAP=+0.1755) — Unusual PE data directory configuration
+
+  [22] [🤖 AI] [imports] (severity: 0.15)
+       Feature 'import_info_51' pushes prediction toward benign (SHAP=-0.1706) — Import-related feature contributes to malware classification
+
+  [23] [🤖 AI] [pe_structure] (severity: 0.14)
+       Feature 'data_dir_info_24' pushes prediction toward malware (SHAP=+0.1621) — Unusual PE data directory configuration
+
+========================================================================
+  Generated by HARUSPEX v0.1.0
+========================================================================

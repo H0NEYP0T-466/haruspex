@@ -1,0 +1,383 @@
+{
+  "sample": {
+    "id": "test_sample_2",
+    "sha256": "123a95c1c818022c5bc794c2f983ee37a2892f2d3b2794dbdfa2144592fd5e5e",
+    "family": "gepys",
+    "category": "trojan"
+  },
+  "prediction": {
+    "verdict": "malware",
+    "confidence": 0.9991,
+    "risk_score": 0.7598,
+    "model": "lightgbm"
+  },
+  "evidence_summary": {
+    "total": 23,
+    "correlated": 5,
+    "ai_only": 15,
+    "forensic_only": 3
+  },
+  "evidence_items": [
+    {
+      "category": "sections",
+      "indicator": "Section with very high entropy feature value (200704.000)",
+      "severity": 1.0,
+      "source": "forensic_analysis",
+      "confidence": 0.6
+    },
+    {
+      "category": "entropy",
+      "indicator": "AI feature 'byte_hist_255' (SHAP=+0.6222) correlates with forensic finding: Binary is likely packed (max section entropy: 200704.00)",
+      "severity": 0.6986,
+      "source": "correlated",
+      "confidence": 0.9,
+      "feature_name": "byte_hist_255",
+      "shap_value": 0.622157,
+      "matched_forensic": "Binary is likely packed (max section entropy: 200704.00)"
+    },
+    {
+      "category": "sections",
+      "indicator": "AI feature 'section_info_194' (SHAP=+0.4740) correlates with forensic finding: Section with very high entropy feature value (200704.000)",
+      "severity": 0.618,
+      "source": "correlated",
+      "confidence": 0.9,
+      "feature_name": "section_info_194",
+      "shap_value": 0.47399,
+      "matched_forensic": "Section with very high entropy feature value (200704.000)"
+    },
+    {
+      "category": "header_anomaly",
+      "indicator": "Feature 'header_info_11' pushes prediction toward malware (SHAP=+1.2975) \u2014 PE header field anomaly \u2014 possible manipulation",
+      "severity": 0.5647,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "header_info_11",
+      "shap_value": 1.297495
+    },
+    {
+      "category": "pe_structure",
+      "indicator": "Feature 'data_dir_info_8' pushes prediction toward malware (SHAP=+0.9737) \u2014 Unusual PE data directory configuration",
+      "severity": 0.4933,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "data_dir_info_8",
+      "shap_value": 0.973666
+    },
+    {
+      "category": "header_anomaly",
+      "indicator": "Feature 'header_info_32' pushes prediction toward malware (SHAP=+0.8625) \u2014 PE header field anomaly \u2014 possible manipulation",
+      "severity": 0.4631,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "header_info_32",
+      "shap_value": 0.862458
+    },
+    {
+      "category": "entropy",
+      "indicator": "AI feature 'byte_hist_32' (SHAP=-0.2149) correlates with forensic finding: High concentration in upper entropy bins (16/56)",
+      "severity": 0.43,
+      "source": "correlated",
+      "confidence": 0.9,
+      "feature_name": "byte_hist_32",
+      "shap_value": -0.214947,
+      "matched_forensic": "High concentration in upper entropy bins (16/56)"
+    },
+    {
+      "category": "header_anomaly",
+      "indicator": "Feature 'header_info_0' pushes prediction toward malware (SHAP=+0.6915) \u2014 PE header field anomaly \u2014 possible manipulation",
+      "severity": 0.4088,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "header_info_0",
+      "shap_value": 0.691489
+    },
+    {
+      "category": "imports",
+      "indicator": "AI feature 'import_info_25' (SHAP=-0.1891) correlates with forensic finding: 3 active import features detected",
+      "severity": 0.4068,
+      "source": "correlated",
+      "confidence": 0.9,
+      "feature_name": "import_info_25",
+      "shap_value": -0.189136,
+      "matched_forensic": "3 active import features detected"
+    },
+    {
+      "category": "pe_structure",
+      "indicator": "Feature 'data_dir_info_9' pushes prediction toward malware (SHAP=+0.6694) \u2014 Unusual PE data directory configuration",
+      "severity": 0.401,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "data_dir_info_9",
+      "shap_value": 0.669417
+    },
+    {
+      "category": "strings",
+      "indicator": "Feature 'string_info_101' pushes prediction toward malware (SHAP=+0.6002) \u2014 Anomalous string characteristics in binary",
+      "severity": 0.3751,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "string_info_101",
+      "shap_value": 0.60016
+    },
+    {
+      "category": "entropy",
+      "indicator": "AI feature 'byte_hist_7' (SHAP=-0.1517) correlates with forensic finding: Binary likely packed (max entropy: 200704.00)",
+      "severity": 0.3713,
+      "source": "correlated",
+      "confidence": 0.9,
+      "feature_name": "byte_hist_7",
+      "shap_value": -0.151748,
+      "matched_forensic": "Binary likely packed (max entropy: 200704.00)"
+    },
+    {
+      "category": "header_anomaly",
+      "indicator": "Feature 'header_info_29' pushes prediction toward malware (SHAP=+0.5785) \u2014 PE header field anomaly \u2014 possible manipulation",
+      "severity": 0.3665,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "header_info_29",
+      "shap_value": 0.578457
+    },
+    {
+      "category": "pe_structure",
+      "indicator": "Feature 'data_dir_info_4' pushes prediction toward benign (SHAP=-0.4972) \u2014 Unusual PE data directory configuration",
+      "severity": 0.3321,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "data_dir_info_4",
+      "shap_value": -0.497202
+    },
+    {
+      "category": "imports",
+      "indicator": "3 active import features detected",
+      "severity": 0.3,
+      "source": "forensic_analysis",
+      "confidence": 0.6
+    },
+    {
+      "category": "entropy",
+      "indicator": "High concentration in upper entropy bins (16/56)",
+      "severity": 0.2857,
+      "source": "forensic_analysis",
+      "confidence": 0.6
+    },
+    {
+      "category": "header_anomaly",
+      "indicator": "Feature 'header_info_57' pushes prediction toward malware (SHAP=+0.3214) \u2014 PE header field anomaly \u2014 possible manipulation",
+      "severity": 0.2432,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "header_info_57",
+      "shap_value": 0.321397
+    },
+    {
+      "category": "pe_structure",
+      "indicator": "Feature 'data_dir_info_13' pushes prediction toward malware (SHAP=+0.2408) \u2014 Unusual PE data directory configuration",
+      "severity": 0.1941,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "data_dir_info_13",
+      "shap_value": 0.240814
+    },
+    {
+      "category": "sections",
+      "indicator": "Feature 'section_info_55' pushes prediction toward malware (SHAP=+0.1899) \u2014 Suspicious PE section properties",
+      "severity": 0.1596,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "section_info_55",
+      "shap_value": 0.189882
+    },
+    {
+      "category": "imports",
+      "indicator": "Feature 'import_info_603' pushes prediction toward malware (SHAP=+0.1786) \u2014 Import-related feature contributes to malware classification",
+      "severity": 0.1515,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "import_info_603",
+      "shap_value": 0.1786
+    },
+    {
+      "category": "pe_structure",
+      "indicator": "Feature 'data_dir_info_2' pushes prediction toward malware (SHAP=+0.1755) \u2014 Unusual PE data directory configuration",
+      "severity": 0.1493,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "data_dir_info_2",
+      "shap_value": 0.175461
+    },
+    {
+      "category": "imports",
+      "indicator": "Feature 'import_info_51' pushes prediction toward benign (SHAP=-0.1706) \u2014 Import-related feature contributes to malware classification",
+      "severity": 0.1457,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "import_info_51",
+      "shap_value": -0.170553
+    },
+    {
+      "category": "pe_structure",
+      "indicator": "Feature 'data_dir_info_24' pushes prediction toward malware (SHAP=+0.1621) \u2014 Unusual PE data directory configuration",
+      "severity": 0.1395,
+      "source": "ai_explanation",
+      "confidence": 0.7,
+      "feature_name": "data_dir_info_24",
+      "shap_value": 0.162093
+    }
+  ],
+  "xai": {
+    "top_shap_features": [
+      {
+        "index": 637,
+        "feature_name": "header_info_11",
+        "shap_value": 1.297494501162027,
+        "feature_value": 0.0
+      },
+      {
+        "index": 2359,
+        "feature_name": "data_dir_info_8",
+        "shap_value": 0.9736655976056888,
+        "feature_value": 0.0
+      },
+      {
+        "index": 658,
+        "feature_name": "header_info_32",
+        "shap_value": 0.8624578636052405,
+        "feature_value": 0.0
+      },
+      {
+        "index": 626,
+        "feature_name": "header_info_0",
+        "shap_value": 0.6914888347943344,
+        "feature_value": 1366036096.0
+      },
+      {
+        "index": 2360,
+        "feature_name": "data_dir_info_9",
+        "shap_value": 0.6694172717439405,
+        "feature_value": 0.0
+      },
+      {
+        "index": 255,
+        "feature_name": "byte_hist_255",
+        "shap_value": 0.6221569840195307,
+        "feature_value": 0.0032837127801030874
+      },
+      {
+        "index": 613,
+        "feature_name": "string_info_101",
+        "shap_value": 0.6001601879686956,
+        "feature_value": 0.0
+      },
+      {
+        "index": 655,
+        "feature_name": "header_info_29",
+        "shap_value": 0.5784573920217713,
+        "feature_value": -1.0
+      },
+      {
+        "index": 2355,
+        "feature_name": "data_dir_info_4",
+        "shap_value": -0.49720185117382304,
+        "feature_value": 1936.0
+      },
+      {
+        "index": 882,
+        "feature_name": "section_info_194",
+        "shap_value": 0.47399027081952017,
+        "feature_value": 0.0
+      }
+    ],
+    "lime_features": [
+      {
+        "feature_description": "import_info_233 <= 0.00",
+        "feature_name": "import_info_233",
+        "weight": -0.16718247830580174
+      },
+      {
+        "feature_description": "import_info_527 <= 0.00",
+        "feature_name": "import_info_527",
+        "weight": -0.10707911391397723
+      },
+      {
+        "feature_description": "import_info_183 <= 0.00",
+        "feature_name": "import_info_183",
+        "weight": -0.10685166839862226
+      },
+      {
+        "feature_description": "import_info_270 <= 0.00",
+        "feature_name": "import_info_270",
+        "weight": -0.08489022944173184
+      },
+      {
+        "feature_description": "import_info_88 <= 0.00",
+        "feature_name": "import_info_88",
+        "weight": -0.06193018144006658
+      },
+      {
+        "feature_description": "section_info_25 <= 0.00",
+        "feature_name": "section_info_25",
+        "weight": 0.017618598777429207
+      },
+      {
+        "feature_description": "section_info_50 <= 0.00",
+        "feature_name": "section_info_50",
+        "weight": 0.016831142279152972
+      },
+      {
+        "feature_description": "import_info_85 <= 0.00",
+        "feature_name": "import_info_85",
+        "weight": -0.012845316583469676
+      },
+      {
+        "feature_description": "import_info_111 <= 0.00",
+        "feature_name": "import_info_111",
+        "weight": 0.012571143915598245
+      },
+      {
+        "feature_description": "section_info_125 <= 0.00",
+        "feature_name": "section_info_125",
+        "weight": 0.009052143852497821
+      }
+    ]
+  },
+  "forensics": {
+    "is_pe": true,
+    "machine_type": "",
+    "compilation_timestamp": "",
+    "entry_point": 0,
+    "has_digital_signature": false,
+    "sections": [],
+    "num_sections": 0,
+    "imported_dlls": [],
+    "suspicious_imports": [],
+    "num_imports": 0,
+    "num_exports": 0,
+    "overall_entropy": 0.03125,
+    "max_section_entropy": 200704.0,
+    "is_likely_packed": true,
+    "anomalies": [],
+    "feature_indicators": [
+      {
+        "category": "entropy",
+        "indicator": "High concentration in upper entropy bins (16/56)",
+        "severity": 0.2857142857142857
+      },
+      {
+        "category": "sections",
+        "indicator": "Section with very high entropy feature value (200704.000)",
+        "severity": 1.0
+      },
+      {
+        "category": "imports",
+        "indicator": "3 active import features detected",
+        "severity": 0.3
+      }
+    ]
+  },
+  "ioc_count": 4,
+  "metadata": {
+    "timestamp": "2026-08-22T07:49:20.431908+00:00",
+    "haruspex_version": "0.1.0"
+  }
+}
