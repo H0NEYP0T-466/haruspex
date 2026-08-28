@@ -25,6 +25,7 @@ from haruspex.forensics.ioc_extractor import IOCExtractor
 from haruspex.forensics.static_analysis import StaticAnalyzer
 from haruspex.utils.logging import get_logger
 from haruspex.xai.shap_explainer import SHAPExplainer
+from haruspex.xai.lime_explainer import LIMEExplainer
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -45,20 +46,33 @@ def _uploaded_file_forensics(content: bytes, filename: str) -> tuple[dict, int]:
             pe_path.unlink(missing_ok=True)
 
 
-def _require_training_compatible_upload_vectorizer() -> None:
-    """Prevent scientifically invalid raw-upload model predictions."""
-    from haruspex.forensics.pe_feature_extractor import PEFeatureExtractor
-    if not PEFeatureExtractor.training_compatible:
+def _vectorize_uploaded_pe(content: bytes) -> np.ndarray:
+    """Create the official EMBER v2 vector shared by EMBER/BODMAS-compatible models."""
+    try:
+        from haruspex.forensics.ember_vectorizer import EmberV2PEVectorizer
+        return EmberV2PEVectorizer().extract(content)
+    except Exception as exc:
         raise HTTPException(
             status_code=422,
-            detail=(
-                "ML verdicts for uploaded PE files are disabled: the installed raw-PE "
-                "extractor has not been validated as the exact vectorizer used to train "
-                "these 2,381-feature models. Use a stored dataset vector/sample for ML "
-                "comparison; uploaded files still support forensic/YARA analysis via "
-                "/api/predict/upload-forensics."
-            ),
-        )
+            detail=f"Could not vectorize uploaded file with the EMBER v2 PE extractor: {exc}",
+        ) from exc
+
+
+_lime_background_cache: Optional[np.ndarray] = None
+
+def _get_lime_background(max_samples: int = 200) -> Optional[np.ndarray]:
+    """Load a small BODMAS subset for LIME background statistics (cached)."""
+    global _lime_background_cache
+    if _lime_background_cache is not None:
+        return _lime_background_cache
+    try:
+        from haruspex.data.bodmas import load_bodmas
+        X, _, _ = load_bodmas(max_samples=max_samples)
+        _lime_background_cache = X
+        return _lime_background_cache
+    except Exception as e:
+        logger.warning("Could not load BODMAS background for LIME: %s", e)
+        return None
 
 
 class FeatureVectorRequest(BaseModel):
@@ -139,7 +153,6 @@ async def predict(
     try:
         # --- Mode 1: PE file upload ---
         if file and file.filename:
-            _require_training_compatible_upload_vectorizer()
             logger.info("Processing PE file upload: %s (group=%s, model=%s)",
                         file.filename, used_group, used_model)
             content = await file.read()
@@ -153,10 +166,9 @@ async def predict(
             forensic_report = static_analyzer.analyze_pe(pe_path)
             iocs = ioc_extractor.extract_all(forensic_report, pe_path)
 
-            # Extract 2381 EMBER-compatible features from PE file bytes
-            from haruspex.forensics.pe_feature_extractor import PEFeatureExtractor
-            extractor = PEFeatureExtractor()
-            features = extractor.extract(content)
+            # Exact official EMBER v2 feature layout; BODMAS was trained on
+            # the compatible 2,381-column EMBER schema.
+            features = _vectorize_uploaded_pe(content)
             sample_id = file.filename
 
         # --- Mode 2: Feature vector ---
@@ -192,8 +204,22 @@ async def predict(
         confidence = pred_proba if pred_label == 1 else (1.0 - pred_proba)
 
         # SHAP explanation
-        shap_explainer = SHAPExplainer(model, feature_names=feature_names)
-        shap_exp = shap_explainer.explain_sample(features)
+        shap_exp = None
+        try:
+            shap_explainer = SHAPExplainer(model, feature_names=feature_names)
+            shap_exp = shap_explainer.explain_sample(features)
+        except Exception as e:
+            logger.warning("SHAP explanation failed: %s", e)
+
+        # LIME explanation (best-effort; needs background data)
+        lime_exp = None
+        try:
+            bg_data = _get_lime_background()
+            if bg_data is not None:
+                lime_explainer = LIMEExplainer(bg_data, feature_names=feature_names)
+                lime_exp = lime_explainer.explain_sample(model, features)
+        except Exception as e:
+            logger.warning("LIME explanation failed: %s", e)
 
         # Forensic analysis (if not already performed on real PE file)
         if forensic_report is None:
@@ -205,6 +231,7 @@ async def predict(
         evidence = correlator.correlate(shap_exp, forensic_report, iocs, top_k=20)
 
         # Build report
+        lime_features = lime_exp.top_features(k=10) if lime_exp else None
         report = correlator.generate_report(
             sample_id=sample_id,
             prediction=prediction,
@@ -214,9 +241,14 @@ async def predict(
             shap_explanation=shap_exp,
             forensic_report=forensic_report,
             iocs=iocs,
+            lime_features=lime_features,
         )
 
-        return report.to_dict()
+        report_dict = report.to_dict()
+        if file and file.filename:
+            report_dict["metadata"]["feature_vectorizer"] = "official_ember_v2"
+            report_dict["metadata"]["vector_schema"] = "EMBER v2 / BODMAS-compatible (2381 features)"
+        return report_dict
 
     except HTTPException:
         raise
@@ -251,7 +283,6 @@ async def predict_all(
 
     try:
         if file and file.filename:
-            _require_training_compatible_upload_vectorizer()
             logger.info("Processing PE file upload for all-model testing: %s", file.filename)
             content = await file.read()
 
@@ -262,10 +293,7 @@ async def predict_all(
             forensic_report = static_analyzer.analyze_pe(pe_path)
             iocs = ioc_extractor.extract_all(forensic_report, pe_path)
 
-            from haruspex.forensics.pe_feature_extractor import PEFeatureExtractor
-
-            extractor = PEFeatureExtractor()
-            features = extractor.extract(content)
+            features = _vectorize_uploaded_pe(content)
             sample_id = file.filename
 
         elif features_json:
@@ -330,6 +358,8 @@ async def predict_all(
             "results": per_model_results,
             "forensic_summary": forensic_report.to_dict() if forensic_report else {},
             "ioc_count": len(iocs) if iocs else 0,
+            "feature_vectorizer": "official_ember_v2" if file and file.filename else "caller_provided",
+            "vector_schema": "EMBER v2 / BODMAS-compatible (2381 features)",
         }
 
     except HTTPException:
@@ -344,19 +374,83 @@ async def predict_all(
 
 @router.post("/predict/upload-forensics")
 async def analyze_uploaded_file_forensics(file: UploadFile = File(...)):
-    """Run safe static/YARA analysis for an uploaded PE; no ML verdict is claimed."""
+    """Run full analysis for an uploaded PE: ML verdict + static/YARA + SHAP."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="Provide a PE file.")
     try:
         content = await file.read()
         forensic_summary, ioc_count = _uploaded_file_forensics(content, file.filename)
+
+        from haruspex.api.main import get_model, get_model_store
+
+        # Attempt ML prediction + SHAP + LIME with the verified EMBER v2 vectorizer
+        ml_result = None
+        shap_result = None
+        lime_result = None
+        try:
+            features = _vectorize_uploaded_pe(content)
+            x = features.reshape(1, -1)
+            feature_names = get_feature_names()
+            loaded_models = _get_loaded_models()
+            if loaded_models:
+                per_model = []
+                for group_name, model_name, model in loaded_models:
+                    pred_label = int(model.predict(x)[0])
+                    pred_proba = float(model.predict_proba(x)[0])
+                    prediction = "malware" if pred_label == 1 else "benign"
+                    confidence = pred_proba if pred_label == 1 else (1.0 - pred_proba)
+                    per_model.append({
+                        "model_group": group_name,
+                        "model_name": model_name,
+                        "prediction": prediction,
+                        "confidence": confidence,
+                    })
+                per_model.sort(key=lambda r: (r["model_group"], r["model_name"]))
+                malware_votes = sum(1 for r in per_model if r["prediction"] == "malware")
+                benign_votes = len(per_model) - malware_votes
+                consensus = "tie"
+                if malware_votes > benign_votes:
+                    consensus = "malware"
+                elif benign_votes > malware_votes:
+                    consensus = "benign"
+                ml_result = {
+                    "available": True,
+                    "consensus": consensus,
+                    "malware_votes": malware_votes,
+                    "benign_votes": benign_votes,
+                    "per_model": per_model,
+                }
+
+                # SHAP for the first (default) model
+                try:
+                    default_model = loaded_models[0][2]
+                    shap_explainer = SHAPExplainer(default_model, feature_names=feature_names)
+                    shap_exp = shap_explainer.explain_sample(features)
+                    shap_result = shap_exp.top_features(k=15)
+                except Exception as e:
+                    logger.warning("SHAP explanation failed for upload: %s", e)
+
+                # LIME for the first (default) model
+                try:
+                    bg_data = _get_lime_background()
+                    if bg_data is not None:
+                        lime_explainer = LIMEExplainer(bg_data, feature_names=feature_names)
+                        lime_exp = lime_explainer.explain_sample(default_model, features)
+                        lime_result = lime_exp.top_features(k=10)
+                except Exception as e:
+                    logger.warning("LIME explanation failed for upload: %s", e)
+
+        except Exception as e:
+            ml_result = {"available": False, "error": str(e)}
+
         return {
             "sample_id": file.filename,
-            "ml_verdict_available": False,
-            "notice": (
-                "Static and YARA analysis completed. ML verdicts are intentionally disabled "
-                "until the exact training-time PE vectorizer is installed and verified."
-            ),
+            "ml_verdict_available": ml_result.get("available", False) if ml_result else False,
+            "ml_verdict": ml_result,
+            "shap_features": shap_result or [],
+            "lime_features": lime_result or [],
+            "feature_vectorizer": "official_ember_v2",
+            "vector_schema": "EMBER v2 / BODMAS-compatible (2381 features)",
             "forensic_summary": forensic_summary,
             "ioc_count": ioc_count,
         }

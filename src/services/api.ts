@@ -135,8 +135,24 @@ export interface MultiModelPredictionResponse {
 
 export interface UploadedForensicsResponse {
   sample_id: string;
-  ml_verdict_available: false;
-  notice: string;
+  ml_verdict_available: boolean;
+  ml_verdict: {
+    available: boolean;
+    consensus?: string;
+    malware_votes?: number;
+    benign_votes?: number;
+    per_model?: {
+      model_group: string;
+      model_name: string;
+      prediction: string;
+      confidence: number;
+    }[];
+    error?: string;
+  } | null;
+  shap_features: ShapFeature[];
+  lime_features: LimeFeature[];
+  feature_vectorizer: string;
+  vector_schema: string;
   forensic_summary: Record<string, unknown>;
   ioc_count: number;
 }

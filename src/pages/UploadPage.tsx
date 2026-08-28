@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import api, { type PredictionReport, type EvidenceItem, type ShapFeature, type MultiModelPredictionResponse, type UploadedForensicsResponse } from '../services/api';
+import api, { type PredictionReport, type EvidenceItem, type ShapFeature, type LimeFeature, type MultiModelPredictionResponse, type UploadedForensicsResponse } from '../services/api';
 
 function getSeverityClass(severity: number): string {
   if (severity >= 0.8) return 'severity-critical';
@@ -59,10 +59,9 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
     setForensics(null);
 
     try {
-      // Raw PE vectors are intentionally not sent to ML models until their
-      // training-time vectorizer is verified. This endpoint still performs
-      // LIEF/YARA analysis for the uploaded file.
-      setForensics(await api.analyzeUploadedFileForensics(file));
+      // Use the full /predict pipeline: ML verdict + SHAP + LIME + forensics + correlation
+      const result = await api.predictFromFile(file, selectedModel, modelGroup);
+      setReport(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
@@ -200,7 +199,7 @@ export default function UploadPage({ modelGroup }: UploadPageProps) {
           <div className="spinner" />
           <p>Running HARUSPEX pipeline...</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            {groupLabel} Model - Prediction - SHAP - Forensics - Correlation
+            {groupLabel} Model - Prediction - SHAP - LIME - Forensics - Correlation
           </p>
         </div>
       )}
@@ -234,21 +233,99 @@ function MultiModelView({ report, onReset }: { report: MultiModelPredictionRespo
 
 function ForensicsView({ result, onReset }: { result: UploadedForensicsResponse; onReset: () => void }) {
   const report = result.forensic_summary;
+  const mlVerdict = result.ml_verdict;
+  const shapFeatures = result.shap_features || [];
+  const limeFeatures = result.lime_features || [];
+  const maxShap = shapFeatures.length > 0 ? Math.max(...shapFeatures.map(f => Math.abs(f.shap_value)), 0.01) : 1;
+  const maxLime = limeFeatures.length > 0 ? Math.max(...limeFeatures.map(f => Math.abs(f.weight)), 0.01) : 1;
+
   return <div className="card">
-    <div className="card-header"><div className="card-title">Uploaded-file static analysis</div><button className="btn btn-secondary" onClick={onReset}>New Analysis</button></div>
-    <div className="error-message" style={{ marginBottom: 'var(--space-md)' }}>{result.notice}</div>
-    <p>YARA / forensic IOC count: <strong>{result.ioc_count}</strong></p>
-    <table className="data-table"><tbody>
-      <tr><td>PE file</td><td>{String(report.is_pe ?? false)}</td></tr><tr><td>Sections</td><td>{String(report.num_sections ?? 0)}</td></tr><tr><td>Imports</td><td>{String(report.num_imports ?? 0)}</td></tr><tr><td>Entropy (direct bytes)</td><td>{Number(report.overall_entropy ?? 0).toFixed(2)}</td></tr><tr><td>Likely packed</td><td>{String(report.is_likely_packed ?? false)}</td></tr>
-    </tbody></table>
+    <div className="card-header">
+      <div className="card-title">Uploaded-file Analysis</div>
+      <button className="btn btn-secondary" onClick={onReset}>New Analysis</button>
+    </div>
+
+    {/* ML Verdict */}
+    {mlVerdict?.available && (
+      <div className="verdict-display" style={{ marginBottom: 'var(--space-md)' }}>
+        <div className={`verdict-label ${(mlVerdict.consensus ?? 'tie') === 'malware' ? 'verdict-malware' : 'verdict-benign'}`}>
+          {mlVerdict.consensus ?? 'unknown'}
+        </div>
+        <div className="verdict-confidence">
+          {mlVerdict.malware_votes} malware / {mlVerdict.benign_votes} benign votes across {mlVerdict.per_model?.length ?? 0} models
+        </div>
+      </div>
+    )}
+
+    {/* Per-model breakdown */}
+    {mlVerdict?.per_model && mlVerdict.per_model.length > 0 && (
+      <div style={{ marginBottom: 'var(--space-md)' }}>
+        <table className="data-table"><thead><tr><th>Model</th><th>Verdict</th><th>Confidence</th></tr></thead><tbody>
+          {mlVerdict.per_model.map((m, i) => <tr key={i}><td>{m.model_group}/{m.model_name}</td><td>{m.prediction}</td><td>{(m.confidence * 100).toFixed(1)}%</td></tr>)}
+        </tbody></table>
+      </div>
+    )}
+
+    {/* SHAP Features */}
+    {shapFeatures.length > 0 && (
+      <div style={{ marginBottom: 'var(--space-md)' }}>
+        <strong>Top SHAP Features</strong>
+        <div className="shap-bar-container" style={{ marginTop: 'var(--space-sm)' }}>
+          {shapFeatures.slice(0, 10).map((feat: ShapFeature, i: number) => (
+            <div className="shap-bar-row" key={i}>
+              <div className="shap-bar-label" title={feat.feature_name}>{feat.feature_name}</div>
+              <div className="shap-bar-track">
+                <div className={`shap-bar-fill ${feat.shap_value >= 0 ? 'positive' : 'negative'}`} style={{ width: `${(Math.abs(feat.shap_value) / maxShap) * 100}%` }} />
+              </div>
+              <div className="shap-bar-value">{feat.shap_value >= 0 ? '+' : ''}{feat.shap_value.toFixed(4)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* LIME Features */}
+    {limeFeatures.length > 0 && (
+      <div style={{ marginBottom: 'var(--space-md)' }}>
+        <strong>Top LIME Features</strong>
+        <div className="shap-bar-container" style={{ marginTop: 'var(--space-sm)' }}>
+          {limeFeatures.slice(0, 10).map((feat: LimeFeature, i: number) => (
+            <div className="shap-bar-row" key={i}>
+              <div className="shap-bar-label" title={feat.feature_name}>{feat.feature_name}</div>
+              <div className="shap-bar-track">
+                <div className={`shap-bar-fill ${feat.weight >= 0 ? 'positive' : 'negative'}`} style={{ width: `${(Math.abs(feat.weight) / maxLime) * 100}%` }} />
+              </div>
+              <div className="shap-bar-value">{feat.weight >= 0 ? '+' : ''}{feat.weight.toFixed(4)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* PE Forensics */}
+    <div>
+      <strong>PE Forensic Summary</strong>
+      <table className="data-table" style={{ marginTop: 'var(--space-sm)' }}><tbody>
+        <tr><td>PE file</td><td>{String(report.is_pe ?? false)}</td></tr>
+        <tr><td>Sections</td><td>{String(report.num_sections ?? 0)}</td></tr>
+        <tr><td>Imports</td><td>{String(report.num_imports ?? 0)}</td></tr>
+        <tr><td>Entropy (direct bytes)</td><td>{Number(report.overall_entropy ?? 0).toFixed(2)}</td></tr>
+        <tr><td>Likely packed</td><td>{String(report.is_likely_packed ?? false)}</td></tr>
+      </tbody></table>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 'var(--space-sm)' }}>
+        YARA / forensic IOC count: <strong>{result.ioc_count}</strong>
+      </p>
+    </div>
   </div>;
 }
 
 function ReportView({ report, onReset }: { report: PredictionReport; onReset: () => void }) {
   const isMALWARE = report.prediction.verdict === 'malware';
   const shapFeatures = report.xai.top_shap_features || [];
+  const limeFeatures = report.xai.lime_features || [];
   const isShap = ['tree_shap', 'kernel_shap'].includes(report.xai.attribution_method || 'tree_shap');
-  const maxShap = Math.max(...shapFeatures.map(f => Math.abs(f.shap_value)), 0.01);
+  const maxShap = shapFeatures.length > 0 ? Math.max(...shapFeatures.map(f => Math.abs(f.shap_value)), 0.01) : 1;
+  const maxLime = limeFeatures.length > 0 ? Math.max(...limeFeatures.map(f => Math.abs(f.weight)), 0.01) : 1;
 
   return (
     <div>
@@ -309,6 +386,30 @@ function ReportView({ report, onReset }: { report: PredictionReport; onReset: ()
                   />
                 </div>
                 <div className="shap-bar-value">{feat.shap_value >= 0 ? '+' : ''}{feat.shap_value.toFixed(4)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* LIME Features */}
+      {limeFeatures.length > 0 && (
+        <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
+          <div className="card-header">
+            <div className="card-title">Top LIME Feature Contributions</div>
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>LIME is model-agnostic; contributions are local linear approximations.</p>
+          <div className="shap-bar-container">
+            {limeFeatures.slice(0, 10).map((feat: LimeFeature, i: number) => (
+              <div className="shap-bar-row" key={i}>
+                <div className="shap-bar-label" title={feat.feature_name}>{feat.feature_name}</div>
+                <div className="shap-bar-track">
+                  <div
+                    className={`shap-bar-fill ${feat.weight >= 0 ? 'positive' : 'negative'}`}
+                    style={{ width: `${(Math.abs(feat.weight) / maxLime) * 100}%` }}
+                  />
+                </div>
+                <div className="shap-bar-value">{feat.weight >= 0 ? '+' : ''}{feat.weight.toFixed(4)}</div>
               </div>
             ))}
           </div>
