@@ -1,3 +1,13 @@
+<h1 align="center">HARUSPEX</h1>
+
+<p align="center">
+  <strong>Explainable AI Framework for Zero-Day Malware Detection & Digital Forensic Investigation</strong>
+</p>
+
+<p align="center">
+  HARUSPEX bridges the gap between AI model explanations and forensic evidence by correlating SHAP/LIME feature attributions with PE analysis findings into unified investigation reports.
+</p>
+
 <p align="center">
 
   <!-- Core -->
@@ -23,16 +33,6 @@
   ![Documentation](https://img.shields.io/badge/Docs-Available-green?style=for-the-badge&logo=readthedocs&logoColor=white)
   ![Open Source Love](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?style=for-the-badge)
 
-</p>
-
-<h1 align="center">HARUSPEX</h1>
-
-<p align="center">
-  <strong>Explainable AI Framework for Zero-Day Malware Detection & Digital Forensic Investigation</strong>
-</p>
-
-<p align="center">
-  HARUSPEX bridges the gap between AI model explanations and forensic evidence by correlating SHAP/LIME feature attributions with PE analysis findings into unified investigation reports.
 </p>
 
 ---
