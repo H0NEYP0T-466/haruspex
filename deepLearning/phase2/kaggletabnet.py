@@ -176,6 +176,11 @@ def main():
     )
     tabnet.fit(X_tr, y_tr, X_val, y_val)
 
+    # Save model
+    model_path = models_dir / "ember_tabnet.zip"
+    tabnet.save(str(model_path))
+    logger.info("Saved %s model to %s", tabnet.model_name, model_path)
+
     # Free training split memory before test evaluation. Note X_tr/X_val are numpy
     # *views* into ember_train.X, so the full ~5.7GB train buffer is only actually
     # released once ember_train itself is also dropped (done below, after we've
