@@ -25,7 +25,6 @@ from haruspex.forensics.ioc_extractor import IOCExtractor
 from haruspex.forensics.static_analysis import StaticAnalyzer
 from haruspex.utils.logging import get_logger
 from haruspex.xai.shap_explainer import SHAPExplainer
-from haruspex.xai.lime_explainer import LIMEExplainer
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -56,23 +55,6 @@ def _vectorize_uploaded_pe(content: bytes) -> np.ndarray:
             status_code=422,
             detail=f"Could not vectorize uploaded file with the EMBER v2 PE extractor: {exc}",
         ) from exc
-
-
-_lime_background_cache: Optional[np.ndarray] = None
-
-def _get_lime_background(max_samples: int = 200) -> Optional[np.ndarray]:
-    """Load a small BODMAS subset for LIME background statistics (cached)."""
-    global _lime_background_cache
-    if _lime_background_cache is not None:
-        return _lime_background_cache
-    try:
-        from haruspex.data.bodmas import load_bodmas
-        X, _, _ = load_bodmas(max_samples=max_samples)
-        _lime_background_cache = X
-        return _lime_background_cache
-    except Exception as e:
-        logger.warning("Could not load BODMAS background for LIME: %s", e)
-        return None
 
 
 class FeatureVectorRequest(BaseModel):
@@ -211,12 +193,12 @@ async def predict(
         except Exception as e:
             logger.warning("SHAP explanation failed: %s", e)
 
-        # LIME explanation (best-effort; needs background data)
+        # LIME explanation (best-effort; uses pre-cached explainer)
         lime_exp = None
         try:
-            bg_data = _get_lime_background()
-            if bg_data is not None:
-                lime_explainer = LIMEExplainer(bg_data, feature_names=feature_names)
+            from haruspex.api.main import get_lime_explainer
+            lime_explainer = get_lime_explainer()
+            if lime_explainer is not None:
                 lime_exp = lime_explainer.explain_sample(model, features)
         except Exception as e:
             logger.warning("LIME explanation failed: %s", e)
@@ -432,9 +414,9 @@ async def analyze_uploaded_file_forensics(file: UploadFile = File(...)):
 
                 # LIME for the first (default) model
                 try:
-                    bg_data = _get_lime_background()
-                    if bg_data is not None:
-                        lime_explainer = LIMEExplainer(bg_data, feature_names=feature_names)
+                    from haruspex.api.main import get_lime_explainer
+                    lime_explainer = get_lime_explainer()
+                    if lime_explainer is not None:
                         lime_exp = lime_explainer.explain_sample(default_model, features)
                         lime_result = lime_exp.top_features(k=10)
                 except Exception as e:

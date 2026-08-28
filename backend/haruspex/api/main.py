@@ -38,11 +38,17 @@ logger = get_logger(__name__)
 #       "_active_group": "bodmas",
 #   }
 _model_store: dict[str, Any] = {}
+_lime_explainer: Any = None
 
 
 def get_model_store() -> dict[str, Any]:
     """Return the global model store."""
     return _model_store
+
+
+def get_lime_explainer():
+    """Return the cached LIME explainer (initialised once at startup)."""
+    return _lime_explainer
 
 
 def get_model(model_name: str | None = None, model_group: str | None = None) -> tuple[Any, str, str]:
@@ -143,6 +149,17 @@ async def lifespan(app: FastAPI):
     logger.info("HARUSPEX API ready (%d models loaded across %d groups)",
                 total_loaded,
                 sum(1 for k in _model_store if not k.startswith("_")))
+
+    # Pre-initialise LIME explainer with BODMAS background (avoid per-request cost)
+    global _lime_explainer
+    try:
+        from haruspex.data.bodmas import load_bodmas
+        from haruspex.xai.lime_explainer import LIMEExplainer
+        bodmas = load_bodmas()
+        _lime_explainer = LIMEExplainer(bodmas.X[:200])
+        logger.info("LIME explainer pre-initialised with 200 BODMAS samples")
+    except Exception as e:
+        logger.warning("LIME explainer pre-init failed (LIME will be skipped): %s", e)
 
     yield
 

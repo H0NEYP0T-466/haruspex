@@ -80,7 +80,7 @@ class LIMEExplainer:
         model: MalwareDetector,
         x_sample: np.ndarray,
         num_features: int = 10,
-        num_samples: int = 5000,
+        num_samples: int = 1000,
     ) -> LIMEExplanation:
         """Generate LIME explanation for a single sample.
 

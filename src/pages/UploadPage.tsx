@@ -227,7 +227,7 @@ function MultiModelView({ report, onReset }: { report: MultiModelPredictionRespo
     <table className="data-table"><thead><tr><th>Dataset / model</th><th>Evaluation scope</th><th>Verdict</th><th>Confidence</th><th>Malware probability</th></tr></thead><tbody>
       {report.results.map((row) => <tr key={`${row.model_group}-${row.model_name}`}><td>{row.model_group} / {row.model_name}</td><td>{row.in_distribution === false ? 'Cross-dataset only' : 'In-distribution'}</td><td>{row.prediction}</td><td>{(row.confidence * 100).toFixed(1)}%</td><td>{(row.malware_probability * 100).toFixed(1)}%</td></tr>)}
     </tbody></table>
-    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 'var(--space-md)' }}>{report.notice || 'Cross-dataset results are comparison-only; trust the model trained on the selected sample dataset.'} Values displayed as 100.0% are rounded and are not proof the prediction is correct.</p>
+    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 'var(--space-md)' }}>{report.notice}</p>
   </div>;
 }
 
