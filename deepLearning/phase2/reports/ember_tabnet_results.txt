@@ -1,0 +1,11 @@
+========================================================================
+  HARUSPEX Kaggle Phase 2 — TabNet (EMBER 2018 Primary)
+========================================================================
+
+EMBER 2018 Test Accuracy:  0.9484
+EMBER 2018 Test F1-Score:  0.9484
+EMBER 2018 Test AUC-ROC:   0.9849
+
+BODMAS Cross-Dataset Acc: 0.6608
+BODMAS Cross-Dataset F1:  0.6862
+BODMAS Cross-Dataset AUC: 0.8160

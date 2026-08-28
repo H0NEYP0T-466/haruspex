@@ -1,0 +1,30 @@
+[2026-08-28 05:29:20,573] INFO ========================================================================
+[2026-08-28 05:29:20,573] INFO   HARUSPEX Kaggle Phase 2 — TabNet Training on EMBER 2018 (GPU T4)
+[2026-08-28 05:29:20,573] INFO ========================================================================
+[2026-08-28 05:29:20,574] INFO PyTorch Execution Device: cuda (CUDA Available: True)
+[2026-08-28 05:29:20,619] INFO GPU Model: Tesla T4
+[2026-08-28 05:29:20,620] INFO [1/4] Loading EMBER dataset (Train & Test partitions)...
+[2026-08-28 05:29:20,627] INFO Found EMBER dataset at: /kaggle/input/datasets/h0neyp0t/ember-2018
+[2026-08-28 05:29:20,628] INFO Loading EMBER (train partition) from /kaggle/input/datasets/h0neyp0t/ember-2018/X_train.dat
+[2026-08-28 05:29:23,550] INFO EMBER (train) dataset loaded: 600000 labeled samples (300000 benign, 300000 malware)
+[2026-08-28 05:29:23,659] INFO Loading EMBER (test partition) from /kaggle/input/datasets/h0neyp0t/ember-2018/X_test.dat
+[2026-08-28 05:29:24,581] INFO EMBER (test) dataset loaded: 200000 labeled samples (100000 benign, 100000 malware)
+[2026-08-28 05:29:24,840] INFO Random Split (seed=42): 480000 train, 120000 test
+[2026-08-28 05:29:27,143] INFO [2/4] Fitting TabNet Model on EMBER (batch_size=1024)...
+[2026-08-28 05:29:27,145] INFO Training tabnet_ember on device: cuda (432000 samples)
+[2026-08-28 05:52:09,656] INFO Saved tabnet_ember model to /kaggle/working/deepLearning/phase2/models/ember_tabnet
+[2026-08-28 05:52:09,656] INFO Saved tabnet_ember model to /kaggle/working/deepLearning/phase2/models/ember_tabnet.zip
+[2026-08-28 05:52:10,023] INFO [3/4] Evaluating on EMBER 2018 Test Partition...
+[2026-08-28 05:52:30,114] INFO   EMBER 2018 Test Performance: acc=0.9484, f1=0.9484, auc=0.9849
+[2026-08-28 05:52:30,272] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_tabnet_test_cm.png
+[2026-08-28 05:52:30,495] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_tabnet_test_roc.png
+[2026-08-28 05:52:30,496] INFO [4/4] Evaluating Cross-Dataset Generalization on BODMAS...
+[2026-08-28 05:52:30,510] INFO Found BODMAS dataset at: /kaggle/input/datasets/h0neyp0t/bodmas
+[2026-08-28 05:52:30,510] INFO Loading BODMAS from npz: /kaggle/input/datasets/h0neyp0t/bodmas/bodmas.npz
+[2026-08-28 05:52:36,254] INFO BODMAS dataset loaded: 134435 samples, 2381 features, 582 unique families, 15 categories
+[2026-08-28 05:52:50,221] INFO   Cross-Dataset BODMAS Generalization: acc=0.6608, f1=0.6862, auc=0.8160
+[2026-08-28 05:52:50,332] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_tabnet_cross_bodmas_cm.png
+[2026-08-28 05:52:50,540] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_tabnet_cross_bodmas_roc.png
+[2026-08-28 05:52:50,541] INFO Generating TabNet Feature Importances...
+[2026-08-28 05:52:51,314] INFO Saved plot to /kaggle/working/deepLearning/phase2/plots/ember_tabnet_feature_importance.png
+[2026-08-28 05:52:51,314] INFO Kaggle TabNet Phase 2 Training Finished Successfully! Artifacts saved to /kaggle/working/deepLearning/phase2
